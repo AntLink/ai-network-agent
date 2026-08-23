@@ -1,0 +1,98 @@
+{
+  "devices": [
+    {
+      "id": "mikrotik-rb5009-tci-upt-pontianak",
+      "hostname": "TCI UPT PONTIANAK",
+      "management_address": "36.88.39.234",
+      "vendor": "mikrotik",
+      "platform": "routeros",
+      "transport": "ssh",
+      "status": "active"
+    },
+    {
+      "id": "mikrotik-rb951ui-2hnd-home-bagem",
+      "hostname": "HOME-BAGEM",
+      "management_address": "192.168.30.1",
+      "vendor": "mikrotik",
+      "platform": "routeros",
+      "transport": "ssh",
+      "status": "active"
+    },
+    {
+      "id": "mikrotik-chr-mk-1",
+      "hostname": "MK-1",
+      "management_address": "172.22.37.168",
+      "vendor": "mikrotik",
+      "platform": "routeros",
+      "transport": "ssh",
+      "status": "active"
+    },
+    {
+      "id": "cisco-iosv-r1",
+      "hostname": "R1",
+      "management_address": "172.22.45.249",
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "ssh",
+      "status": "active"
+    },
+    {
+      "id": "cisco-iosv-r2",
+      "hostname": "R2",
+      "management_address": "172.22.36.184",
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "ssh",
+      "status": "active"
+    },
+    {
+      "id": "cisco-iosvl2-sw1",
+      "hostname": "SW1",
+      "management_address": "172.22.38.10",
+      "vendor": "cisco",
+      "platform": "ios-l2",
+      "transport": "ssh",
+      "console_host": "172.22.37.68",
+      "console_port": 5002,
+      "status": "active"
+    },
+    {
+      "id": "cisco-iosvl2-sw2",
+      "hostname": "SW2",
+      "management_address": "172.22.39.10",
+      "vendor": "cisco",
+      "platform": "ios-l2",
+      "transport": "ssh",
+      "console_host": "172.22.37.68",
+      "console_port": 5004,
+      "status": "active"
+    },
+    {
+      "id": "linux-embedded",
+      "hostname": "CSMS-SINGKAWANG",
+      "management_address": "192.168.162.20",
+      "vendor": "linux",
+      "platform": "embedded",
+      "transport": "ssh",
+      "status": "active"
+    },
+    {
+      "id": "linux-debian",
+      "hostname": "fauzan",
+      "management_address": "172.23.193.80",
+      "vendor": "linux",
+      "platform": "debian",
+      "transport": "ssh",
+      "status": "active"
+    },
+    {
+      "id": "linux-ubuntu",
+      "hostname": "ubuntu",
+      "management_address": "192.168.210.51",
+      "vendor": "linux",
+      "platform": "ubuntu",
+      "transport": "ssh",
+      "status": "active"
+    }
+  ]
+}

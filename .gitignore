@@ -1,7 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.venv/
+venv/
+env/
+
+# Go build cache
+tmp/go-build-cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/audit.log
+*.log
+
+# Backups
+backups/
+
+# Test temp files
+tmp/test_*.py
+
+# Environment
 .env
-inventory/devices.json
-backups/*
-!backups/.gitkeep
-logs/*
-!logs/.gitkeep
-node_modules/
+.env.local
+
+# GNS3
+*.gns3
+.project
+
+# Compiled
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution
+dist/
+build/
+*.egg-info/
