@@ -14,6 +14,11 @@ env/
 # Go build cache
 tmp/go-build-cache/
 
+# Node.js
+node_modules/
+package-lock.json
+yarn.lock
+
 # IDE
 .idea/
 .vscode/
@@ -33,6 +38,7 @@ backups/
 
 # Test temp files
 tmp/test_*.py
+tmp/*.py
 
 # Environment
 .env
@@ -51,3 +57,7 @@ tmp/test_*.py
 dist/
 build/
 *.egg-info/
+
+# Frontend build
+backend/csms_monitor/frontend/dist/
+backend/csms_monitor/frontend/node_modules/
