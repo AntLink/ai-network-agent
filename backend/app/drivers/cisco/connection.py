@@ -1,7 +1,9 @@
 """Netmiko connection wrapper for Cisco IOS/IOS-XE."""
-import os
 from netmiko import ConnectHandler
 from app.core.audit import log_event
+
+# Import from local base module to avoid duplication
+from .base import get_credentials
 
 
 class IOSConnection:
@@ -12,10 +14,8 @@ class IOSConnection:
         self._conn = None
 
     def _get_connection_params(self) -> dict:
-        prefix = self.device["id"].upper().replace("-", "_")
-        username = os.getenv(f"{prefix}_USERNAME", os.getenv("NETWORK_USERNAME", "admin"))
-        password = os.getenv(f"{prefix}_PASSWORD", os.getenv("NETWORK_PASSWORD"))
-        secret = os.getenv(f"{prefix}_SECRET", os.getenv("NETWORK_SECRET", password))
+        """Get connection parameters using shared credential utility."""
+        username, password, secret = get_credentials(self.device)
         return {
             "device_type": "cisco_ios",
             "host": self.device["management_address"],

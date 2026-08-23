@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     BACKUP_DIR: str = str(ROOT / "backups")
     AUDIT_LOG_FILE: str = str(ROOT / "logs" / "audit.log")
 
-    SSH_CONNECT_TIMEOUT: int = 10
-    SSH_COMMAND_TIMEOUT: int = 20
+    SSH_CONNECT_TIMEOUT: int = 15
+    SSH_COMMAND_TIMEOUT: int = 45
 
     model_config = SettingsConfigDict(
         env_file=".env",

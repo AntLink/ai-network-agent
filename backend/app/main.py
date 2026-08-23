@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.transports.ssh import (
@@ -13,6 +14,15 @@ from app.drivers.cisco.cli import CiscoCLIError
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
+)
+
+# CORS Configuration - Allow all origins for development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)

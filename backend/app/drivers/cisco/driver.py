@@ -157,88 +157,106 @@ class CiscoDriver(BaseDriver):
         return {"vendor": "cisco", "raw": await self.exec_logged("show version")}
 
     async def get_facts(self):
-        return {"raw": await self.exec_logged("show version")}
+        raw = await self.exec_logged("show version")
+        return {"data": raw, "raw": raw}
 
     async def get_interfaces(self):
-        return {"raw": await self.exec_logged("show ip interface brief")}
+        raw = await self.exec_logged("show ip interface brief")
+        return {"data": raw, "raw": raw}
 
     async def get_interfaces_detail(self):
-        return {"raw": await self.exec_logged("show interfaces")}
+        raw = await self.exec_logged("show interfaces")
+        return {"data": raw, "raw": raw}
 
     async def get_routes(self):
-        return {"raw": await self.exec_logged("show ip route")}
+        raw = await self.exec_logged("show ip route")
+        return {"data": raw, "raw": raw}
 
     async def get_arp(self):
-        return {"raw": await self.exec_logged("show ip arp")}
+        raw = await self.exec_logged("show ip arp")
+        return {"data": raw, "raw": raw}
 
     async def get_cpu_memory(self):
         cpu = await self.exec_logged("show processes cpu summary")
         mem = await self.exec_logged("show memory summary")
-        return {"cpu": cpu, "memory": mem}
+        return {"data": {"cpu": cpu, "memory": mem}, "raw": f"CPU:\n{cpu}\n\nMemory:\n{mem}"
 
     async def get_acls(self):
-        return {"raw": await self.exec_logged("show access-lists")}
+        raw = await self.exec_logged("show access-lists")
+        return {"data": raw, "raw": raw}
 
     async def get_cdp_neighbors(self):
-        return {"raw": await self.exec_logged("show cdp neighbors detail")}
+        raw = await self.exec_logged("show cdp neighbors detail")
+        return {"data": raw, "raw": raw}
 
     async def get_nat_translations(self):
-        return {"raw": await self.exec_logged("show ip nat translation")}
+        raw = await self.exec_logged("show ip nat translation")
+        return {"data": raw, "raw": raw}
 
     async def get_startup_config(self):
-        return {"raw": await self.exec_logged("show startup-config")}
+        raw = await self.exec_logged("show startup-config")
+        return {"data": raw, "raw": raw}
 
     async def get_logs(self):
-        return {"raw": await self.exec_logged("show logging")}
+        raw = await self.exec_logged("show logging")
+        return {"data": raw, "raw": raw}
 
     async def get_config(self):
-        return {"raw": await self.exec_logged("show running-config")}
+        raw = await self.exec_logged("show running-config")
+        return {"data": raw, "raw": raw}
 
     async def backup(self):
         cmd = "show running-config"
         raw = await self._logged("BACKUP", cmd, lambda: self._transport().run(cmd))
-        return {"raw": raw}
+        return {"data": raw, "raw": raw}
 
     # ------------------------------------------------------------------
     # System configuration (CONFIG)
     # ------------------------------------------------------------------
 
     async def set_hostname(self, name: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"hostname {name}", lambda: self._configure([f"hostname {name}"])
         )
+        return {"status": "applied", "output": output}
 
     async def set_dns(self, servers: list[str]):
         lines = ["no ip name-server"] + [f"ip name-server {s}" for s in servers]
-        return await self._logged("CONFIG", "; ".join(lines), lambda: self._configure(lines))
+        output = await self._logged("CONFIG", "; ".join(lines), lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def add_ntp_server(self, server: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"ntp server {server}", lambda: self._configure([f"ntp server {server}"])
         )
+        return {"status": "applied", "output": output}
 
     async def remove_ntp_server(self, server: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"no ntp server {server}", lambda: self._configure([f"no ntp server {server}"])
         )
+        return {"status": "applied", "output": output}
 
     async def set_banner_motd(self, text: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"banner motd", lambda: self._configure([f"banner motd #{text}#"])
         )
+        return {"status": "applied", "output": output}
 
     async def create_local_user(self, username: str, password: str, privilege: int = 1):
         detail = f"username {username} privilege {privilege}"
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", detail,
             lambda: self._configure([f"username {username} privilege {privilege} secret {password}"]),
         )
+        return {"status": "applied", "output": output}
 
     async def delete_local_user(self, username: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"no username {username}",
             lambda: self._configure([f"no username {username}"]),
         )
+        return {"status": "applied", "output": output}
 
     # ------------------------------------------------------------------
     # Interface configuration (CONFIG)
@@ -246,10 +264,11 @@ class CiscoDriver(BaseDriver):
 
     async def interface_set_description(self, interface: str, description: str):
         line = f"description {description}" if description.strip() else "no description"
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"interface {interface}; {line}",
             lambda: self._configure([f"interface {interface}", line]),
         )
+        return {"status": "applied", "output": output}
 
     async def interface_set_address(self, interface: str, address: str):
         if address.lower() == "dhcp":
@@ -265,26 +284,30 @@ class CiscoDriver(BaseDriver):
                 ip, mask = parts
             lines = [f"interface {interface}", f"ip address {ip} {mask}"]
             detail = f"interface {interface}; ip address {ip} {mask}"
-        return await self._logged("CONFIG", detail, lambda: self._configure(lines))
+        output = await self._logged("CONFIG", detail, lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def interface_remove_address(self, interface: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"interface {interface}; no ip address",
             lambda: self._configure([f"interface {interface}", "no ip address"]),
         )
+        return {"status": "applied", "output": output}
 
     async def interface_set_mtu(self, interface: str, mtu: int):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"interface {interface}; mtu {mtu}",
             lambda: self._configure([f"interface {interface}", f"mtu {mtu}"]),
         )
+        return {"status": "applied", "output": output}
 
     async def interface_set_state(self, interface: str, up: bool):
         line = "no shutdown" if up else "shutdown"
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"interface {interface}; {line}",
             lambda: self._configure([f"interface {interface}", line]),
         )
+        return {"status": "applied", "output": output}
 
     # ------------------------------------------------------------------
     # Routing (CONFIG)
@@ -302,12 +325,14 @@ class CiscoDriver(BaseDriver):
         line = f"ip route {target} {gateway}"
         if distance is not None:
             line += f" {distance}"
-        return await self._logged("CONFIG", line, lambda: self._configure([line]))
+        output = await self._logged("CONFIG", line, lambda: self._configure([line]))
+        return {"status": "applied", "output": output}
 
     async def remove_static_route(self, prefix: str, gateway: str):
         target = self._route_target(prefix)
         line = f"no ip route {target} {gateway}"
-        return await self._logged("CONFIG", line, lambda: self._configure([line]))
+        output = await self._logged("CONFIG", line, lambda: self._configure([line]))
+        return {"status": "applied", "output": output}
 
     # ------------------------------------------------------------------
     # ACLs (CONFIG)
@@ -318,40 +343,44 @@ class CiscoDriver(BaseDriver):
         if acl_type not in ("standard", "extended"):
             raise ValueError("acl_type must be standard|extended")
         lines = [f"ip access-list {acl_type} {name}"] + list(rules)
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"ip access-list {acl_type} {name} ({len(rules)} rule)",
             lambda: self._configure(lines),
         )
+        return {"status": "applied", "output": output}
 
     async def acl_delete(self, name: str, acl_type: str):
         acl_type = acl_type.lower()
         if acl_type not in ("standard", "extended"):
             raise ValueError("acl_type must be standard|extended")
         line = f"no ip access-list {acl_type} {name}"
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", line,
             lambda: self._configure([line]),
         )
+        return {"status": "applied", "output": output}
 
     async def acl_apply(self, name: str, interface: str, direction: str):
         direction = direction.lower()
         if direction not in ("in", "out"):
             raise ValueError("direction must be in|out")
         lines = [f"interface {interface}", f"ip access-group {name} {direction}"]
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"ip access-group {name} {direction} on {interface}",
             lambda: self._configure(lines),
         )
+        return {"status": "applied", "output": output}
 
     async def acl_unapply(self, name: str, interface: str, direction: str):
         direction = direction.lower()
         if direction not in ("in", "out"):
             raise ValueError("direction must be in|out")
         lines = [f"interface {interface}", f"no ip access-group {name} {direction}"]
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"no ip access-group {name} {direction} on {interface}",
             lambda: self._configure(lines),
         )
+        return {"status": "applied", "output": output}
 
     # ------------------------------------------------------------------
     # Operations (TEST / CONFIG / AUDIT)
@@ -580,10 +609,12 @@ class CiscoDriver(BaseDriver):
         lines = [f"vlan {vlan_id}"]
         if name:
             lines.append(f"name {name}")
-        return await self._logged("CONFIG", f"vlan {vlan_id}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"vlan {vlan_id}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def delete_vlan(self, vlan_id: int):
-        return await self._logged("CONFIG", f"no vlan {vlan_id}", lambda: self._configure([f"no vlan {vlan_id}"]))
+        output = await self._logged("CONFIG", f"no vlan {vlan_id}", lambda: self._configure([f"no vlan {vlan_id}"]))
+        return {"status": "applied", "output": output}
 
     async def set_access_port(self, interface: str, vlan_id: int):
         lines = [
@@ -592,7 +623,8 @@ class CiscoDriver(BaseDriver):
             f"switchport access vlan {vlan_id}",
             "spanning-tree portfast",
         ]
-        return await self._logged("CONFIG", f"access {interface} vlan {vlan_id}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"access {interface} vlan {vlan_id}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def set_trunk_port(self, interface: str, allowed_vlans: str = "all"):
         lines = [
@@ -600,7 +632,8 @@ class CiscoDriver(BaseDriver):
             "switchport mode trunk",
             f"switchport trunk allowed vlan {allowed_vlans}",
         ]
-        return await self._logged("CONFIG", f"trunk {interface} allow {allowed_vlans}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"trunk {interface} allow {allowed_vlans}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def create_subinterface(self, parent_interface: str, sub_id: int, vlan_id: int, ip_address: str | None = None):
         """Create L3 subinterface (router-on-a-stick)."""
@@ -610,7 +643,8 @@ class CiscoDriver(BaseDriver):
         ]
         if ip_address:
             lines.append(f"ip address {ip_address}")
-        return await self._logged("CONFIG", f"subif {parent_interface}.{sub_id} vlan {vlan_id}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"subif {parent_interface}.{sub_id} vlan {vlan_id}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def set_svi(self, vlan_id: int, ip_address: str | None = None, shutdown: bool = False):
         """Create / modify Switch Virtual Interface."""
@@ -621,7 +655,8 @@ class CiscoDriver(BaseDriver):
             lines.append("shutdown")
         else:
             lines.append("no shutdown")
-        return await self._logged("CONFIG", f"svi vlan {vlan_id}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"svi vlan {vlan_id}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def ping_tool(self, address: str, repeat: int = 3, timeout: int = 2):
         import re

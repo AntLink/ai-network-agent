@@ -11,10 +11,12 @@ class GenericSSHDriver(BaseDriver):
         )
 
     async def identify(self):
-        return {"vendor": "unknown", "raw": await self._transport().run("show version")}
+        raw = await self._transport().run("show version")
+        return {"vendor": "unknown", "data": raw, "raw": raw}
 
     async def get_facts(self):
-        return await self.identify()
+        raw = await self._transport().run("show version")
+        return {"vendor": "unknown", "data": raw, "raw": raw}
 
     async def get_interfaces(self):
         raise NotImplementedError("Unknown vendor: interface command must be supplied explicitly.")
