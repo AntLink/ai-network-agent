@@ -720,3 +720,106 @@ async def run_commands(device_id: str, payload: schemas.CommandRunRequest):
 async def get_monitoring(device_id: str, payload: schemas.MonitoringRequest):
     output = await _get_mikrotik_driver(device_id).get_monitoring(payload.metrics)
     return {"status": "ok", "metrics": output}
+
+
+# ---------------------------------------------------------------------------
+# Health / Ping / Traceroute
+# ---------------------------------------------------------------------------
+
+@router.get("/{device_id}/health")
+async def get_health(device_id: str):
+    try:
+        return await _get_mikrotik_driver(device_id).health()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+
+@router.post("/{device_id}/tools/ping")
+async def ping_tool(device_id: str, payload: schemas.PingRequest):
+    output = await _get_mikrotik_driver(device_id).ping_tool(
+        payload.address, payload.count, payload.interval, payload.size
+    )
+    return {"status": "ok", "output": output}
+
+
+@router.post("/{device_id}/tools/traceroute")
+async def traceroute_tool(device_id: str, payload: schemas.TracerouteRequest):
+    output = await _get_mikrotik_driver(device_id).traceroute_tool(
+        payload.address, payload.max_hops, payload.packet_size
+    )
+    return {"status": "ok", "output": output}
+
+
+# ---------------------------------------------------------------------------
+# Config Transaction (parity with Cisco)
+# ---------------------------------------------------------------------------
+
+@router.post("/{device_id}/config/transaction")
+async def config_transaction(device_id: str, payload: schemas.ConfigTransaction):
+    driver = _get_mikrotik_driver(device_id)
+    report = await driver.config_transaction(
+        commands=payload.commands,
+        verify=payload.verify,
+        save_on_success=payload.save_on_success,
+        description=payload.description or "",
+    )
+    return {"status": report.get("status"), **report}
+
+
+# ---------------------------------------------------------------------------
+# OSPF Configuration (ROS7)
+# ---------------------------------------------------------------------------
+
+@router.post("/{device_id}/ospf/instance")
+async def add_ospf_instance(device_id: str, payload: schemas.OspfInstanceCreate):
+    output = await _get_mikrotik_driver(device_id).add_ospf_instance(
+        payload.name, payload.router_id or "", payload.comment or ""
+    )
+    return {"status": "applied", "output": output}
+
+
+@router.delete("/{device_id}/ospf/instance")
+async def remove_ospf_instance(device_id: str, payload: schemas.OspfInstanceDelete):
+    output = await _get_mikrotik_driver(device_id).remove_ospf_instance(payload.name)
+    return {"status": "applied", "output": output}
+
+
+@router.post("/{device_id}/ospf/area")
+async def add_ospf_area(device_id: str, payload: schemas.OspfAreaCreate):
+    output = await _get_mikrotik_driver(device_id).add_ospf_area(
+        payload.instance, payload.name, payload.area_id or "", payload.area_type or "default", payload.comment or ""
+    )
+    return {"status": "applied", "output": output}
+
+
+@router.post("/{device_id}/ospf/interface-template")
+async def add_ospf_interface_template(device_id: str, payload: schemas.OspfInterfaceTemplateCreate):
+    output = await _get_mikrotik_driver(device_id).add_ospf_interface_template(
+        payload.instance, payload.area, payload.interfaces,
+        payload.network_type or "broadcast", payload.cost or 10, payload.priority or 1, payload.comment or ""
+    )
+    return {"status": "applied", "output": output}
+
+
+@router.post("/{device_id}/ospf/network")
+async def add_ospf_network(device_id: str, payload: schemas.OspfNetworkCreate):
+    output = await _get_mikrotik_driver(device_id).add_ospf_network(
+        payload.instance, payload.network, payload.area, payload.comment or ""
+    )
+    return {"status": "applied", "output": output}
+
+
+@router.delete("/{device_id}/ospf/network")
+async def remove_ospf_network(device_id: str, payload: schemas.OspfNetworkDelete):
+    output = await _get_mikrotik_driver(device_id).remove_ospf_network(payload.instance, payload.network)
+    return {"status": "applied", "output": output}
+
+
+# ---------------------------------------------------------------------------
+# Config Save (with verification)
+# ---------------------------------------------------------------------------
+
+@router.post("/{device_id}/config/save")
+async def save_config(device_id: str):
+    result = await _get_mikrotik_driver(device_id).save_config()
+    return {"status": "saved" if result["saved"] else "failed", **result}

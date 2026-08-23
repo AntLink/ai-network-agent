@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from dotenv import load_dotenv
 from app.drivers.base import BaseDriver
@@ -16,6 +17,20 @@ class MikroTikDriver(BaseDriver):
         username = os.getenv(f"{prefix}_USERNAME", os.getenv("NETWORK_USERNAME", "admin"))
         password = os.getenv(f"{prefix}_PASSWORD", os.getenv("NETWORK_PASSWORD"))
         return SSHTransport(self.device["management_address"], username, password)
+
+    async def _logged(self, action: str, detail: str, fn):
+        """Run an operation with timed OK/FAIL audit logging (parity with Cisco)."""
+        device_id = self.device["id"]
+        t0 = time.perf_counter()
+        try:
+            out = await fn()
+            duration = round((time.perf_counter() - t0) * 1000)
+            log_event(device_id, action, detail, status="OK", duration_ms=duration)
+            return out
+        except Exception as e:
+            duration = round((time.perf_counter() - t0) * 1000)
+            log_event(device_id, action, detail, status="FAIL", duration_ms=duration, error=str(e))
+            raise
 
     async def identify(self):
         t = self._transport()
@@ -686,3 +701,193 @@ class MikroTikDriver(BaseDriver):
         cmd = f'/interface {tunnel_type}-client monitor {name} once'
         log_event(self.device["id"], "monitor_tunnel_client", cmd)
         return await self._transport().run(cmd)
+
+    # ------------------------------------------------------------------
+    # Parity with Cisco: health, save_config, ping, traceroute, OSPF config
+    # ------------------------------------------------------------------
+
+    async def health(self):
+        """Reachability + system health check."""
+        import asyncio
+        result: dict = {"device_id": self.device["id"]}
+        addr = self.device.get("management_address") or ""
+        host = addr.split("/")[0]
+        try:
+            reader, writer = await asyncio.wait_for(
+                asyncio.open_connection(host, 22), timeout=5.0
+            )
+            banner = await asyncio.wait_for(reader.readline(), timeout=3.0)
+            writer.close()
+            result["reachable"] = True
+            result["ssh_banner"] = banner.decode(errors="replace").strip()
+        except Exception as e:
+            result.update(reachable=False, reason=f"TCP/22 unreachable: {e}")
+            return result
+
+        try:
+            resource_out = await self._transport().run("/system resource print")
+            result["resource"] = resource_out
+        except Exception as e:
+            result["resource_error"] = str(e)
+
+        return result
+
+    async def save_config(self):
+        """Save config and verify persistence."""
+        out = await self._transport().run("/system backup save dont-encrypt=yes name=config-backup")
+        # On MikroTik, /export is the source of truth; backup is binary.
+        # Verify by reading back the backup name list.
+        verify_out = await self._transport().run("/system backup print where name=config-backup")
+        verified = "config-backup" in verify_out
+        log_event(self.device["id"], "SAVE-VERIFY", f"backup verified={verified}")
+        return {"saved": True, "verified": verified, "output": out}
+
+    async def ping_tool(self, address: str, count: int = 3, interval: int = 1, size: int = 56):
+        cmd = f"/ping address={address} count={count} interval={interval} size={size}"
+        t0 = __import__("time").perf_counter()
+        try:
+            out = await self._transport().run(cmd)
+        except Exception as e:
+            log_event(self.device["id"], "PING", f"{address} x{count}", status="FAIL", error=str(e))
+            raise
+        duration = round((__import__("time").perf_counter() - t0) * 1000)
+        # parse MikroTik ping output for packet loss
+        import re
+        m = re.search(r"(\d+) packets transmitted, (\d+) received", out)
+        loss = 100
+        if m:
+            sent, recv = int(m.group(1)), int(m.group(2))
+            loss = 100 - int(recv * 100 / sent) if sent else 100
+        log_event(self.device["id"], "PING", f"{address} x{count}", status=f"OK loss={loss}%", duration_ms=duration)
+        return {"raw": out}
+
+    async def traceroute_tool(self, address: str, max_hops: int = 30, packet_size: int = 56):
+        cmd = f"/tool traceroute address={address} max-hops={max_hops} packet-size={packet_size}"
+        out = await self._transport().run(cmd)
+        return {"raw": out}
+
+    # ------------------------------------------------------------------
+    # OSPF Configuration (ROS7 uses /routing/ospf/... structure)
+    # ------------------------------------------------------------------
+
+    async def add_ospf_instance(self, name: str, router_id: str = "", comment: str = ""):
+        cmd = f'/routing ospf instance add name={name}'
+        if router_id:
+            cmd += f' router-id={router_id}'
+        if comment:
+            cmd += f' comment="{comment}"'
+        log_event(self.device["id"], "add_ospf_instance", cmd)
+        return await self._transport().run(cmd)
+
+    async def remove_ospf_instance(self, name: str):
+        cmd = f'/routing ospf instance remove [find name={name}]'
+        log_event(self.device["id"], "remove_ospf_instance", cmd)
+        return await self._transport().run(cmd)
+
+    async def add_ospf_area(self, instance: str, name: str, area_id: str = "", area_type: str = "default", comment: str = ""):
+        cmd = f'/routing ospf area add instance={instance} name={name}'
+        if area_id:
+            cmd += f' area-id={area_id}'
+        if area_type:
+            cmd += f' type={area_type}'
+        if comment:
+            cmd += f' comment="{comment}"'
+        log_event(self.device["id"], "add_ospf_area", cmd)
+        return await self._transport().run(cmd)
+
+    async def add_ospf_interface_template(self, instance: str, area: str, interfaces: str, network_type: str = "broadcast", cost: int = 10, priority: int = 1, comment: str = ""):
+        cmd = f'/routing ospf interface-template add instance={instance} area={area} interfaces={interfaces}'
+        cmd += f' network-type={network_type} cost={cost} priority={priority}'
+        if comment:
+            cmd += f' comment="{comment}"'
+        log_event(self.device["id"], "add_ospf_interface_template", cmd)
+        return await self._transport().run(cmd)
+
+    async def add_ospf_network(self, instance: str, network: str, area: str, comment: str = ""):
+        cmd = f'/routing ospf network add instance={instance} network={network} area={area}'
+        if comment:
+            cmd += f' comment="{comment}"'
+        log_event(self.device["id"], "add_ospf_network", cmd)
+        return await self._transport().run(cmd)
+
+    async def remove_ospf_network(self, instance: str, network: str):
+        cmd = f'/routing ospf network remove [find instance={instance} network={network}]'
+        log_event(self.device["id"], "remove_ospf_network", cmd)
+        return await self._transport().run(cmd)
+
+    # ------------------------------------------------------------------
+    # Config transaction parity (backup -> apply -> verify -> commit/rollback)
+    # ------------------------------------------------------------------
+
+    async def _txn_backup_export(self):
+        out = await self._transport().run("/export file=txn-backup")
+        return "txn-backup.rsc" in out
+
+    async def _txn_rollback(self):
+        try:
+            out = await self._transport().run("/import file=txn-backup.rsc")
+            ok = "completed" in out.lower() or "ok" in out.lower()
+            return {"status": "OK" if ok else "?", "output": out[-300:].strip()}
+        except Exception as e:
+            return {"status": "FAIL", "output": str(e)}
+        finally:
+            try:
+                await self._transport().run("/file remove txn-backup.rsc")
+            except Exception:
+                pass
+
+    async def config_transaction(
+        self,
+        commands: list[str],
+        verify: list[dict] | None = None,
+        save_on_success: bool = False,
+        description: str = "",
+    ) -> dict:
+        """Safe config transaction: export -> apply -> verify -> commit | rollback."""
+        verify = verify or []
+        report: dict = {"description": description, "steps": []}
+
+        if not await self._txn_backup_export():
+            report["status"] = "failed_preapply"
+            report["reason"] = "export backup failed; no changes applied"
+            return report
+
+        # APPLY
+        try:
+            await self._logged("TXN-APPLY", "; ".join(commands), lambda: self.apply(commands))
+            report["steps"].append({"phase": "apply", "status": "OK"})
+        except Exception as e:
+            rb = await self._txn_rollback()
+            report.update(status="rolled_back", reason=f"apply failed: {e}", rollback=rb)
+            return report
+
+        # VERIFY
+        failures = []
+        for chk in verify:
+            command = chk.get("command", "")
+            expect = chk.get("expect")
+            try:
+                out = await self._transport().run(command)
+                if expect and expect.lower() not in out.lower():
+                    failures.append({"command": command, "reason": f"'{expect}' not found"})
+            except Exception as e:
+                failures.append({"command": command, "reason": str(e)[:200]})
+
+        if failures:
+            rb = await self._txn_rollback()
+            report.update(status="rolled_back", verify_failures=failures, rollback=rb)
+            return report
+
+        report["steps"].append({"phase": "verify", "status": "OK", "checks": len(verify)})
+
+        if save_on_success:
+            await self.save_config()
+            report["steps"].append({"phase": "save", "status": "OK"})
+
+        try:
+            await self._transport().run("/file remove txn-backup.rsc")
+        except Exception:
+            pass
+
+        report["status"] = "committed"
+        return report
