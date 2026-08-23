@@ -1,0 +1,34 @@
+
+--- Connectivity check ---
+$ uname -a
+Linux CSMS-SINGKAWANG 4.6.0-xilinx #1 SMP PREEMPT Thu Dec 5 14:01:14 PST 2019 armv7l armv7l armv7l GNU/Linux
+
+--- Check /etc writability ---
+$ touch /etc/test_write 2>/dev/null && rm /etc/test_write 2>/dev/null && echo "writable" || echo "read-only"
+writable
+
+--- Check /media writability ---
+$ touch /media/test_write 2>/dev/null && rm /media/test_write 2>/dev/null && echo "writable" || echo "read-only"
+writable
+
+--- Create /etc/init.d/cloudflared ---
+$ printf '%b\n' '#!/bin/sh\n### BEGIN INIT INFO\n# Provides:          cloudflared\n# Required-Start:    $network\n# Required-Stop:     $network\n# Default-Start:     2 3 4 5\n# Default-Stop:      0 1 6\n# Short-Description: Cloudflare Tunnel\n### END INIT INFO\n\nCLOUDFLARED=/media/httpd/cgi-bin/cloud...
+
+
+--- chmod +x /etc/init.d/cloudflared ---
+$ chmod +x /etc/init.d/cloudflared
+
+
+--- Create rc5.d symlink ---
+$ ln -sf /etc/init.d/cloudflared /etc/rc5.d/S99cloudflared
+
+
+--- Start cloudflared ---
+$ /etc/init.d/cloudflared start
+Starting cloudflared tunnel...
+Starting cloudflared
+Cloudflared started
+
+--- Check cloudflared status ---
+$ /etc/init.d/cloudflared status
+Running

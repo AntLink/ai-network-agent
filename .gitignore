@@ -1,0 +1,7 @@
+.env
+inventory/devices.json
+backups/*
+!backups/.gitkeep
+logs/*
+!logs/.gitkeep
+node_modules/

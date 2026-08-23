@@ -1,0 +1,466 @@
+00123094: ldr      ip, [r0]
+00123098: movw     r3, #0x3e08
+0012309c: push     {r4, r5, r6, r7, r8, sb, sl, lr}
+001230a0: mov      r5, r1
+001230a4: movt     r3, #0x11
+001230a8: sub      sp, sp, #0x30
+001230ac: mov      r4, r0
+001230b0: ldr      r1, [ip, #8]
+001230b4: cmp      r1, r3
+001230b8: bne      #0x1232d0
+001230bc: ldr      r0, [r0, #0xb8]
+001230c0: ldr      r3, [r5, #0x10]
+001230c4: cmp      r0, #0   ; val=0
+001230c8: movweq   r6, #0xa090
+001230cc: ldrne    r6, [r0, #0x18]
+001230d0: movteq   r6, #0x2d
+001230d4: add      r3, r3, #0x14
+001230d8: cmp      r3, r2
+001230dc: beq      #0x123108
+001230e0: movw     r5, #0x7f6c
+001230e4: add      r6, r4, #0x10
+001230e8: movt     r5, #1
+001230ec: cmp      r5, #0   ; val=0
+001230f0: beq      #0x1232e0
+001230f4: mov      r0, r6
+001230f8: bl       #0x175d0   ; _init+0x74
+001230fc: cmp      r0, #0   ; val=0
+00123100: beq      #0x123770
+00123104: bl       #0x17b40   ; _ZNSt9bad_allocD1Ev@@GLIBCXX_3.4+0x78
+00123108: ldr      r3, [r4, #0x114]
+0012310c: add      lr, r4, #0xf8
+00123110: ldr      r2, [r5]
+00123114: ldr      ip, [r5, #4]
+00123118: ldr      r1, [r5, #0xc]
+0012311c: ldr      r0, [r5, #8]
+00123120: str      r2, [r3]
+00123124: str      ip, [r3, #4]
+00123128: str      r0, [r3, #8]
+0012312c: str      r1, [r3, #0xc]
+00123130: ldr      r2, [r5, #0x10]
+00123134: str      r2, [r3, #0x10]
+00123138: ldr      r3, [r4, #0xfc]
+0012313c: ldrh     r1, [r5, #8]
+00123140: ldr      ip, [r5, #0xc]
+00123144: cmp      r3, #0   ; val=0
+00123148: beq      #0x123194
+0012314c: mov      r0, lr
+00123150: b        #0x123168
+00123154: beq      #0x1232bc
+00123158: mov      r0, r3
+0012315c: ldr      r3, [r3, #8]
+00123160: cmp      r3, #0   ; val=0
+00123164: beq      #0x123180
+00123168: ldrh     r2, [r3, #0x10]
+0012316c: cmp      r1, r2
+00123170: bls      #0x123154
+00123174: ldr      r3, [r3, #0xc]
+00123178: cmp      r3, #0   ; val=0
+0012317c: bne      #0x123168
+00123180: cmp      lr, r0
+00123184: beq      #0x123194
+00123188: ldrh     r3, [r0, #0x10]
+0012318c: cmp      r1, r3
+00123190: bhs      #0x12331c
+00123194: ldr      r3, [r4, #0x108]
+00123198: cmp      r3, #0   ; val=0
+0012319c: bne      #0x123428
+001231a0: ldrb     lr, [r5, #0xa]
+001231a4: movw     r7, #0x5c00
+001231a8: movt     r7, #0x1ad
+001231ac: ldr      r3, [r7, #0x20]
+001231b0: cmp      r3, #0   ; val=0
+001231b4: beq      #0x123204
+001231b8: add      r7, r7, #0x1c
+001231bc: mov      r0, r7
+001231c0: b        #0x1231d8
+001231c4: beq      #0x123394
+001231c8: mov      r0, r3
+001231cc: ldr      r3, [r3, #8]
+001231d0: cmp      r3, #0   ; val=0
+001231d4: beq      #0x1231f0
+001231d8: ldrh     r2, [r3, #0x10]
+001231dc: cmp      r1, r2
+001231e0: bls      #0x1231c4
+001231e4: ldr      r3, [r3, #0xc]
+001231e8: cmp      r3, #0   ; val=0
+001231ec: bne      #0x1231d8
+001231f0: cmp      r0, r7
+001231f4: beq      #0x123204
+001231f8: ldrh     r3, [r0, #0x10]
+001231fc: cmp      r1, r3
+00123200: bhs      #0x1233a4
+00123204: cmp      lr, #0   ; val=0
+00123208: bne      #0x1235b0
+0012320c: ldr      r7, [pc, #0x5c8]
+00123210: mov      r8, r7
+00123214: movw     r3, #0x5854
+00123218: movt     r3, #0x1ad
+0012321c: ldr      r3, [r3]
+00123220: add      r3, r3, #0x2000
+00123224: ldr      r3, [r3, #0x8c8]
+00123228: cmp      r3, #0   ; val=0
+0012322c: beq      #0x123240
+00123230: mov      r2, #0xa9
+00123234: ldr      r1, [r4, #0x114]
+00123238: mov      r0, r4
+0012323c: bl       #0x11dff4   ; _ZN11CMetricsNet9SendErrorERKN7SSmsMsg4SHdrEm
+00123240: ldr      sb, [r5, #0x10]
+00123244: cmp      sb, #0   ; val=0
+00123248: bne      #0x123518
+0012324c: cmp      r8, r7
+00123250: beq      #0x123270
+00123254: ldrb     r2, [r8, #0x18]
+00123258: ldrb     r3, [r5, #0xa]
+0012325c: cmp      r2, r3
+00123260: bls      #0x123270
+00123264: add      r1, r4, #0x114
+00123268: mov      r0, r4
+0012326c: bl       #0x120690   ; _ZN11CMetricsNet9UpConvertERP11SMetricsMsg
+00123270: ldr      r1, [r4, #0x114]
+00123274: ldrh     r3, [r1, #8]
+00123278: cmp      r3, #0x34   ; val=52
+0012327c: beq      #0x123668
+00123280: bls      #0x12344c
+00123284: cmp      r3, #0x3e   ; val=62
+00123288: beq      #0x123638
+0012328c: bhi      #0x123578
+00123290: cmp      r3, #0x3c   ; val=60
+00123294: beq      #0x123698
+00123298: bhi      #0x123680
+0012329c: cmp      r3, #0x35   ; val=53
+001232a0: bne      #0x123470
+001232a4: movw     r3, #0x56f4
+001232a8: mov      r2, r4
+001232ac: movt     r3, #0x1ad
+001232b0: ldr      r0, [r3]
+001232b4: bl       #0x110088   ; _ZN8CMetrics15OnSuperUserCtrlERK11SMetricsMsgP11CMetricsNet
+001232b8: b        #0x12338c
+001232bc: ldr      r2, [r3, #0x14]
+001232c0: cmp      ip, r2
+001232c4: bls      #0x123158
+001232c8: ldr      r3, [r3, #0xc]
+001232cc: b        #0x123178
+001232d0: str      r2, [sp, #0x14]
+001232d4: blx      r1
+001232d8: ldr      r2, [sp, #0x14]
+001232dc: b        #0x1230c0
+001232e0: ldr      r3, [r4, #0xa4]
+001232e4: cmp      r3, #1   ; val=1
+001232e8: beq      #0x1232f4
+001232ec: cmp      r3, #2   ; val=2
+001232f0: bne      #0x12338c
+001232f4: ldr      r0, [r4, #0xf0]
+001232f8: cmn      r0, #1
+001232fc: beq      #0x123308
+00123300: mov      r1, #1
+00123304: bl       #0x18260   ; _ZNSt11logic_errorD1Ev@@GLIBCXX_3.4+0xc0
+00123308: cmp      r5, #0   ; val=0
+0012330c: beq      #0x12338c
+00123310: mov      r0, r6
+00123314: bl       #0x18950   ; __cxa_pure_virtual@@CXXABI_1.3+0x60
+00123318: b        #0x12338c
+0012331c: beq      #0x123404
+00123320: ldr      r3, [r4, #0x108]
+00123324: cmp      r3, #0   ; val=0
+00123328: beq      #0x1231a0
+0012332c: ldrb     r3, [r0, #0x18]
+00123330: ldrb     lr, [r5, #0xa]
+00123334: cmp      lr, r3
+00123338: beq      #0x123414
+0012333c: ldr      r2, [r4, #0x114]
+00123340: strb     r3, [r2, #0xa]
+00123344: ldrb     r2, [r0, #0x19]
+00123348: ldr      r3, [r4, #0x114]
+0012334c: strb     r2, [r3, #0xb]
+00123350: ldrb     r0, [r5, #0xb]
+00123354: movw     r1, #0xc978
+00123358: ldrb     lr, [r5, #0xa]
+0012335c: mov      r2, r6
+00123360: ldr      ip, [r5, #0xc]
+00123364: movt     r1, #0x2f   ; "Metrics: bad version from %s: type=%hu subtype=%lu cmdVer=%u respVer=%u"
+00123368: ldrh     r3, [r5, #8]
+0012336c: str      r0, [sp, #8]
+00123370: mov      r0, #3
+00123374: stm      sp, {ip, lr}
+00123378: bl       #0xffce8   ; _ZN4CLog3LogENS_9ELogLevelEPKcz
+0012337c: mov      r2, #0xd
+00123380: ldr      r1, [r4, #0x114]
+00123384: mov      r0, r4
+00123388: bl       #0x11dff4   ; _ZN11CMetricsNet9SendErrorERKN7SSmsMsg4SHdrEm
+0012338c: add      sp, sp, #0x30
+00123390: pop      {r4, r5, r6, r7, r8, sb, sl, pc}
+00123394: ldr      r2, [r3, #0x14]
+00123398: cmp      ip, r2
+0012339c: bhi      #0x1231e4
+001233a0: b        #0x1231c8
+001233a4: beq      #0x123568
+001233a8: ldrb     r3, [r0, #0x18]
+001233ac: cmp      lr, r3
+001233b0: movls    r8, r0
+001233b4: bls      #0x123214
+001233b8: ldr      r2, [r4, #0x114]
+001233bc: strb     r3, [r2, #0xa]
+001233c0: ldrb     r2, [r0, #0x19]
+001233c4: ldr      r3, [r4, #0x114]
+001233c8: strb     r2, [r3, #0xb]
+001233cc: ldrb     lr, [r5, #0xa]
+001233d0: movw     r1, #0xc9c0
+001233d4: ldr      ip, [r5, #0xc]
+001233d8: mov      r2, r6
+001233dc: ldrh     r3, [r5, #8]
+001233e0: movt     r1, #0x2f   ; "Metrics: bad version from %s: type=%hu subtype=%lu cmdVer=%u"
+001233e4: mov      r0, #3
+001233e8: stm      sp, {ip, lr}
+001233ec: bl       #0xffce8   ; _ZN4CLog3LogENS_9ELogLevelEPKcz
+001233f0: mov      r2, #0xd
+001233f4: ldr      r1, [r4, #0x114]
+001233f8: mov      r0, r4
+001233fc: bl       #0x11dff4   ; _ZN11CMetricsNet9SendErrorERKN7SSmsMsg4SHdrEm
+00123400: b        #0x12338c
+00123404: ldr      r3, [r0, #0x14]
+00123408: cmp      ip, r3
+0012340c: bhs      #0x123320
+00123410: b        #0x123194
+00123414: ldrb     r7, [r0, #0x19]
+00123418: ldrb     r2, [r5, #0xb]
+0012341c: cmp      r7, r2
+00123420: bne      #0x12333c
+00123424: b        #0x1231a4
+00123428: ldrh     r3, [r5, #0xa]
+0012342c: cmp      r3, #0   ; val=0
+00123430: beq      #0x1231a0
+00123434: ldr      r2, [r4, #0x114]
+00123438: mov      r3, #0
+0012343c: strb     r3, [r2, #0xa]
+00123440: ldr      r2, [r4, #0x114]
+00123444: strb     r3, [r2, #0xb]
+00123448: b        #0x123350
+0012344c: cmp      r3, #0x1e   ; val=30
+00123450: beq      #0x123650
+00123454: bls      #0x123608
+00123458: cmp      r3, #0x21   ; val=33
+0012345c: beq      #0x1236bc
+00123460: cmp      r3, #0x22   ; val=34
+00123464: beq      #0x1236a4
+00123468: cmp      r3, #0x1f   ; val=31
+0012346c: beq      #0x123704
+00123470: ldr      ip, [r5, #0xc]
+00123474: movw     r1, #0xca34
+00123478: ldrh     r3, [r5, #8]
+0012347c: mov      r2, r6
+00123480: movt     r1, #0x2f   ; "Metrics: invalid message type from %s: type %hu subtype %lu"
+00123484: mov      r0, #3
+00123488: str      ip, [sp]
+0012348c: bl       #0xffce8   ; _ZN4CLog3LogENS_9ELogLevelEPKcz
+00123490: mov      r0, #4
+00123494: bl       #0x17954   ; cvtIDsc11__mbstate_tE9do_lengthERS0_PKcS4_j@@GLIBCXX_3.4.21+0x180
+00123498: mov      r3, #5
+0012349c: movw     r1, #0xcfa0
+001234a0: str      r3, [r0]
+001234a4: movt     r1, #0x2d
+001234a8: mov      r2, #0
+001234ac: bl       #0x186bc   ; pthread_create@@GLIBC_2.4+0x78
+001234b0: cmp      r1, #1   ; val=1
+001234b4: beq      #0x1237b4
+001234b8: cmp      r1, #2   ; val=2
+001234bc: bne      #0x12379c
+001234c0: bl       #0x178c4   ; ecvtIDsc11__mbstate_tE9do_lengthERS0_PKcS4_j@@GLIBCXX_3.4.21+0xf0
+001234c4: ldr      r3, [r0]
+001234c8: ldr      r3, [r3, #8]
+001234cc: blx      r3
+001234d0: movw     r1, #0xca70
+001234d4: mov      r2, r0
+001234d8: movt     r1, #0x2f   ; "Metrics: service failed %s"
+001234dc: mov      r0, #3
+001234e0: bl       #0xffce8   ; _ZN4CLog3LogENS_9ELogLevelEPKcz
+001234e4: bl       #0x185d8   ; KSt7codecvtIDsc11__mbstate_tE11do_encodingEv@@GLIBCXX_3.4.21+0x48
+001234e8: mov      r0, #8
+001234ec: bl       #0x17954   ; cvtIDsc11__mbstate_tE9do_lengthERS0_PKcS4_j@@GLIBCXX_3.4.21+0x180
+001234f0: movw     r1, #0xc320
+001234f4: mov      r4, r0
+001234f8: movt     r1, #0x2e   ; "Fatal error"
+001234fc: bl       #0x17894   ; ecvtIDsc11__mbstate_tE9do_lengthERS0_PKcS4_j@@GLIBCXX_3.4.21+0xc0
+00123500: movw     r2, #0x7f54
+00123504: movw     r1, #0x3bfc
+00123508: mov      r0, r4
+0012350c: movt     r2, #1
+00123510: movt     r1, #0x36
+00123514: bl       #0x186bc   ; pthread_create@@GLIBC_2.4+0x78
+00123518: ldr      sl, [r4, #0x114]
+0012351c: mov      r0, sl
+00123520: bl       #0x11da90   ; _ZN11CMetricsNet16IsBodyCompressedERK11SMetricsMsg
+00123524: cmp      r0, #0   ; val=0
+00123528: beq      #0x1235c8
+0012352c: ldrh     r2, [sl, #8]
+00123530: ldr      r3, [sl, #0xc]
+00123534: cmp      r2, #0x3c   ; val=60
+00123538: bne      #0x123544
+0012353c: cmp      r3, #4   ; val=4
+00123540: beq      #0x123734
+00123544: movw     r1, #0xca00
+00123548: mov      r0, #3
+0012354c: movt     r1, #0x2f   ; "received unsupported compressed message (%hu,%lu)"
+00123550: bl       #0xffce8   ; _ZN4CLog3LogENS_9ELogLevelEPKcz
+00123554: mov      r2, #0xd
+00123558: ldr      r1, [r4, #0x114]
+0012355c: mov      r0, r4
+00123560: bl       #0x11dff4   ; _ZN11CMetricsNet9SendErrorERKN7SSmsMsg4SHdrEm
+00123564: b        #0x12338c
+00123568: ldr      r3, [r0, #0x14]
+0012356c: cmp      ip, r3
+00123570: bhs      #0x1233a8
+00123574: b        #0x123204
+00123578: movw     r2, #0x2173
+0012357c: cmp      r3, r2
+00123580: beq      #0x1236ec
+00123584: movw     r2, #0x2175
+00123588: cmp      r3, r2
+0012358c: beq      #0x1236d4
+00123590: cmp      r3, #0x42   ; val=66
+00123594: bne      #0x123470
+00123598: movw     r3, #0x56f4
+0012359c: mov      r2, r4
+001235a0: movt     r3, #0x1ad
+001235a4: ldr      r0, [r3]
+001235a8: bl       #0x113630   ; _ZN8CMetrics8OnDmCtrlERK11SMetricsMsgP11CMetricsNet
+001235ac: b        #0x12338c
+001235b0: ldr      r2, [r4, #0x114]
+001235b4: mov      r3, #0
+001235b8: strb     r3, [r2, #0xa]
+001235bc: ldr      r2, [r4, #0x114]
+001235c0: strb     r3, [r2, #0xb]
+001235c4: b        #0x1233cc
+001235c8: ldr      r3, [r4, #0x110]
+001235cc: cmp      sb, r3
+001235d0: bls      #0x123630
+001235d4: str      sb, [r4, #0x110]
+001235d8: add      r1, sb, #0x14
+001235dc: mov      r0, sl
+001235e0: bl       #0x17e58   ; _ZNSt11range_errorD1Ev@@GLIBCXX_3.4+0x30
+001235e4: cmp      r0, #0   ; val=0
+001235e8: beq      #0x12376c
+001235ec: ldr      r2, [r5, #0x10]
+001235f0: mov      sl, r0
+001235f4: str      r0, [r4, #0x114]
+001235f8: add      r0, sl, #0x14
+001235fc: add      r1, r5, #0x14
+00123600: bl       #0x18428   ; _ZNKSt11logic_error4whatEv@@GLIBCXX_3.4+0x3c
+00123604: b        #0x12324c
+00123608: cmp      r3, #0x1b   ; val=27
+0012360c: beq      #0x12371c
+00123610: cmp      r3, #0x1c   ; val=28
+00123614: bne      #0x123470
+00123618: movw     r3, #0x56f4
+0012361c: mov      r2, r4
+00123620: movt     r3, #0x1ad
+00123624: ldr      r0, [r3]
+00123628: bl       #0x10ca5c   ; _ZN8CMetrics11OnDemodCtrlERK11SMetricsMsgP11CMetricsNet
+0012362c: b        #0x12338c
+00123630: mov      r2, sb
+00123634: b        #0x1235f8
+00123638: movw     r3, #0x56f4
+0012363c: mov      r2, r4
+00123640: movt     r3, #0x1ad
+00123644: ldr      r0, [r3]
+00123648: bl       #0x10fc10   ; _ZN8CMetrics17OnSystemStateCtrlERK11SMetricsMsgP11CMetricsNet
+0012364c: b        #0x12338c
+00123650: movw     r3, #0x56f4
+00123654: mov      r2, r4
+00123658: movt     r3, #0x1ad
+0012365c: ldr      r0, [r3]
+00123660: bl       #0x111ed4   ; _ZN8CMetrics15OnOccupancyCtrlERK11SMetricsMsgP11CMetricsNet
+00123664: b        #0x12338c
+00123668: movw     r3, #0x56f4
+0012366c: mov      r2, r4
+00123670: movt     r3, #0x1ad
+00123674: ldr      r0, [r3]
+00123678: bl       #0x110748   ; _ZN8CMetrics14OnPriorityCtrlERK11SMetricsMsgP11CMetricsNet
+0012367c: b        #0x12338c
+00123680: movw     r3, #0x56f4
+00123684: mov      r2, r4
+00123688: movt     r3, #0x1ad
+0012368c: ldr      r0, [r3]
+00123690: bl       #0x10bc78   ; _ZN8CMetrics9OnAntCtrlERK11SMetricsMsgP11CMetricsNet
+00123694: b        #0x12338c
+00123698: mov      r0, r4
+0012369c: bl       #0x122b94   ; _ZN11CMetricsNet12OnStatusCtrlERK11SMetricsMsg
+001236a0: b        #0x12338c
+001236a4: movw     r3, #0x56f4
+001236a8: mov      r2, r4
+001236ac: movt     r3, #0x1ad
+001236b0: ldr      r0, [r3]
+001236b4: bl       #0x1119f8   ; _ZN8CMetrics9OnAvdCtrlERK11SMetricsMsgP11CMetricsNet
+001236b8: b        #0x12338c
+001236bc: movw     r3, #0x56f4
+001236c0: mov      r2, r4
+001236c4: movt     r3, #0x1ad
+001236c8: ldr      r0, [r3]
+001236cc: bl       #0x112588   ; _ZN8CMetrics17OnOccupancyDfCtrlERK11SMetricsMsgP11CMetricsNet
+001236d0: b        #0x12338c
+001236d4: movw     r3, #0x56f4
+001236d8: mov      r2, r4
+001236dc: movt     r3, #0x1ad
+001236e0: ldr      r0, [r3]
+001236e4: bl       #0x10c824   ; 8CMetrics24OnMeasurementGreetingReqERK11SMetricsMsgP11CMetricsNet
+001236e8: b        #0x12338c
+001236ec: movw     r3, #0x56f4
+001236f0: mov      r2, r4
+001236f4: movt     r3, #0x1ad
+001236f8: ldr      r0, [r3]
+001236fc: bl       #0x10cea4   ; _ZN8CMetrics19OnMeasurementPanReqERK11SMetricsMsgP11CMetricsNet
+00123700: b        #0x12338c
+00123704: movw     r3, #0x56f4
+00123708: mov      r2, r4
+0012370c: movt     r3, #0x1ad
+00123710: ldr      r0, [r3]
+00123714: bl       #0x10bdf0   ; _ZN8CMetrics10OnBistCtrlERK11SMetricsMsgP11CMetricsNet
+00123718: b        #0x12338c
+0012371c: movw     r3, #0x56f4
+00123720: mov      r2, r4
+00123724: movt     r3, #0x1ad
+00123728: ldr      r0, [r3]
+0012372c: bl       #0x10dcfc   ; _ZN8CMetrics13OnMeasureCtrlERK11SMetricsMsgP11CMetricsNet
+00123730: b        #0x12338c
+00123734: ldm      sl!, {r0, r1, r2, r3}
+00123738: add      ip, sp, #0x1c
+0012373c: mov      lr, #0x10000
+00123740: mov      r6, #0
+00123744: ldr      r5, [r4]
+00123748: str      r6, [sp, #0x2c]
+0012374c: stm      ip!, {r0, r1, r2, r3}
+00123750: mov      r2, #0x14
+00123754: ldr      r3, [r5, #0xc]
+00123758: add      r1, sp, #0x1c
+0012375c: mov      r0, r4
+00123760: str      lr, [sp, #0x28]
+00123764: blx      r3
+00123768: b        #0x12338c
+0012376c: bl       #0x18bc4   ; sMsg20SGetAutoViolateCmdV3aSERKNS_20SGetAutoViolateCmdV2E.part.30
+00123770: ldr      r3, [r4, #0xa4]
+00123774: cmp      r3, #1   ; val=1
+00123778: beq      #0x1232f4
+0012377c: cmp      r3, #2   ; val=2
+00123780: beq      #0x1232f4
+00123784: b        #0x123310
+00123788: mov      r0, r4
+0012378c: bl       #0x17c24   ; _ZNSt9bad_allocD1Ev@@GLIBCXX_3.4+0x15c
+00123790: bl       #0x180b0   ; _ZNSt12system_errorD1Ev@@GLIBCXX_3.4.11+0xa8
+00123794: bl       #0x185d8   ; KSt7codecvtIDsc11__mbstate_tE11do_encodingEv@@GLIBCXX_3.4.21+0x48
+00123798: bl       #0x180b0   ; _ZNSt12system_errorD1Ev@@GLIBCXX_3.4.11+0xa8
+0012379c: bl       #0x178c4   ; ecvtIDsc11__mbstate_tE9do_lengthERS0_PKcS4_j@@GLIBCXX_3.4.21+0xf0
+001237a0: movw     r1, #0xca8c
+001237a4: mov      r0, #3
+001237a8: movt     r1, #0x2f   ; "Metrics: service failed An unexpected error occurred"
+001237ac: bl       #0xffce8   ; _ZN4CLog3LogENS_9ELogLevelEPKcz
+001237b0: b        #0x1234e4
+001237b4: bl       #0x178c4   ; ecvtIDsc11__mbstate_tE9do_lengthERS0_PKcS4_j@@GLIBCXX_3.4.21+0xf0
+001237b8: ldr      r1, [r4, #0x114]
+001237bc: ldr      r2, [r0]
+001237c0: mov      r0, r4
+001237c4: bl       #0x11dff4   ; _ZN11CMetricsNet9SendErrorERKN7SSmsMsg4SHdrEm
+001237c8: bl       #0x185d8   ; KSt7codecvtIDsc11__mbstate_tE11do_encodingEv@@GLIBCXX_3.4.21+0x48
+001237cc: b        #0x12338c
+001237d0: bl       #0x185d8   ; KSt7codecvtIDsc11__mbstate_tE11do_encodingEv@@GLIBCXX_3.4.21+0x48
+001237d4: bl       #0x180b0   ; _ZNSt12system_errorD1Ev@@GLIBCXX_3.4.11+0xa8
+001237d8: b        #0x123794

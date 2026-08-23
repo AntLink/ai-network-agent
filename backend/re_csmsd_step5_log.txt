@@ -1,0 +1,181 @@
+======================================================================
+  RE SESSION STEP 5: OFFICIAL LAUNCHER + PATIENT PORT POLLING
+======================================================================
+
+======================================================================
+[LAUNCHER: /etc/rc5.d/S99csmsd content]  (timeout=20s)
+$ ls -la /etc/rc5.d/ | grep -i csms
+cat /etc/rc5.d/S99csmsd
+true
+----------------------------------------------------------------------
+-rwxr-xr-x  1 root root  985 Jul 16  2020 S99csmsd
+#!/bin/sh
+DAEMON=/media/tci/csms/bin/csmsd.elf
+NAME=csmsd
+DESC="Compact Spectrum Monitoring Server"
+PIDFILE=/media/tci/csms/csmsd.pid
+ARGS="--daemon"
+
+set -
+
+test -f "$DAEMON" || exit 0
+
+case "$1" in
+  start)
+        echo -n "Starting $DESC: "
+        start-stop-daemon -S -p $PIDFILE -x "$DAEMON" -- $ARGS
+        echo "$NAME."
+        ;;
+  stop)
+        echo -n "Stopping $DESC: "
+        start-stop-daemon -K -p $PIDFILE -s QUIT
+        echo "$NAME."
+        ;;
+  restart)
+        echo -n "Restarting $DESC: "
+        start-stop-daemon -K -p $PIDFILE -s QUIT
+        chkprocess="csmsd.elf"
+        while [[ $chkprocess == *"csmsd.elf"* ]]
+        do
+          chkprocess=$(ps | grep "csmsd")
+          echo "waiting for csmd to exit..."
+          sleep 1
+        done
+        start-stop-daemon -S -p $PIDFILE -x "$DAEMON" -- $ARGS
+        echo "$NAME."
+        ;;
+  *)
+        N=/etc/init.d/$NAME
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0
+
+
+======================================================================
+[RESTART: killall then S99csmsd start]  (timeout=40s)
+$ killall csmsd.elf 2>/dev/null; sleep 2
+/etc/rc5.d/S99csmsd start
+sleep 5
+pidof csmsd.elf || true
+true
+----------------------------------------------------------------------
+Starting Compact Spectrum Monitoring Server: csmsd.
+17180
+
+
+======================================================================
+[POLL: watch for 330x listeners (6 x 10s)]  (timeout=90s)
+$ for i in 1 2 3 4 5 6; do
+  sleep 10
+  P=$(netstat -tlnp 2>/dev/null | grep csmsd | awk '{print $4}' | tr '\n' ' ')
+  echo "t=${i}0s listeners: ${P:-none}"
+done
+true
+----------------------------------------------------------------------
+t=10s listeners: :::3307 
+t=20s listeners: none
+t=30s listeners: none
+t=40s listeners: none
+t=50s listeners: none
+t=60s listeners: none
+
+
+======================================================================
+[SCPI: probe whatever csmsd listens on]  (timeout=60s)
+$ PORTS=$(netstat -tlnp 2>/dev/null | grep csmsd | awk '{print $4}' | sed 's/.*://' | sort -u)
+echo "csmsd ports: ${PORTS:-NONE}"
+for p in $PORTS; do
+  echo "=== port $p : *IDN? ==="
+  printf "*IDN?\n" | nc -w 4 127.0.0.1 $p 2>/dev/null | head -3
+done
+true
+----------------------------------------------------------------------
+csmsd ports: NONE
+
+
+======================================================================
+[LOG: last startup lines]  (timeout=25s)
+$ tail -40 /media/tci/csms/log/SpectrumMonitor.log 2>/dev/null
+echo "--- csmsd stdout ---"
+tail -30 /tmp/csmsd_run.log 2>/dev/null
+true
+----------------------------------------------------------------------
+Starting SpecturmMonitor script... Fri Aug 21 01:29:54 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:33:30 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:34:13 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:35:06 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:36:56 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:37:39 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:39:09 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:41:10 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:44:58 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:45:58 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 01:47:53 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 02:20:30 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 02:22:23 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 02:54:27 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 03:08:11 UTC 2026
+
+detected csmsd stopped, relauch csmsd: Fri Aug 21 03:21:12 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 03:21:17 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 09:26:27 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 09:27:44 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 09:29:00 UTC 2026
+
+--- csmsd stdout ---
+08/21/2026 09:30:11.266 Rf Board
+08/21/2026 09:30:11.266 Antennas: Rf input 1 has antenna VUHF_640_DSC with LMR-240 processor input cable length configured as 1.4 m
+08/21/2026 09:30:11.266 Antennas: Rf input 2 has antenna VUHF_640_DSC with LMR-240 processor input cable length configured as 0.6 m
+08/21/2026 09:30:11.267 Antennas: Rf input 3 has antenna HF_7031 with LMR-240 processor input cable length configured as 6.1 m
+08/21/2026 09:30:11.267 Antennas
+08/21/2026 09:30:11.267 Passband Calibration
+08/21/2026 09:30:11.267 NTP: Time is accurate, offset at 0.011319 ms
+08/21/2026 09:30:11.267 NTP
+08/21/2026 09:30:11.267 GPS
+08/21/2026 09:30:11.267 Warning: Built-In Self Test
+System fault status changed from PASS to WARNING
+startup event = 22
+08/21/2026 09:30:15.270 csmsd service started on node 0
+08/21/2026 09:30:15.270 Received signal 15
+CHwControl::ControlThread exiting
+CHwControl::AgcTimeoutThread exiting
+CHwControl::PanTimeoutThread exiting
+CHwControl::MonitorThread exiting
+CHwControl::FaultLEDThread exiting on shutdown
+CProcessing::Thread exiting
+CSharedMemory: I am no longer master
+CTciGps::Thread exiting
+08/21/2026 09:30:15.288 Watchdog closed
+CWatchdog::TimeoutThread exiting
+C3230::Thread[2] exiting: 80000
+C3230::Thread[3] exiting: 800000
+C3230::Thread[0] exiting: 400409
+CSharedMemory: I am no longer master
+CPersistentData::DBChkCapacityThread exiting
+08/21/2026 09:30:16.667 csmsd service stopped on node 0
+
+
+======================================================================
+  STEP 5 COMPLETE
+======================================================================

@@ -1,0 +1,8 @@
+======================================================================
+  STEP 14: SFTP-BASED FULL TYPE SWEEP ON PORT 3302
+======================================================================
+payload built: 10752 bytes for 512 message types
+payload uploaded
+rc=124
+740 /tmp/sweep_out.bin
+

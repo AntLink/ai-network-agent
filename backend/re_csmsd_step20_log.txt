@@ -1,0 +1,51 @@
+======================================================================
+  STEP 20: SERVICE RECOVERY AFTER CRASH
+======================================================================
+
+[CLEAN]
+cleaned
+
+
+[START via S99csmsd with PATH=/sbin]
+Starting Compact Spectrum Monitoring Server: /media/tci/csms/data/ directory exists
+/media/tci/csms/log/ directory exists
+csmsd daemon starting
+csmsd child created: 32723. Parent exiting.
+csmsd.
+true
+media r/w...
+csmsd running...
+pidof: 32723
+pidfile: 32723
+
+
+[POLL for listeners (up to 2.5 min)]
+t=15s listeners=0
+t=30s listeners=0
+t=45s listeners=0
+t=60s listeners=0
+t=75s listeners=0
+t=90s listeners=0
+t=105s listeners=0
+t=120s listeners=0
+t=135s listeners=0
+t=150s listeners=0
+
+
+[INSTALL restart helper /tmp/csmsd-restart.sh]
+#!/bin/sh
+export PATH=/sbin:/usr/sbin:$PATH
+killall csmsd.elf 2>/dev/null
+sleep 3
+killall -9 csmsd.elf 2>/dev/null
+rm -f /media/tci/csms/csmsd.pid
+/etc/rc5.d/S99csmsd start
+echo restarted
+
+
+[FINAL STATE]
+(no output)
+
+======================================================================
+  STEP 20 COMPLETE
+======================================================================

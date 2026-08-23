@@ -1,0 +1,388 @@
+Connecting to 192.168.162.20 as root ...
+======================================================================
+
+----------------------------------------------------------------------
+>>> 1a. DB files in /media/tci/csms/data
+----------------------------------------------------------------------
+-rwxr-xr-x 1 root root 38672384 Aug 20 20:01 /media/tci/csms/data/backup.db
+-rwxr-xr-x 1 root root 38672384 Aug 17 05:25 /media/tci/csms/data/csmsdb.db
+
+
+----------------------------------------------------------------------
+>>> 1b. Database Tables
+----------------------------------------------------------------------
+sqlite3_not_available
+
+
+----------------------------------------------------------------------
+>>> 1c. Table Schema
+----------------------------------------------------------------------
+(no output)
+
+----------------------------------------------------------------------
+>>> 1d. All table names via sqlite_master
+----------------------------------------------------------------------
+query_failed
+
+
+----------------------------------------------------------------------
+>>> 1e. Sample events
+----------------------------------------------------------------------
+no_events_table
+
+
+----------------------------------------------------------------------
+>>> 1f. Sample signals
+----------------------------------------------------------------------
+no_signals_table
+
+
+----------------------------------------------------------------------
+>>> 1g. DB dump first 50 lines
+----------------------------------------------------------------------
+(no output)
+
+----------------------------------------------------------------------
+>>> 2a. GPS data
+----------------------------------------------------------------------
+usage: gpsd [OPTIONS] device...
+
+  Options include: 
+  -?, -h, --help            = help message
+  -b, --readonly            = bluetooth-safe: open data sources read-only
+  -D, --debug integer       = set debug level, default 0 
+  -F, --sockfile sockfile   = specify control socket location, default none
+  -f, --framing FRAMING     = fix device framing to FRAMING (8N1, 8O1, etc.)
+  -G, --listenany           = make gpsd listen on INADDR_ANY
+  -l, --drivers             = list compiled in drivers, and exit.
+  -n, --nowait              = don't wait for client connects to poll GPS
+                             forced on in this binary
+  -N, --foreground          = don't go into background
+  -P, --pidfile pidfile     = set file to record process ID
+  -p, --passive             = do not reconfigure the receiver automatically
+  -r, --badtime             = use GPS time even if no fix
+  -S, --port PORT           = set port for daemon, default 2947
+  -s, --speed SPEED         = fix device speed to SPEED, default none
+  -V, --version             = emit version and exit.
+
+
+
+----------------------------------------------------------------------
+>>> 2b. GPS socket check
+----------------------------------------------------------------------
+{"class":"VERSION","release":"3.23.1","rev":"3.23.1","proto_major":3,"proto_minor":14}
+{"class":"VERSION","release":"3.23.1","rev":"3.23.1","proto_major":3,"proto_minor":14}
+gpsd_socket_failed
+
+
+----------------------------------------------------------------------
+>>> 3a. CSMS socket files
+----------------------------------------------------------------------
+no_sockets
+
+
+----------------------------------------------------------------------
+>>> 4a. /proc/stat (CPU)
+----------------------------------------------------------------------
+cpu  7516 0 8623 463873 785 0 160 0 0 0
+cpu0 3258 0 4318 232428 208 0 158 0 0 0
+cpu1 4258 0 4305 231445 577 0 2 0 0 0
+intr 970079 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 744167 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2155 0 0 18592 93 980 663 6 52560 28438 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 64
+ctxt 1739191
+
+
+----------------------------------------------------------------------
+>>> 4b. /proc/meminfo
+----------------------------------------------------------------------
+MemTotal:         575360 kB
+MemFree:          318896 kB
+MemAvailable:     534772 kB
+Buffers:           26332 kB
+Cached:           182724 kB
+SwapCached:            0 kB
+Active:            84188 kB
+Inactive:         135780 kB
+Active(anon):      13520 kB
+Inactive(anon):       76 kB
+
+
+----------------------------------------------------------------------
+>>> 4c. /proc/net/dev (network)
+----------------------------------------------------------------------
+Inter-|   Receive                                                |  Transmit
+ face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+  sit0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+    lo:  170539     459    0    0    0     0          0         0   170539     459    0    0    0     0       0          0
+  eth0: 2742902   27428    0    0    0     0          0         0  3192150   28692    0    0    0     0       0          0
+ tunl0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+
+
+----------------------------------------------------------------------
+>>> 4d. /proc/diskstats
+----------------------------------------------------------------------
+   1       0 ram0 0 0 0 0 0 0 0 0 0 0 0
+   1       1 ram1 0 0 0 0 0 0 0 0 0 0 0
+   1       2 ram2 0 0 0 0 0 0 0 0 0 0 0
+   1       3 ram3 0 0 0 0 0 0 0 0 0 0 0
+   1       4 ram4 0 0 0 0 0 0 0 0 0 0 0
+   1       5 ram5 0 0 0 0 0 0 0 0 0 0 0
+   1       6 ram6 0 0 0 0 0 0 0 0 0 0 0
+   1       7 ram7 0 0 0 0 0 0 0 0 0 0 0
+   1       8 ram8 0 0 0 0 0 0 0 0 0 0 0
+   1       9 ram9 0 0 0 0 0 0 0 0 0 0 0
+
+
+----------------------------------------------------------------------
+>>> 4e. Temperature sensors
+----------------------------------------------------------------------
+no_thermal_zones
+
+
+----------------------------------------------------------------------
+>>> 5a. /var/volatile/log/
+----------------------------------------------------------------------
+total 92
+drwxr-xr-x 2 root root   180 Aug 20 20:10 .
+drwxrwxrwt 4 root root    80 Aug 20 20:01 ..
+-rw-r--r-- 1 root root  6217 Aug 20 20:01 boot
+-rw-r--r-- 1 root root  6249 Aug 20 20:10 cloudflared.err
+-rw-r--r-- 1 root root     0 Aug 20 20:10 cloudflared.log
+-rw-r--r-- 1 root root 14446 Aug 20 20:01 dmesg
+-rw-r--r-- 1 root root 52403 Aug 20 20:41 messages
+-rw-r--r-- 1 root root  1696 Aug 20 20:01 ntp.log
+-rw-rw-r-- 1 root root  3072 Aug 20 20:04 wtmp
+
+
+----------------------------------------------------------------------
+>>> 5b. csmsd.log tail
+----------------------------------------------------------------------
+csmsd_log_not_found
+
+
+----------------------------------------------------------------------
+>>> 5c. /var/log/
+----------------------------------------------------------------------
+total 92
+drwxr-xr-x 2 root root   180 Aug 20 20:10 .
+drwxrwxrwt 4 root root    80 Aug 20 20:01 ..
+-rw-r--r-- 1 root root  6217 Aug 20 20:01 boot
+-rw-r--r-- 1 root root  6249 Aug 20 20:10 cloudflared.err
+-rw-r--r-- 1 root root     0 Aug 20 20:10 cloudflared.log
+-rw-r--r-- 1 root root 14446 Aug 20 20:01 dmesg
+-rw-r--r-- 1 root root 53045 Aug 20 20:41 messages
+-rw-r--r-- 1 root root  1696 Aug 20 20:01 ntp.log
+-rw-rw-r-- 1 root root  3072 Aug 20 20:04 wtmp
+
+
+----------------------------------------------------------------------
+>>> 6. Process list
+----------------------------------------------------------------------
+PID   USER     TIME   COMMAND
+    1 root       0:02 init [5]
+    2 root       0:00 [kthreadd]
+    3 root       0:00 [ksoftirqd/0]
+    5 root       0:00 [kworker/0:0H]
+    6 root       0:00 [kworker/u4:0]
+    7 root       0:00 [rcu_preempt]
+    8 root       0:00 [rcu_sched]
+    9 root       0:00 [rcu_bh]
+   10 root       0:00 [migration/0]
+   11 root       0:00 [cpuhp/0]
+   12 root       0:00 [cpuhp/1]
+   13 root       0:00 [migration/1]
+   14 root       0:00 [ksoftirqd/1]
+   15 root       0:00 [kworker/1:0]
+   16 root       0:00 [kworker/1:0H]
+   17 root       0:00 [kdevtmpfs]
+   51 root       0:00 [kworker/1:1]
+  120 root       0:00 [kworker/u4:2]
+  278 root       0:00 [oom_reaper]
+  279 root       0:00 [writeback]
+  281 root       0:00 [kworker/0:1]
+  282 root       0:00 [crypto]
+  283 root       0:00 [bioset]
+  285 root       0:00 [kblockd]
+  304 root       0:00 [edac-poller]
+  333 root       0:00 [watchdogd]
+  417 root       0:00 [rpciod]
+  431 root       0:00 [kswapd0]
+  432 root       0:00 [vmstat]
+  433 root       0:00 [nfsiod]
+  468 root       0:00 [bioset]
+  469 root       0:00 [bioset]
+  470 root       0:00 [bioset]
+  471 root       0:00 [bioset]
+  472 root       0:00 [bioset]
+  473 root       0:00 [bioset]
+  474 root       0:00 [bioset]
+  475 root       0:00 [bioset]
+  476 root       0:00 [bioset]
+  477 root       0:00 [bioset]
+  478 root       0:00 [bioset]
+  479 root       0:00 [bioset]
+  480 root       0:00 [bioset]
+  481 root       0:00 [bioset]
+  482 root       0:00 [bioset]
+  483 root       0:00 [bioset]
+  517 root       0:00 [bioset]
+  520 root       0:00 [bioset]
+  523 root       0:00 [bioset]
+  526 root       0:00 [bioset]
+  529 root       0:00 [bioset]
+  532 root       0:00 [bioset]
+  535 root       0:00 [bioset]
+  538 root       0:00 [bioset]
+  556 root       0:00 [spi32766]
+  561 root       0:00 [spi0]
+  565 root       0:00 [bioset]
+  570 root       0:00 [bioset]
+  575 root       0:00 [bioset]
+  580 root       0:00 [bioset]
+  585 root       0:00 [bioset]
+  590 root       0:00 [bioset]
+  667 root       0:00 [kpsmoused]
+  723 root       0:00 [irq/149-mmc0]
+  748 root       0:00 [ipv6_addrconf]
+  749 root       0:00 [kworker/0:2]
+  757 root       0:00 [deferwq]
+  780 root       0:00 [bioset]
+  781 root       0:02 [mmcqd/0]
+  786 root       0:00 [kworker/1:1H]
+ 1078 messageb   0:00 /usr/bin/dbus-daemon --system
+ 1084 root       0:00 /usr/sbin/dropbear -r /etc/dropbear/dropbear_rsa_host_key -p 22
+ 1089 root       0:00 [kworker/0:1H]
+ 1123 root       0:00 /sbin/syslogd -n -O /var/log/messages
+ 1126 root       0:00 /sbin/klogd -n
+ 1146 root       0:01 /bin/busybox httpd -p 80 -h /media/httpd
+ 1166 root       0:17 csmsAudio.elf
+ 1178 root       0:00 syslogd -s 500 -b 5
+ 1180 root       0:00 /media/TCI/SendIP.elf
+ 1183 root       0:00 /media/tci/busybox ifplugd -I -i eth0 -r /media/TCI/ifplugdnet.sh
+ 1207 root       0:01 /usr/sbin/tcf-agent -d -L- -l0
+ 1212 root       0:00 {start_getty} /bin/sh /bin/start_getty 115200 ttyPS0
+ 1213 root       0:00 /sbin/getty 38400 tty1
+ 1214 root       0:00 /sbin/getty -L 115200 ttyPS0
+ 1220 root       0:03 gpsd -f 8N1 -s 9600 -n /dev/ttyPS1
+ 1222 root       0:00 ntpd -gGNc /etc/ntp.conf
+ 1226 root       0:00 /usr/sbin/inetd
+ 1811 root       0:00 /usr/sbin/dropbear -r /etc/dropbear/dropbear_rsa_host_key -p 22
+ 1838 root       0:00 -sh
+ 3470 root       0:24 /media/httpd/cgi-bin/cloudflared-linux-arm --pidfile /var/run/cloudflared.pid --autoupdate-freq 24h0m0s tunnel run --token eyJhIjoiYzYxM2MxNjRhY2RhNDY4ZDNiNGY2ZWYzNWNhODkwYzQiLCJ0IjoiNjkxNDAwYjUtNjM1Yi00N2E4LWE5MDAtNTBhMzUxMDNjMmRhIiwicyI6IlptSm1OR1ptT1dJdFlUQmtaUzAwTkdJd0xUZzROVGt0T0dVd05HRTNNRGszTnpKayJ9
+ 5806 root       0:00 ping 8.8.8.8
+ 8911 root       0:00 sh -c echo "\n\n>>> [Header] <<<"; echo "==========================================" echo "  CSMS DATA SOURCES FOR MONITORING" echo "=========================================="; echo "\n\n>>> [=== 1. SQLite Database Structure ===] <<<"; cd /media/tci/csms/data && ls -la *.db; echo "\n\n>>> [=== Database Tables ===] <<<"; cd /media/tci/csms/data && sqlite3 csmsdb.db ".tables" 2>/dev/null || echo "sqlite3 not found"; echo "\n\n>>> [=== Table Schema (first 100 lines) ===] <<<"; cd /media/tci/csms/data && sqlite3 csmsdb.db ".schema" 2>/dev/null | head -100; echo "\n\n>>> [=== Sample: events table ===] <<<"; cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM events LIMIT 5;" 2>/dev/null || echo "no events table"; echo "\n\n>>> [=== Sample: signals table ===] <<<"; cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM signals LIMIT 5;" 2>/dev/null || echo "no signals table"; echo "\n\n>>> [=== All table names ===] <<<"; cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT name FROM sqlite_master WHERE type='table';" 2>/dev/null; echo "\n\n>>> [=== 2. GPS Data (gpsd -x) ===] <<<"; gpsd -x 1 2>/dev/null | head -20 || echo gpsd command failed; echo "\n\n>>> [=== GPS Socket (gpsd port 2947) ===] <<<"; echo '?VERSION;' | nc -w 2 localhost 2947 2>/dev/null || echo gpsd not responding; echo "\n\n>>> [=== 3. CSMS API/Socket Files ===] <<<"; find /var/run -name "*csms*" 2>/dev/null; find /tmp -name "*csms*" 2>/dev/null; ls -la /var/run/*.sock 2>/dev/null || echo "no sockets"; echo "\n\n>>> [=== 4. System Monitoring: /proc/stat (CPU) ===] <<<"; cat /proc/stat | head -5; echo "\n\n>>> [=== System Monitoring: /proc/meminfo ===] <<<"; cat /proc/meminfo | head -10; echo "\n\n>>> [=== System Monitoring: /proc/net/dev (network) ===] <<<"; cat /proc/net/dev; echo "\n\n>>> [=== System Monitoring: /proc/diskstats ===] <<<"; cat /proc/diskstats | head -10; echo "\n\n>>> [=== System Monitoring: Temperature ===] <<<"; cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null || echo "no thermal zones"; echo 
+ 8922 root       0:00 nc -w 2 localhost 2947
+ 9047 root       0:00 sh -c #!/bin/sh set +e echo "" echo ">>> [Header]" (echo "==========================================" echo "  CSMS DATA SOURCES FOR MONITORING" echo "==========================================") || true echo "" echo ">>> [=== 1. SQLite Database Structure ===]" (cd /media/tci/csms/data && ls -la *.db) || true echo "" echo ">>> [=== Database Tables ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db ".tables" 2>/dev/null || echo "sqlite3 not found") || true echo "" echo ">>> [=== Table Schema (first 100 lines) ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db ".schema" 2>/dev/null | head -100) || true echo "" echo ">>> [=== Sample: events table ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM events LIMIT 5;" 2>/dev/null || echo "no events table") || true echo "" echo ">>> [=== Sample: signals table ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM signals LIMIT 5;" 2>/dev/null || echo "no signals table") || true echo "" echo ">>> [=== All table names ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT name FROM sqlite_master WHERE type='table';" 2>/dev/null) || true echo "" echo ">>> [=== 2. GPS Data (gpsd -x) ===]" (gpsd -x 1 2>/dev/null | head -20 || echo gpsd command failed) || true echo "" echo ">>> [=== GPS Socket (gpsd port 2947) ===]" (echo '?VERSION;' | nc -w 2 localhost 2947 2>/dev/null || echo gpsd not responding) || true echo "" echo ">>> [=== 3. CSMS API/Socket Files ===]" (find /var/run -name "*csms*" 2>/dev/null; find /tmp -name "*csms*" 2>/dev/null; ls -la /var/run/*.sock 2>/dev/null || echo "no sockets") || true echo "" echo ">>> [=== 4. System Monitoring: /proc/stat (CPU) ===]" (cat /proc/stat | head -5) || true echo "" echo ">>> [=== System Monitoring: /proc/meminfo ===]" (cat /proc/meminfo | head -10) || true echo "" echo ">>> [=== System Monitoring: /proc/net/dev (network) ===]" (cat /proc/net/dev) || true echo "" echo ">>> [=== System Monitoring: /proc/diskstats ===]" (cat /proc/diskstats | head -10) || true echo "" echo ">>> [
+ 9065 root       0:00 sh -c #!/bin/sh set +e echo "" echo ">>> [Header]" (echo "==========================================" echo "  CSMS DATA SOURCES FOR MONITORING" echo "==========================================") || true echo "" echo ">>> [=== 1. SQLite Database Structure ===]" (cd /media/tci/csms/data && ls -la *.db) || true echo "" echo ">>> [=== Database Tables ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db ".tables" 2>/dev/null || echo "sqlite3 not found") || true echo "" echo ">>> [=== Table Schema (first 100 lines) ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db ".schema" 2>/dev/null | head -100) || true echo "" echo ">>> [=== Sample: events table ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM events LIMIT 5;" 2>/dev/null || echo "no events table") || true echo "" echo ">>> [=== Sample: signals table ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM signals LIMIT 5;" 2>/dev/null || echo "no signals table") || true echo "" echo ">>> [=== All table names ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT name FROM sqlite_master WHERE type='table';" 2>/dev/null) || true echo "" echo ">>> [=== 2. GPS Data (gpsd -x) ===]" (gpsd -x 1 2>/dev/null | head -20 || echo gpsd command failed) || true echo "" echo ">>> [=== GPS Socket (gpsd port 2947) ===]" (echo '?VERSION;' | nc -w 2 localhost 2947 2>/dev/null || echo gpsd not responding) || true echo "" echo ">>> [=== 3. CSMS API/Socket Files ===]" (find /var/run -name "*csms*" 2>/dev/null; find /tmp -name "*csms*" 2>/dev/null; ls -la /var/run/*.sock 2>/dev/null || echo "no sockets") || true echo "" echo ">>> [=== 4. System Monitoring: /proc/stat (CPU) ===]" (cat /proc/stat | head -5) || true echo "" echo ">>> [=== System Monitoring: /proc/meminfo ===]" (cat /proc/meminfo | head -10) || true echo "" echo ">>> [=== System Monitoring: /proc/net/dev (network) ===]" (cat /proc/net/dev) || true echo "" echo ">>> [=== System Monitoring: /proc/diskstats ===]" (cat /proc/diskstats | head -10) || true echo "" echo ">>> [
+ 9067 root       0:00 nc -w 2 localhost 2947
+ 9072 root       0:00 sh -c #!/bin/sh set +e echo "" echo ">>> [Header]" (echo "==========================================" echo "  CSMS DATA SOURCES FOR MONITORING" echo "==========================================") || true echo "" echo ">>> [=== 1. SQLite Database Structure ===]" (cd /media/tci/csms/data && ls -la *.db) || true echo "" echo ">>> [=== Database Tables ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db ".tables" 2>/dev/null || echo "sqlite3 not found") || true echo "" echo ">>> [=== Table Schema (first 100 lines) ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db ".schema" 2>/dev/null | head -100) || true echo "" echo ">>> [=== Sample: events table ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM events LIMIT 5;" 2>/dev/null || echo "no events table") || true echo "" echo ">>> [=== Sample: signals table ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM signals LIMIT 5;" 2>/dev/null || echo "no signals table") || true echo "" echo ">>> [=== All table names ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT name FROM sqlite_master WHERE type='table';" 2>/dev/null) || true echo "" echo ">>> [=== 2. GPS Data (gpsd -x) ===]" (gpsd -x 1 2>/dev/null | head -20 || echo gpsd command failed) || true echo "" echo ">>> [=== GPS Socket (gpsd port 2947) ===]" (echo '?VERSION;' | nc -w 2 localhost 2947 2>/dev/null || echo gpsd not responding) || true echo "" echo ">>> [=== 3. CSMS API/Socket Files ===]" (find /var/run -name "*csms*" 2>/dev/null; find /tmp -name "*csms*" 2>/dev/null; ls -la /var/run/*.sock 2>/dev/null || echo "no sockets") || true echo "" echo ">>> [=== 4. System Monitoring: /proc/stat (CPU) ===]" (cat /proc/stat | head -5) || true echo "" echo ">>> [=== System Monitoring: /proc/meminfo ===]" (cat /proc/meminfo | head -10) || true echo "" echo ">>> [=== System Monitoring: /proc/net/dev (network) ===]" (cat /proc/net/dev) || true echo "" echo ">>> [=== System Monitoring: /proc/diskstats ===]" (cat /proc/diskstats | head -10) || true echo "" echo ">>> [
+ 9090 root       0:00 sh -c #!/bin/sh set +e echo "" echo ">>> [Header]" (echo "==========================================" echo "  CSMS DATA SOURCES FOR MONITORING" echo "==========================================") || true echo "" echo ">>> [=== 1. SQLite Database Structure ===]" (cd /media/tci/csms/data && ls -la *.db) || true echo "" echo ">>> [=== Database Tables ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db ".tables" 2>/dev/null || echo "sqlite3 not found") || true echo "" echo ">>> [=== Table Schema (first 100 lines) ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db ".schema" 2>/dev/null | head -100) || true echo "" echo ">>> [=== Sample: events table ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM events LIMIT 5;" 2>/dev/null || echo "no events table") || true echo "" echo ">>> [=== Sample: signals table ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT * FROM signals LIMIT 5;" 2>/dev/null || echo "no signals table") || true echo "" echo ">>> [=== All table names ===]" (cd /media/tci/csms/data && sqlite3 csmsdb.db "SELECT name FROM sqlite_master WHERE type='table';" 2>/dev/null) || true echo "" echo ">>> [=== 2. GPS Data (gpsd -x) ===]" (gpsd -x 1 2>/dev/null | head -20 || echo gpsd command failed) || true echo "" echo ">>> [=== GPS Socket (gpsd port 2947) ===]" (echo '?VERSION;' | nc -w 2 localhost 2947 2>/dev/null || echo gpsd not responding) || true echo "" echo ">>> [=== 3. CSMS API/Socket Files ===]" (find /var/run -name "*csms*" 2>/dev/null; find /tmp -name "*csms*" 2>/dev/null; ls -la /var/run/*.sock 2>/dev/null || echo "no sockets") || true echo "" echo ">>> [=== 4. System Monitoring: /proc/stat (CPU) ===]" (cat /proc/stat | head -5) || true echo "" echo ">>> [=== System Monitoring: /proc/meminfo ===]" (cat /proc/meminfo | head -10) || true echo "" echo ">>> [=== System Monitoring: /proc/net/dev (network) ===]" (cat /proc/net/dev) || true echo "" echo ">>> [=== System Monitoring: /proc/diskstats ===]" (cat /proc/diskstats | head -10) || true echo "" echo ">>> [
+ 9092 root       0:00 nc -w 2 localhost 2947
+ 9241 root       0:00 /usr/sbin/dropbear -r /etc/dropbear/dropbear_rsa_host_key -p 22
+ 9242 root       0:00 ps aux
+
+
+----------------------------------------------------------------------
+>>> 7. Hardware interfaces
+----------------------------------------------------------------------
+crw--w---- 1 root root 247, 0 Aug 20 20:01 /dev/ttyPS0
+crw-rw---- 1 root root 247, 1 Aug 20 20:01 /dev/ttyPS1
+crw-rw---- 1 root root 89, 0 Aug 20 20:01 /dev/i2c-0
+crw-rw---- 1 root root 89, 1 Aug 20 20:01 /dev/i2c-1
+crw-rw---- 1 root root 89, 2 Aug 20 20:01 /dev/i2c-2
+crw-rw---- 1 root root 89, 3 Aug 20 20:01 /dev/i2c-3
+crw-rw---- 1 root root 89, 4 Aug 20 20:01 /dev/i2c-4
+crw-rw---- 1 root root 89, 5 Aug 20 20:01 /dev/i2c-5
+crw-rw---- 1 root root 89, 6 Aug 20 20:01 /dev/i2c-6
+crw-rw---- 1 root root 89, 7 Aug 20 20:01 /dev/i2c-7
+crw-rw---- 1 root root 89, 8 Aug 20 20:01 /dev/i2c-8
+crw-rw---- 1 root root 153, 0 Aug 20 20:01 /dev/spidev32766.0
+done
+
+
+----------------------------------------------------------------------
+>>> 8. FPGA status
+----------------------------------------------------------------------
+no_fpga_device
+
+
+----------------------------------------------------------------------
+>>> 9. Available interpreters
+----------------------------------------------------------------------
+no_python
+/usr/bin/perl
+no_php
+
+
+----------------------------------------------------------------------
+>>> 10. CSMS XML Config
+----------------------------------------------------------------------
+(no output)
+
+----------------------------------------------------------------------
+>>> 11. Uptime and disk usage
+----------------------------------------------------------------------
+ 20:41pm  up   0:40,  1 user,  load average: 0.29, 0.09, 0.07
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs            64K  4.0K   60K   7% /dev
+tmpfs           281M   40K  281M   1% /run
+tmpfs           281M   96K  281M   1% /var/volatile
+/dev/mmcblk0p1   30G  1.1G   29G   4% /media
+
+
+----------------------------------------------------------------------
+>>> 12. CSMS directory tree
+----------------------------------------------------------------------
+/media/tci/csms/bin/csmsAudio.elf
+/media/tci/csms/bin/csmsd.elf
+/media/tci/csms/csmsCustomSettings.xml
+/media/tci/csms/data/csmsdb.db
+/media/tci/csms/data/backup.db
+/media/tci/csms/etc/649_8.CAB
+/media/tci/csms/etc/am1084.txt
+/media/tci/csms/etc/am1163.txt
+/media/tci/csms/etc/awd-80-2000.txt
+/media/tci/csms/etc/BBAK_9137.txt
+/media/tci/csms/etc/CSMSConfig++.xml
+/media/tci/csms/etc/CSMSConfig++.xml_1100
+/media/tci/csms/etc/CSMSConfig++.xml_7031
+/media/tci/csms/etc/CSMSConfig.xml
+/media/tci/csms/etc/csmsDf.ini
+/media/tci/csms/etc/csmsGeneral.xml
+/media/tci/csms/etc/CsmsLicense.lic
+/media/tci/csms/etc/custom_antenna.txt
+/media/tci/csms/etc/hf620_antenna.txt
+/media/tci/csms/etc/hf632_antenna.txt
+/media/tci/csms/etc/hf7031_antenna.txt
+/media/tci/csms/etc/hf7235_antenna.txt
+/media/tci/csms/etc/hfswitch.txt
+/media/tci/csms/etc/hfswitchlf.txt
+/media/tci/csms/etc/horn_sas_571_2ant.txt
+/media/tci/csms/etc/horn_sas_571_587_588ant.txt
+/media/tci/csms/etc/horn_sas_571_587ant.txt
+/media/tci/csms/etc/horn_SAS_571ant.txt
+/media/tci/csms/etc/horn_sas_588ant.txt
+/media/tci/csms/etc/lightningprotect.txt
+/media/tci/csms/etc/LP-80-2000-C.txt
+/media/tci/csms/etc/LP_400_6000.txt
+/media/tci/csms/etc/lpa_sas_510_4ant.txt
+/media/tci/csms/etc/lpa_SAS_521F_7ant.txt
+/media/tci/csms/etc/LPDA-A0121.txt
+/media/tci/csms/etc/n9010a526b40.txt
+/media/tci/csms/etc/n9010a533b40.txt
+/media/tci/csms/etc/n9010a544b25.txt
+/media/tci/csms/etc/n9010b526b25.txt
+/media/tci/csms/etc/n9010b532b25.txt
+/media/tci/csms/etc/n9010b544b25.txt
+/media/tci/csms/etc/Omni_Vertical.txt
+/media/tci/csms/etc/ProcParamsV2.csv
+/media/tci/csms/etc/restrictedHz.txt.bk
+/media/tci/csms/etc/sas_571_574_combo.txt
+/media/tci/csms/etc/SBA_9113.txt
+/media/tci/csms/etc/SBA_9113B.txt
+/media/tci/csms/etc/shf640_2_antenna.txt
+/media/tci/csms/etc/sms_tdoa.txt
+/media/tci/csms/etc/sms_tdoa.txt_1
+
+
+======================================================================
+Exploration complete.

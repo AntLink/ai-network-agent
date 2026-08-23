@@ -1,0 +1,131 @@
+======================================================================
+  RE SESSION STEP 7: LAUNCHER DEBUG + RELAUNCH + EXTENDED POLL
+======================================================================
+
+======================================================================
+[DEBUG: start-stop-daemon presence + verbose start attempt]  (timeout=30s)
+$ command -v start-stop-daemon || echo "ssd NOT in PATH"
+ls -la /sbin/start-stop-daemon 2>/dev/null
+rm -f /media/tci/csms/csmsd.pid
+/etc/rc5.d/S99csmsd start 2>&1
+sleep 3
+echo "pidof after ssd: $(pidof csmsd.elf 2>/dev/null || echo none)"
+true
+----------------------------------------------------------------------
+ssd NOT in PATH
+lrwxrwxrwx 1 root root 19 Jul 16  2020 /sbin/start-stop-daemon -> /bin/busybox.nosuid
+Starting Compact Spectrum Monitoring Server: /etc/rc5.d/S99csmsd: line 15: start-stop-daemon: command not found
+csmsd.
+pidof after ssd: none
+
+
+======================================================================
+[TEST: direct --daemon invocation]  (timeout=40s)
+$ /media/tci/csms/bin/csmsd.elf --daemon 2>&1 | head -10
+echo "rc=$?"
+sleep 3
+echo "pidof after direct --daemon: $(pidof csmsd.elf 2>/dev/null || echo none)"
+true
+----------------------------------------------------------------------
+killall: SpectrumMonitor: no process killed
+/media/tci/csms/data/ directory exists
+/media/tci/csms/log/ directory exists
+csmsd daemon starting
+csmsd child created: 17475. Parent exiting.
+true
+media r/w...
+sh: devmem: command not found
+csmsd running...
+/media/tci/csms/data/ directory exists
+rc=0
+pidof after direct --daemon: 17475
+
+
+======================================================================
+[RELAUNCH: setsid foreground-style (known working)]  (timeout=30s)
+$ pidof csmsd.elf >/dev/null 2>&1 || {
+  rm -f /tmp/csmsd_run.log
+  setsid sh -c '/media/tci/csms/bin/csmsd.elf >/tmp/csmsd_run.log 2>&1 </dev/null &'
+}
+sleep 3
+echo "pidof: $(pidof csmsd.elf 2>/dev/null || echo none)"
+true
+----------------------------------------------------------------------
+pidof: 17475
+
+
+======================================================================
+[EXTENDED POLL: listeners every 20s x15]  (timeout=340s)
+$ for i in $(seq 1 15); do
+  sleep 20
+  P=$(netstat -tlnp 2>/dev/null | grep csmsd | awk '{print $4}' | tr '\n' ' ')
+  A=$(pidof csmsd.elf 2>/dev/null || echo dead)
+  echo "t=$((i*20))s pid=$A listeners: ${P:-none}"
+  if [ -n "$P" ]; then echo ">>> PORTS UP at t=$((i*20))s <<<"; break; fi
+done
+true
+----------------------------------------------------------------------
+t=20s pid=17475 listeners: none
+t=40s pid=17475 listeners: none
+t=60s pid=dead listeners: none
+t=80s pid=dead listeners: none
+t=100s pid=dead listeners: none
+t=120s pid=dead listeners: none
+t=140s pid=dead listeners: none
+t=160s pid=dead listeners: none
+t=180s pid=dead listeners: none
+t=200s pid=dead listeners: none
+t=220s pid=dead listeners: none
+t=240s pid=dead listeners: none
+t=260s pid=dead listeners: none
+t=280s pid=dead listeners: none
+t=300s pid=dead listeners: none
+
+
+======================================================================
+[SCPI: *IDN? on live ports]  (timeout=90s)
+$ PORTS=$(netstat -tlnp 2>/dev/null | grep csmsd | awk '{print $4}' | sed 's/.*://' | sort -u)
+echo "csmsd ports: ${PORTS:-NONE}"
+for p in $PORTS; do
+  echo "=== port $p ==="
+  printf "*IDN?\n" | nc -w 5 127.0.0.1 $p 2>/dev/null | head -3
+done
+true
+----------------------------------------------------------------------
+csmsd ports: NONE
+
+
+======================================================================
+[LOG: csmsd stdout tail]  (timeout=25s)
+$ tail -25 /tmp/csmsd_run.log 2>/dev/null; true
+----------------------------------------------------------------------
+08/21/2026 09:30:11.267 Passband Calibration
+08/21/2026 09:30:11.267 NTP: Time is accurate, offset at 0.011319 ms
+08/21/2026 09:30:11.267 NTP
+08/21/2026 09:30:11.267 GPS
+08/21/2026 09:30:11.267 Warning: Built-In Self Test
+System fault status changed from PASS to WARNING
+startup event = 22
+08/21/2026 09:30:15.270 csmsd service started on node 0
+08/21/2026 09:30:15.270 Received signal 15
+CHwControl::ControlThread exiting
+CHwControl::AgcTimeoutThread exiting
+CHwControl::PanTimeoutThread exiting
+CHwControl::MonitorThread exiting
+CHwControl::FaultLEDThread exiting on shutdown
+CProcessing::Thread exiting
+CSharedMemory: I am no longer master
+CTciGps::Thread exiting
+08/21/2026 09:30:15.288 Watchdog closed
+CWatchdog::TimeoutThread exiting
+C3230::Thread[2] exiting: 80000
+C3230::Thread[3] exiting: 800000
+C3230::Thread[0] exiting: 400409
+CSharedMemory: I am no longer master
+CPersistentData::DBChkCapacityThread exiting
+08/21/2026 09:30:16.667 csmsd service stopped on node 0
+
+
+======================================================================
+  STEP 7 COMPLETE
+======================================================================

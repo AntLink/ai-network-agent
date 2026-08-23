@@ -1,0 +1,9 @@
+Value PROTOCOL (\S+)
+Value PREFIX (\S+)
+Value MASK (\S+)
+Value NEXTHOP (\S+)
+Value INTERFACE (\S+)
+
+Start
+  ^${PROTOCOL}\s+${PREFIX}\s+${MASK}\s+\[.*\]\s+via\s+${NEXTHOP}.*${INTERFACE} -> Record
+  ^${PROTOCOL}\s+${PREFIX}\s+${MASK}\s+\[.*\]\s+is directly connected,.*${INTERFACE} -> Record

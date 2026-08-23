@@ -1,0 +1,16 @@
+======================================================================
+  STEP 28b: GREETING VERSION MATRIX
+======================================================================
+  greet cmdVer=0 respVer=1: ERROR TimeoutError
+  greet cmdVer=0 respVer=2: ERROR TimeoutError
+  greet cmdVer=0 respVer=3: ERROR TimeoutError
+  greet cmdVer=1 respVer=1: ERROR TimeoutError
+  greet cmdVer=2 respVer=2: ERROR TimeoutError
+  greet cmdVer=3 respVer=3: ERROR TimeoutError
+--------------------------------------------------
+  pan cmdVer=0 respVer=0: ERROR TimeoutError
+  pan cmdVer=0 respVer=1: ERROR TimeoutError
+  pan cmdVer=1 respVer=1: ERROR TimeoutError
+  pan cmdVer=2 respVer=2: ERROR TimeoutError
+
+done

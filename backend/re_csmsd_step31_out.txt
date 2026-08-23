@@ -1,0 +1,14 @@
+relaunched-from-root-cwd
+
+t=15s listeners=0
+t=30s listeners=0
+t=45s listeners=0
+t=60s listeners=0
+t=75s listeners=3
+waiting extra 240s for full init...
+greeting after long settle:
+reply 20B
+000000 01 e0 00 00 00 00 00 00 0f 27 00 00 0d 00 00 00  >.........'......<
+000010 00 00 00 00                                      >....<
+000014
+

@@ -1,0 +1,22 @@
+{
+  "devices": [
+    {
+      "id": "router-core",
+      "hostname": "router-core",
+      "management_address": "192.168.88.1",
+      "vendor": "mikrotik",
+      "platform": "routeros",
+      "transport": "ssh",
+      "credential_ref": "env:ROUTER_CORE"
+    },
+    {
+      "id": "switch-core",
+      "hostname": "switch-core",
+      "management_address": "192.168.88.2",
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "ssh",
+      "credential_ref": "env:SWITCH_CORE"
+    }
+  ]
+}

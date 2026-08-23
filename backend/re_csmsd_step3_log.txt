@@ -1,0 +1,147 @@
+======================================================================
+  RE SESSION STEP 3: INIT SCRIPT + PROPER RESTART + PORT 330x PROBE
+======================================================================
+
+======================================================================
+[INIT: find csmsd startup script]  (timeout=30s)
+$ grep -rl "csmsd" /etc/init.d/ /etc/rcS.d/ /etc/inittab 2>/dev/null
+echo "---"
+for f in $(grep -rl "csmsd" /etc/init.d/ /etc/rcS.d/ 2>/dev/null); do
+  echo "### $f ###"
+  cat "$f"
+done
+----------------------------------------------------------------------
+---
+
+
+======================================================================
+[CLEANUP: kill test instance]  (timeout=20s)
+$ killall csmsd.elf 2>/dev/null; sleep 2
+pidof csmsd.elf || echo "no csmsd running"
+----------------------------------------------------------------------
+no csmsd running
+
+
+======================================================================
+[RESTART: via init script if present]  (timeout=45s)
+$ INIT=$(grep -rl "csmsd" /etc/init.d/ 2>/dev/null | head -1)
+if [ -n "$INIT" ]; then
+  echo "using $INIT"
+  "$INIT" stop 2>/dev/null; sleep 1
+  "$INIT" start 2>/dev/null || "$INIT" restart 2>/dev/null
+else
+  echo "no init script found - launching directly"
+  setsid sh -c '/media/tci/csms/bin/csmsd.elf >/tmp/csmsd_run.log 2>&1 </dev/null &'
+fi
+sleep 6
+echo "=== pidof ==="; pidof csmsd.elf
+echo "=== ports ==="; netstat -tlnp 2>/dev/null | grep csmsd
+----------------------------------------------------------------------
+[ERROR] RuntimeError: Command failed: 1
+
+======================================================================
+[PROBE: banner + SCPI on 3302/3303/3307]  (timeout=40s)
+$ for p in 3302 3303 3307; do
+  echo "=== port $p ==="
+  echo "*IDN?" | nc -w 3 127.0.0.1 $p 2>/dev/null | head -5
+  echo "(rc=$?)"
+done
+----------------------------------------------------------------------
+=== port 3302 ===
+(rc=0)
+=== port 3303 ===
+(rc=0)
+=== port 3307 ===
+(rc=0)
+
+
+======================================================================
+[STRINGS: port/protocol hints in binary]  (timeout=60s)
+$ strings /media/tci/csms/bin/csmsd.elf | grep -E "\b330[0-9]\b" | head -20
+echo "---scpi---"
+strings /media/tci/csms/bin/csmsd.elf | grep -iE "^\*(IDN|OPC|RST|CLS)|SCPI|:MEAS|:FREQ|:POW|:INIT|:CONF" | head -40
+echo "---listen/bind---"
+strings /media/tci/csms/bin/csmsd.elf | grep -iE "listen|bind|socket|port" | head -30
+----------------------------------------------------------------------
+3304
+3307
+3303
+3305
+3302
+---scpi---
+_ZTIN14CNetConnectionI8CScpiNetE9CNetErrorE
+CTask::InitDemodCtrl(SET_RCVR) polarization not found for ant = 
+CTask::InitDemodCtrl(SET_PAN_PARA) polarization not found for ant = 
+CTask::InitDemodCtrl(SET_AUDIO_PARAMS) polarization not found for ant = 
+St23enable_shared_from_thisI8CScpiNetE
+14CNetConnectionI8CScpiNetE
+N14CNetConnectionI8CScpiNetE9CNetErrorE
+St23_Sp_counted_ptr_inplaceI8CScpiNetSaIS0_ELN9__gnu_cxx12_Lock_policyE2EE
+Unable to create Scpi connection
+*IDN?
+*RST
+:SENS:FREQ:SPAN 0 HZ
+:SENS:POW:RF:ATT 0
+:POW:GAIN:BAND FULL
+:POW:GAIN ON
+:INIT:CONT OFF
+:SENS:FREQ:CENT 
+ MHZ;:INIT:IMM;*OPC?
+CRfSelSwitch::InitSwitch: Unable to connect to switch IP addr: %s
+CRfSelSwitch::Init OK
+17CScpiNetException
+P17CScpiNetException
+NSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI8CScpiNetEFvbjEEPS5_bjEEEE
+NSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI8CScpiNetEFvvEEPS5_EEEE
+St23_Sp_counted_ptr_inplaceINSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI8CScpiNetEFvbjEEPS6_bjEEEESaISD_ELN9__gnu_cxx12_Lock_policyE2EE
+St23_Sp_counted_ptr_inplaceINSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI8CScpiNetEFvvEEPS6_EEEESaISD_ELN9__gnu_cxx12_Lock_policyE2EE
+8CScpiNet
+Disconnected from Scpi %s, code = %d
+Connected to Scpi %s
+Sent to Scpi failed
+Scpi client connection started %s  %s
+ScpiNet.h
+ScpiNet.h
+ScpiNet.cpp
+_ZN9__gnu_cxx16__aligned_bufferISt4pairIKSt10shared_ptrI8CScpiNetEPS3_EE6_M_ptrEv
+_S_destroy<std::pair<const Units::Frequency, CAntenna::DualPolFourierPattern> >
+_ZNSt8__detail21_Hashtable_ebo_helperILi0ESaINS_10_Hash_nodeISt4pairIKSt10shared_ptrI8CScpiNetEPS4_ELb0EEEELb1EED4Ev
+_ZNSt8__detail9_Map_baseISt10shared_ptrI8CScpiNetESt4pairIKS3_PS2_ESaIS7_ENS_10_Select1stESt8equal_toIS3_ESt4hashIS3_ENS_18_Mod_range_hashingENS_20_Default_ranged_hashENS_20_Prime_rehash_policyENS_17_Hashtable_traitsILb0ELb0ELb1EEELb1EEC4Ev
+_ZNSt8__detail21_Hashtable_ebo_helperILi0ESt8equal_toISt10shared_ptrI8CScpiNetEELb1EEC4Ev
+_ZNSt10_HashtableISt10shared_ptrI8CScpiNetESt4pairIKS2_PS1_ESaIS6_ENSt8__detail10_Select1stESt8equal_toIS2_ESt4hashIS2_ENS8_18_Mod_range_hashingENS8_20_Default_ranged_hashENS8_20_Prime_rehash_policyENS8_17_Hashtable_traitsILb0ELb0ELb1EEEE21_M_deallocate_bucketsEPPNS8_15_Hash_node_baseEj
+---listen/bind---
+socket
+listen
+bind
+NSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM6CAudioFvvEEPS3_EEEE
+NSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI7CRdsNetEFvbjEEPS5_bjEEEE
+NSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI7CRdsNetEFvvEEPS5_EEEE
+St23_Sp_counted_ptr_inplaceINSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM6CAudioFvvEEPS4_EEEESaISB_ELN9__gnu_cxx12_Lock_policyE2EE
+St23_Sp_counted_ptr_inplaceINSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI7CRdsNetEFvbjEEPS6_bjEEEESaISD_ELN9__gnu_cxx12_Lock_policyE2EE
+St23_Sp_counted_ptr_inplaceINSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI7CRdsNetEFvvEEPS6_EEEESaISD_ELN9__gnu_cxx12_Lock_policyE2EE
+%s disconnected from Rds Net port, code = %d
+API Support: %1$u connection(s).
+Compass.compassPort
+CConfig::GetProcessorCableLoss(Err 0): procPort = 
+, inPortNum = 
+ <rfSwitchInputPort> 
+ not equal to <CascadedRfSwitch><rfSwitchInputPort> 
+ only 1 or 2 is allowed for <CascadedRfSwitch><rfSwitchInputPort> not 
+ not SUPPORTED
+ not matching other port id
+ exceeds available input ports
+ is an unknown terminal port
+ number monitor ports 
+ HF Antenna port must connect to RF3 or SMPL-RF3
+ non-HF Antenna port cannot connect to RF3 or SMPL-RF3
+ numConnections not supported, only 1, 2 or 4 allowed.
+ numInputs not supported, must be >= 2 && <= 6.
+terminated to Processor RF1 DF port
+ cannot be connected to 739 master RF1 port
+ AUTO Policy must be the only one connected to RF1 port(i.e.: no external RF switch)
+terminated to Processor RF3 DF port
+
+
+======================================================================
+  STEP 3 COMPLETE
+======================================================================

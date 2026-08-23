@@ -1,0 +1,156 @@
+======================================================================
+  RE SESSION STEP 4: RESTORE SERVICE + LIVE PROBE PORTS 3302/3303/3307
+======================================================================
+
+======================================================================
+[RESTART: launch csmsd detached (as before)]  (timeout=40s)
+$ killall csmsd.elf 2>/dev/null; sleep 1
+rm -f /tmp/csmsd_run.log
+setsid sh -c '/media/tci/csms/bin/csmsd.elf >/tmp/csmsd_run.log 2>&1 </dev/null &'
+sleep 8
+echo "=== pidof ==="; pidof csmsd.elf || true
+echo "=== ports ==="; netstat -tlnp 2>/dev/null | grep -E "csmsd|330" || echo "no 330x listeners"
+true
+----------------------------------------------------------------------
+=== pidof ===
+17180
+=== ports ===
+no 330x listeners
+
+
+======================================================================
+[SCPI: *IDN? on each live port]  (timeout=60s)
+$ for p in 3302 3303 3304 3305 3307; do
+  if netstat -tln 2>/dev/null | grep -q ":$p "; then
+    echo "=== port $p : *IDN? ==="
+    printf "*IDN?\n" | nc -w 4 127.0.0.1 $p 2>/dev/null | head -3
+  else
+    echo "=== port $p closed ==="
+  fi
+done
+true
+----------------------------------------------------------------------
+=== port 3302 closed ===
+=== port 3303 closed ===
+=== port 3304 closed ===
+=== port 3305 closed ===
+=== port 3307 closed ===
+
+
+======================================================================
+[BANNER: connect-only grab]  (timeout=45s)
+$ for p in 3302 3303 3307; do
+  echo "=== port $p banner ==="
+  timeout 3 nc 127.0.0.1 $p </dev/null 2>/dev/null | head -c 200 | od -c | head -6
+done
+true
+----------------------------------------------------------------------
+=== port 3302 banner ===
+0000000
+=== port 3303 banner ===
+0000000
+=== port 3307 banner ===
+0000000
+
+
+======================================================================
+[BOOT: where does csmsd start from?]  (timeout=30s)
+$ grep -r "csms" /etc/inittab /etc/init.d/rcS /etc/profile /etc/rcS.d/* 2>/dev/null | head -10
+echo "--- SpectrumMonitor script ---"
+ls -la /media/tci/SpectrumMonitor 2>/dev/null
+head -40 /media/tci/SpectrumMonitor 2>/dev/null
+echo "--- crontab ---"
+crontab -l 2>/dev/null | head -10
+true
+----------------------------------------------------------------------
+--- SpectrumMonitor script ---
+-rwxr-xr-x 1 root root 1004 Sep 12  2023 /media/tci/SpectrumMonitor
+#!/bin/bash
+ScriptEnabled=true
+#ScriptEnable=false
+FILE="/media/tci/csms/log/SpectrumMonitor.log"
+chkprocess="csmsd.elf"
+now=$(date)
+echo -e "Starting SpecturmMonitor script... $now\n" >> $FILE
+echo $ScriptEnabled
+while [ $ScriptEnabled ]
+do
+  # check if media turned read only
+  mountfile=/proc/self/mountinfo
+  if grep -q "mmcblk0p1 ro" $mountfile
+  then
+    fsck -aw /dev/mmcblk0p1
+    echo "media read-only detected.. cleaning disk and reboot..." 
+    now=$(date)
+    echo -e "media read-only detected..$now cleaning disk and reboot...\n" >> $FILE
+    sleep 5
+    reboot
+  else
+    echo "media r/w..."
+  fi 
+
+
+  chkprocess=$(ps | grep "csmsd")
+  if [[ $chkprocess == *"csmsd.elf"* ]]; then
+    echo "csmsd running..."
+  else
+    echo "detected csmsd stopped, relauch csmsd..."
+    now=$(date)
+    echo -e "detected csmsd stopped, relauch csmsd: $now\n" >> $FILE
+    /etc/rc5.d/S99csmsd start 
+  fi
+  sleep 30 
+done
+now=$(date) 
+echo "Current time : $now"
+echo "csmsd monitor script exited normally"
+
+--- crontab ---
+
+
+======================================================================
+[FINAL: service state + startup log]  (timeout=25s)
+$ ps aux | grep -E "csmsd|csmsAudio" | grep -v grep || true
+netstat -tlnp 2>/dev/null | grep csmsd || true
+echo "--- log ---"
+cat /tmp/csmsd_run.log 2>/dev/null | head -30
+true
+----------------------------------------------------------------------
+ 1166 root       5:31 csmsAudio.elf
+17180 root       0:01 /media/tci/csms/bin/csmsd.elf
+--- log ---
+true
+media r/w...
+sh: devmem: command not found
+csmsd running...
+/media/tci/csms/data/ directory exists
+/media/tci/csms/log/ directory exists
+My exeName: /media/TCI/csms/bin/csmsd.elfZ
+exe ctime = 01/12/2006 02:36:02 atime = 08/21/2026 00:02:12 mtime = 08/21/2025 00:52:20
+no changes needed
+08/21/2026 09:29:00.413 sms_tdoa.txt version = 2, ddc_extraSamples = 44, directExtraClocks = 12, tdoaStart = (103,33)
+Changing VUSHF Metric V high freq 0.000000 to 20000000.000000
+Changing VUSHF Metric V low freq 0.000000 to 3000000000.000000
+Leaving VUSHF Metric V high freq at 20000000.000000
+Changing VUSHF Metric V low freq 3000000000.000000 to 8500000000.000000
+Changing HF Metric high freq 0.000000 to 9000.000000
+Changing HF Metric low freq 0.000000 to 30000000.000000
+My hostname: CSMS-SINGKAWANG
+sysinfo: Linux 4.6.0-xilinx #1 SMP PREEMPT Thu Dec 5 14:01:14 PST 2019 armv7l
+08/21/2026 09:29:00.686 Csms product version min vs actual 02010016 vs 02070010
+ALC mode activated
+radio not at df master state
+CProcesorNode: this csmsd is not the df master
+dbFile: /media/tci/csms/data/csmsdb.db backupFile: /media/tci/csms/data/backup.db tempFile: /media/tci/csms/data/temp.db badFile: /media/tci/csms/data/bad.db
+sqlite readonly main 0
+SQLite mutex is set at = 1. SQLite can run in multi-thread.
+maxPageCount = 1048576
+Ready to start thread
+CPersistentData ctor done
+CSharedMemory: size is 0, wanted is 32
+CSharedMemory: master = 0 iAmMaster = 1
+
+
+======================================================================
+  STEP 4 COMPLETE
+======================================================================

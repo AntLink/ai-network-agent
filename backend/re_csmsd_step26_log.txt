@@ -1,0 +1,43 @@
+======================================================================
+  STEP 26: SINGLE-CONNECTION SEQUENCE GREETING -> PAN
+======================================================================
+
+[SANITY]
+356
+
+
+[A: greet(no body) + pan(no body) (one connection, 12s)]
+reply bytes: 20
+000000 0a 00 00 00 00 00 00 00 0f 27 00 00 0d 00 00 00  >.........'......<
+000010 00 00 00 00                                      >....<
+000014
+
+
+[B: greet(36B zeros) + pan(36B zeros) (one connection, 12s)]
+reply bytes: 20
+000000 00 00 00 00 00 00 00 00 0f 27 00 00 0d 00 00 00  >.........'......<
+000010 00 00 00 00                                      >....<
+000014
+
+
+[C: greet(36B zeros) only (one connection, 12s)]
+reply bytes: 20
+000000 00 00 00 00 00 00 00 00 0f 27 00 00 0d 00 00 00  >.........'......<
+000010 00 00 00 00                                      >....<
+000014
+
+
+[SERVER LOG grep GREETING/PAN]
+08/21/2026 11:50:33.535 Got MEASUREMENT_GREETING_REQ from localhost.localdomain
+08/21/2026 11:50:45.314 Got MEASUREMENT_PAN_REQ from localhost.localdomain
+08/21/2026 11:50:57.074 Got MEASUREMENT_GREETING_REQ from localhost.localdomain
+08/21/2026 11:55:55.035 Got MEASUREMENT_GREETING_REQ from localhost.localdomain
+
+
+[HEALTH]
+356
+
+
+======================================================================
+  STEP 26 COMPLETE
+======================================================================

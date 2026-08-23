@@ -1,0 +1,237 @@
+======================================================================
+>>> Command 1: Find all Unix sockets
+----------------------------------------------------------------------
+(no output)
+======================================================================
+>>> Command 2: Find all FIFOs
+----------------------------------------------------------------------
+(no output)
+======================================================================
+>>> Command 3: Check shared memory
+----------------------------------------------------------------------
+total 0
+drwxrwxrwx 2 root root   40 Aug 20 20:04 .
+drwxr-xr-x 6 root root 3300 Aug 20 20:01 ..
+
+------ Shared Memory Segments --------
+key        shmid      owner      perms      bytes      nattch     status      
+0x4e545030 294912     root       600        80         2                       
+0x4e545031 327681     root       600        80         2                       
+0x4e545032 360450     root       666        80         1                       
+0x4e545033 393219     root       666        80         1                       
+0x4e545034 425988     root       666        80         1                       
+0x4e545035 458757     root       666        80         1                       
+0x4e545036 491526     root       666        80         1                       
+0x4e545037 524295     root       666        80         1                       
+0x47505344 557064     root       666        26344      1                       
+
+
+======================================================================
+>>> Command 4: Check csmsd.elf network connections
+----------------------------------------------------------------------
+ 1166 root       1:48 csmsAudio.elf
+ 9776 root       0:00 sh -c ps aux | grep csms netstat -tlnp 2>/dev/null | grep -E "csms|SendIP|127.0.0" netstat -ulnp 2>/dev/null | grep -E "csms|SendIP" netstat -anp 2>/dev/null | grep -E "csms|SendIP" | head -20 true
+ 9778 root       0:00 grep csms
+tcp        0      0 127.0.0.1:2947          0.0.0.0:*               LISTEN      1220/gpsd       
+tcp        0      0 127.0.0.1:20241         0.0.0.0:*               LISTEN      3470/cloudflared-li
+udp        0      0 0.0.0.0:18331           0.0.0.0:*                           1180/SendIP.elf 
+udp        0      0 0.0.0.0:5060            0.0.0.0:*                           1166/csmsAudio.elf
+udp        0      0 0.0.0.0:18331           0.0.0.0:*                           1180/SendIP.elf 
+udp        0      0 0.0.0.0:5060            0.0.0.0:*                           1166/csmsAudio.elf
+unix  2      [ ]         DGRAM                    4672     1180/SendIP.elf     
+
+======================================================================
+>>> Command 5: Check SendIP.elf network usage
+----------------------------------------------------------------------
+ 1180 root       0:00 /media/TCI/SendIP.elf
+ 9787 root       0:00 sh -c ps aux | grep SendIP strings /media/TCI/SendIP.elf 2>/dev/null | grep -iE "udp|tcp|port|connect|bind|socket|send|recv" | head -30 true
+ 9789 root       0:00 grep SendIP
+socket
+bind
+recvfrom
+sendto
+cannot create socket
+bind failed
+waiting on port %d
+sendto failed
+SendIP daemon started.
+../SendIP.c
+socket.h
+socket.h
+socket_type.h
+socket
+C:\Users\Public\Current\LinuxZynq\Main\Source\Utilities\SendIP\Release
+recvfrom
+bind
+../SendIP.c
+sin_port
+__socket_type
+sendto
+recvlen
+in_port_t
+SendIP.c
+recvfrom@@GLIBC_2.4
+bind@@GLIBC_2.4
+sendto@@GLIBC_2.4
+socket@@GLIBC_2.4
+
+======================================================================
+>>> Command 6: Check csmsd.elf for API/socket strings
+----------------------------------------------------------------------
+connect
+socket
+listen
+bind
+accept4
+_ZTIN14CNetConnectionI13CEquipCtrlNetE9CNetErrorE
+_ZTIN14CNetConnectionI11CMetricsNetE9CNetErrorE
+_ZTIN14CNetConnectionI10CDfCtrlNetE9CNetErrorE
+_ZTIN14CNetConnectionI8CScpiNetE9CNetErrorE
+_ZTIN14CNetConnectionI11CRotatorNetE9CNetErrorE
+_ZTIN14CNetConnectionI11CVCPCtrlNetE9CNetErrorE
+14CNetConnectionIvE
+14CNetConnectionI7CRdsNetE
+N14CNetConnectionI7CRdsNetE9CNetErrorE
+NSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM6CAudioFvvEEPS3_EEEE
+NSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI7CRdsNetEFvbjEEPS5_bjEEEE
+NSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI7CRdsNetEFvvEEPS5_EEEE
+St23_Sp_counted_ptr_inplaceINSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM6CAudioFvvEEPS4_EEEESaISB_ELN9__gnu_cxx12_Lock_policyE2EE
+St23_Sp_counted_ptr_inplaceINSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI7CRdsNetEFvbjEEPS6_bjEEEESaISD_ELN9__gnu_cxx12_Lock_policyE2EE
+St23_Sp_counted_ptr_inplaceINSt6thread5_ImplISt12_Bind_simpleIFSt7_Mem_fnIM14CNetConnectionI7CRdsNetEFvvEEPS6_EEEESaISD_ELN9__gnu_cxx12_Lock_policyE2EE
+%s disconnected from Rds Net port, code = %d
+CRdsNet client Set TCP_NODELAY failed
+connecting client - to request rds client connection
+making a connection to rds client...%s
+Incoming connection setup failed: %s
+Incoming connection setup failed
+No GPS Connection
+Not Connected
+num of slaves connected to %d nodes
+Unable to connect to signal analyzer
+HF whip disconnected
+HF whip connected
+Unable to connect to Slave node.
+API Support: %1$u connection(s).
+St15_Sp_counted_ptrIPSt3mapIN5Units9FrequencyEfSt4lessIS2_ESaISt4pairIKS2_fEEELN9__gnu_cxx12_Lock_policyE2EE
+Compass.compassPort
+CConfig::GetFreqDepGain: Dual-band antenna ANT2 not found in m_intConnectMap
+ not in m_intConnectMap
+CConfig::GetProcessorCableLoss(Err 0): procPort = 
+ not found in m_intConnectMap
+
+======================================================================
+>>> Command 7: Check if csmsd has any hidden ports
+----------------------------------------------------------------------
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 127.0.0.1:2947          0.0.0.0:*               LISTEN      1220/gpsd       
+tcp        0      0 127.0.0.1:20241         0.0.0.0:*               LISTEN      3470/cloudflared-li
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1084/dropbear   
+tcp        0      0 0.0.0.0:23              0.0.0.0:*               LISTEN      1226/inetd      
+tcp        0      0 0.0.0.0:1534            0.0.0.0:*               LISTEN      1207/tcf-agent  
+tcp6       0      0 ::1:2947                :::*                    LISTEN      1220/gpsd       
+tcp6       0      0 :::80                   :::*                    LISTEN      1146/busybox    
+tcp6       0      0 :::22                   :::*                    LISTEN      1084/dropbear   
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+udp        0      0 192.168.255.22:123      0.0.0.0:*                           1222/ntpd       
+udp        0      0 192.168.162.20:123      0.0.0.0:*                           1222/ntpd       
+udp        0      0 127.0.0.1:123           0.0.0.0:*                           1222/ntpd       
+udp        0      0 0.0.0.0:123             0.0.0.0:*                           1222/ntpd       
+udp        0      0 0.0.0.0:18331           0.0.0.0:*                           1180/SendIP.elf 
+udp        0      0 0.0.0.0:5060            0.0.0.0:*                           1166/csmsAudio.elf
+udp        0      0 0.0.0.0:1534            0.0.0.0:*                           1207/tcf-agent  
+udp6       0      0 :::38921                :::*                                3470/cloudflared-li
+udp6       0      0 :::34369                :::*                                3470/cloudflared-li
+udp6       0      0 fe80::72b3:d5ff:fe7:123 :::*                                1222/ntpd       
+udp6       0      0 ::1:123                 :::*                                1222/ntpd       
+udp6       0      0 :::123                  :::*                                1222/ntpd       
+udp6       0      0 :::43654                :::*                                3470/cloudflared-li
+udp6       0      0 :::40257                :::*                                3470/cloudflared-li
+
+======================================================================
+>>> Command 8: Check /proc for csmsd file descriptors
+----------------------------------------------------------------------
+csmsd.elf not running
+
+======================================================================
+>>> Command 9: Check SendIP file descriptors
+----------------------------------------------------------------------
+SendIP PID: 1180
+total 0
+dr-x------ 2 root root  0 Aug 20 20:01 .
+dr-xr-xr-x 8 root root  0 Aug 20 20:01 ..
+lrwx------ 1 root root 64 Aug 20 20:01 0 -> /dev/null
+lrwx------ 1 root root 64 Aug 20 20:01 1 -> /dev/null
+lrwx------ 1 root root 64 Aug 20 20:01 2 -> /dev/null
+lrwx------ 1 root root 64 Aug 20 20:01 3 -> socket:[4672]
+lrwx------ 1 root root 64 Aug 20 20:01 4 -> socket:[4673]
+  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode                                                     
+   0: 0100007F:0B83 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 4721 1 d095cc00 100 0 0 10 0                              
+   1: 0100007F:4F11 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 12160 1 cebd9880 100 0 0 10 0                             
+   2: 00000000:0016 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 4450 1 d095c000 100 0 0 10 5                              
+   3: 00000000:0017 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 4813 1 d095c600 100 0 0 10 0                              
+   4: 00000000:05FE 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 6292 1 d109b840 100 0 0 10 0                              
+   5: 0100007F:0B83 0100007F:E530 01 00000000:00000000 00:00000000 00000000     0        0 41978 1 b790b300 21 4 27 10 -1                            
+   6: 0100007F:0B83 0100007F:E52E 01 00000000:00000000 00:00000000 00000000     0        0 41988 1 d109a040 21 4 29 10 -1                            
+   7: 0100007F:E52C 0100007F:0B83 01 00000000:00000000 00:00000000 00000000     0        0 41594 1 cebd8680 21 4 28 10 -1                            
+   8: 14A2A8C0:0016 5006A8C0:A679 01 00000000:00000000 00:00000000 00000000     0        0 7069 1 d095d800 29 4 1 3 2                                
+  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode ref pointer drops             
+  123: 16FFA8C0:007B 00000000:0000 07 00000000:00000000 00:00000000 00000000     0        0 4875 2 d268a300 0                  
+  123: 14A2A8C0:007B 00000000:0000 07 00000000:00000000 00:00000000 00000000     0        0 4873 2 d268a5c0 0                  
+  123: 0100007F:007B 00000000:0000 07 00000000:00000000 00:00000000 00000000     0        0 4871 2 d0c6dc00 0                  
+  123: 00000000:007B 00000000:0000 07 00000000:00000000 00:00000000 00000000     0        0 4795 2 d268a040 0                  
+  411: 00000000:479B 00000000:0000 07 00000000:00000000 00:00000000 00000000     0        0 4673 2 d2739080 0                  
+  452: 00000000:13C4 00000000:0000 07 00000000:00000000 00:00000000 00000000     0        0 6255 2 d268b380 0                  
+  510: 00000000:05FE 00000000:0000 07 00000000:00000000 00:00000000 00000000     0        0 6293 2 d268b640 0                  
+
+======================================================================
+>>> Command 10: Check for any data pipes between processes
+----------------------------------------------------------------------
+lr-x------ 1 root root 64 Aug 20 20:10 3 -> pipe:[7612]
+l-wx------ 1 root root 64 Aug 20 20:10 4 -> pipe:[7612]
+lr-x------ 1 root root 64 Aug 20 20:10 6 -> pipe:[6421]
+lr-x------ 1 root root 64 Aug 20 20:10 6 -> pipe:[6421]
+lr-x------ 1 root root 64 Aug 21 00:24 0 -> pipe:[40715]
+l-wx------ 1 root root 64 Aug 21 00:24 1 -> pipe:[40716]
+l-wx------ 1 root root 64 Aug 21 00:24 2 -> pipe:[40717]
+lr-x------ 1 root root 64 Aug 21 00:24 0 -> pipe:[40718]
+l-wx------ 1 root root 64 Aug 21 00:24 1 -> pipe:[40716]
+lr-x------ 1 root root 64 Aug 21 00:25 0 -> pipe:[40960]
+l-wx------ 1 root root 64 Aug 21 00:25 1 -> pipe:[41985]
+l-wx------ 1 root root 64 Aug 21 00:25 2 -> pipe:[41986]
+lr-x------ 1 root root 64 Aug 21 00:25 0 -> pipe:[41987]
+l-wx------ 1 root root 64 Aug 21 00:25 1 -> pipe:[41985]
+lr-x------ 1 root root 64 Aug 21 00:27 0 -> pipe:[41974]
+l-wx------ 1 root root 64 Aug 21 00:27 1 -> pipe:[41975]
+l-wx------ 1 root root 64 Aug 21 00:27 2 -> pipe:[41976]
+lr-x------ 1 root root 64 Aug 21 00:27 0 -> pipe:[41977]
+l-wx------ 1 root root 64 Aug 21 00:27 1 -> pipe:[41975]
+lr-x------ 1 root root 64 Aug 21 00:27 11 -> pipe:[42359]
+
+======================================================================
+>>> Command 11: Check GPS data format
+----------------------------------------------------------------------
+{"class":"VERSION","release":"3.23.1","rev":"3.23.1","proto_major":3,"proto_minor":14}
+{"class":"VERSION","release":"3.23.1","rev":"3.23.1","proto_major":3,"proto_minor":14}
+{"class":"VERSION","release":"3.23.1","rev":"3.23.1","proto_major":3,"proto_minor":14}
+{"class":"DEVICES","devices":[{"class":"DEVICE","path":"/dev/ttyPS1","driver":"MTK-3301","subtype":"AXN_3.8_3333_15043022-3325-MC-GG-1.0","activated":"2026-08-21T00:27:35.519Z","flags":1,"native":0,"bps":9600,"parity":"N","stopbits":1,"cycle":1.00,"mincycle":0.10}]}
+{"class":"VERSION","release":"3.23.1","rev":"3.23.1","proto_major":3,"proto_minor":14}
+{"class":"DEVICES","devices":[{"class":"DEVICE","path":"/dev/ttyPS1","driver":"MTK-3301","subtype":"AXN_3.8_3333_15043022-3325-MC-GG-1.0","activated":"2026-08-21T00:27:38.559Z","flags":1,"native":0,"bps":9600,"parity":"N","stopbits":1,"cycle":1.00,"mincycle":0.10}]}
+{"class":"WATCH","enable":true,"json":false,"nmea":false,"raw":0,"scaled":false,"timing":false,"split24":false,"pps":false}
+
+======================================================================
+>>> Command 12: Check if there's a TCI protocol port
+----------------------------------------------------------------------
+3304
+9999
+5025
+37001
+37000
+3307
+3303
+3305
+3302
+10001
+
+======================================================================

@@ -1,0 +1,69 @@
+======================================================================
+  STEP 21: DIAGNOSE + RELAUNCH FOREGROUND
+======================================================================
+
+[STATE + SYSLOG tail]
+pidof: none
+Starting SpecturmMonitor script... Fri Aug 21 03:21:17 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 09:26:27 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 09:27:44 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 09:29:00 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 09:37:19 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 09:44:00 UTC 2026
+
+detected csmsd stopped, relauch csmsd: Fri Aug 21 10:56:37 UTC 2026
+
+detected csmsd stopped, relauch csmsd: Fri Aug 21 10:57:07 UTC 2026
+
+detected csmsd stopped, relauch csmsd: Fri Aug 21 10:57:37 UTC 2026
+
+Starting SpecturmMonitor script... Fri Aug 21 10:58:05 UTC 2026
+
+
+
+[CLEAN]
+cleaned
+
+
+[LAUNCH foreground detached]
+pidof: 356
+
+
+[POLL ports]
+t=15s pid=356 listeners=0
+t=30s pid=356 listeners=0
+t=45s pid=356 listeners=0
+t=60s pid=356 listeners=0
+t=75s pid=356 listeners=3
+PORTS_UP
+
+
+[LOG tail]
+08/21/2026 11:02:32.204 Rf Board: Radio cal tone amplitude is -0.5 dB from -34.3 dBm(nominal) @ 4890 MHz in wide band(24)
+08/21/2026 11:02:32.209 Rf Board: Radio cal tone amplitude is 0.1 dB from -33.5 dBm(nominal) @ 5150 MHz in narrow band(25)
+08/21/2026 11:02:32.212 Rf Board: Radio cal tone amplitude is 0.0 dB from -33.5 dBm(nominal) @ 5150 MHz in wide band(25)
+08/21/2026 11:02:32.216 Rf Board: Radio cal tone amplitude is -0.2 dB from -34.5 dBm(nominal) @ 5610 MHz in narrow band(26)
+08/21/2026 11:02:32.220 Rf Board: Radio cal tone amplitude is -0.4 dB from -34.5 dBm(nominal) @ 5610 MHz in wide band(26)
+08/21/2026 11:02:32.224 Rf Board: Radio cal tone amplitude is -0.1 dB from -40.0 dBm(nominal) @ 6110 MHz in narrow band(27)
+08/21/2026 11:02:32.227 Rf Board: Radio cal tone amplitude is -0.5 dB from -40.0 dBm(nominal) @ 6110 MHz in wide band(27)
+08/21/2026 11:02:32.232 Rf Board: Radio cal tone amplitude is 0.3 dB from -39.6 dBm(nominal) @ 6400 MHz in narrow band(28)
+08/21/2026 11:02:32.235 Rf Board: Radio cal tone amplitude is 0.1 dB from -39.6 dBm(nominal) @ 6400 MHz in wide band(28)
+08/21/2026 11:02:32.239 Rf Board: Radio cal tone amplitude is -0.3 dB from -42.4 dBm(nominal) @ 6890 MHz in narrow band(29)
+08/21/2026 11:02:32.243 Rf Board: Radio cal tone amplitude is -0.5 dB from -42.4 dBm(nominal) @ 6890 MHz in wide band(29)
+SetAttenuation wanted 50[2] got 48[2]
+08/21/2026 11:02:32.247 Rf Board: Radio cal tone amplitude is 0.4 dB from -42.4 dBm(nominal) @ 7720 MHz in narrow band(30)
+08/21/2026 11:02:32.251 Rf Board: Radio cal tone amplitude is -0.1 dB from -42.4 dBm(nominal) @ 7720 MHz in wide band(30)
+08/21/2026 11:02:32.255 Rf Board: Radio cal tone amplitude is 0.2 dB from -43.6 dBm(nom
+
+[FINAL]
+356
+
+
+======================================================================
+  STEP 21 COMPLETE
+======================================================================

@@ -1,0 +1,36 @@
+[extract] 39 /tmp/cf_block.sh
+
+=== TEST 1: kondisi normal (semua ada, tunnel jalan) ===
++ CF_DIR=/media/httpd/cgi-bin
++ CF_RESTORED=0
++ '[' '!' -x /media/httpd/cgi-bin/cloudflared-linux-arm ']'
++ '[' '!' -f /media/httpd/cgi-bin/cloudflared ']'
++ '[' '!' -f /etc/init.d/cloudflared ']'
++ '[' '!' -e /etc/rc5.d/S99cloudflared ']'
++ '[' 0 = 1 ']'
++ sleep 2
++ pidof cloudflared-linux-arm
+++ pidof cloudflared-linux-arm
++ echo 'cloudflared: already running (pid 3470)'
+cloudflared: already running (pid 3470)
+
+3470
+TUNNEL_ALIVE
+
+
+=== TEST 2: simulasi hilang - rename launcher+init ===
+moved
+
+cloudflared: restored missing files from backup
+cloudflared: already running (pid 3470)
+
+=== verifikasi pasca restore ===
+OK  /media/httpd/cgi-bin/cloudflared-linux-arm
+OK  /media/httpd/cgi-bin/cloudflared
+OK  /etc/init.d/cloudflared
+OK  /etc/rc5.d/S99cloudflared
+3470
+TUNNEL_ALIVE
+-rwxr-xr-x 1 root root  818 Aug 20 20:10 /tmp/cf_initd.saved
+-rwxr-xr-x 1 root root 2339 Jul  7 15:27 /tmp/cf_launcher.saved
+

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "skill": {
+      "*": "allow"
+    },
+    "tool": {
+      "device_identify": "allow",
+      "device_get_*": "allow",
+      "config_plan": "allow",
+      "config_validate": "allow",
+      "config_backup": "ask",
+      "config_apply": "ask",
+      "config_verify": "ask",
+      "config_rollback": "ask",
+      "policy_check": "allow",
+      "bash": "ask",
+      "edit": "ask"
+    }
+  }
+}

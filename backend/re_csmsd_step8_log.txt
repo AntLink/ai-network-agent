@@ -1,0 +1,90 @@
+======================================================================
+  RE SESSION STEP 8: CLEAN DETACHED LAUNCH + POLL PAST 75s INIT
+======================================================================
+
+======================================================================
+[CLEAN: ensure no csmsd running]  (timeout=35s)
+$ killall csmsd.elf 2>/dev/null
+for i in $(seq 1 10); do
+  pidof csmsd.elf >/dev/null 2>&1 || break
+  sleep 1
+done
+pidof csmsd.elf >/dev/null 2>&1 && killall -9 csmsd.elf
+sleep 1
+echo "pidof now: $(pidof csmsd.elf 2>/dev/null || echo none)"
+rm -f /media/tci/csms/csmsd.pid /tmp/csmsd_run.log
+true
+----------------------------------------------------------------------
+pidof now: none
+
+
+======================================================================
+[LAUNCH: setsid + full fd redirection]  (timeout=25s)
+$ setsid sh -c '/media/tci/csms/bin/csmsd.elf >/tmp/csmsd_run.log 2>&1 </dev/null &'
+sleep 3
+echo "pidof: $(pidof csmsd.elf 2>/dev/null || echo none)"
+true
+----------------------------------------------------------------------
+pidof: 17657
+
+
+======================================================================
+[POLL: every 15s up to 5min]  (timeout=340s)
+$ for i in $(seq 1 20); do
+  sleep 15
+  P=$(netstat -tlnp 2>/dev/null | grep csmsd | awk '{print $4}' | tr '\n' ' ')
+  A=$(pidof csmsd.elf 2>/dev/null || echo dead)
+  echo "t=$((i*15))s pid=$A listeners: ${P:-none}"
+  if [ -n "$P" ]; then echo ">>> PORTS UP at t=$((i*15))s <<<"; break; fi
+done
+true
+----------------------------------------------------------------------
+t=15s pid=17657 listeners: none
+t=30s pid=17657 listeners: none
+t=45s pid=17657 listeners: none
+t=60s pid=17657 listeners: none
+t=75s pid=17657 listeners: :::3302 :::3303 :::3307 
+>>> PORTS UP at t=75s <<<
+
+
+======================================================================
+[SCPI: *IDN? on live ports]  (timeout=90s)
+$ PORTS=$(netstat -tlnp 2>/dev/null | grep csmsd | awk '{print $4}' | sed 's/.*://' | sort -u)
+echo "csmsd ports: ${PORTS:-NONE}"
+for p in $PORTS; do
+  echo "=== port $p ==="
+  printf "*IDN?\n" | nc -w 5 127.0.0.1 $p 2>/dev/null | head -3
+done
+true
+----------------------------------------------------------------------
+(TIMEOUT after 90s)
+
+======================================================================
+[LIVENESS: fresh connection re-check]  (timeout=30s)
+$ sleep 5
+echo "pidof: $(pidof csmsd.elf 2>/dev/null || echo none)"
+netstat -tlnp 2>/dev/null | grep csmsd || echo "no listeners"
+tail -12 /tmp/csmsd_run.log 2>/dev/null
+true
+----------------------------------------------------------------------
+pidof: 17657
+tcp6       0      0 :::3302                 :::*                    LISTEN      17657/csmsd.elf 
+tcp6       0      0 :::3303                 :::*                    LISTEN      17657/csmsd.elf 
+tcp6       0      0 :::3307                 :::*                    LISTEN      17657/csmsd.elf 
+08/21/2026 09:45:11.244 Rf Board: Radio cal tone amplitude is -0.2 dB from -39.6 dBm(nominal) @ 6400 MHz in wide band(28)
+08/21/2026 09:45:11.249 Rf Board: Radio cal tone amplitude is -0.5 dB from -42.4 dBm(nominal) @ 6890 MHz in narrow band(29)
+08/21/2026 09:45:11.252 Rf Board: Radio cal tone amplitude is -0.7 dB from -42.4 dBm(nominal) @ 6890 MHz in wide band(29)
+SetAttenuation wanted 50[2] got 48[2]
+08/21/2026 09:45:11.256 Rf Board: Radio cal tone amplitude is 0.1 dB from -42.4 dBm(nominal) @ 7720 MHz in narrow band(30)
+08/21/2026 09:45:11.260 Rf Board: Radio cal tone amplitude is -0.3 dB from -42.4 dBm(nominal) @ 7720 MHz in wide band(30)
+08/21/2026 09:45:1media r/w...
+csmsd running...
+media r/w...
+csmsd running...
+media r/w...
+csmsd running...
+
+
+======================================================================
+  STEP 8 COMPLETE
+======================================================================
