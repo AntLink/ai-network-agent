@@ -34,7 +34,9 @@
       "vendor": "cisco",
       "platform": "ios",
       "transport": "ssh",
-      "status": "active"
+      "status": "active",
+      "console_host": "172.22.37.68",
+      "console_port": 5006
     },
     {
       "id": "cisco-iosv-r2",
@@ -43,7 +45,9 @@
       "vendor": "cisco",
       "platform": "ios",
       "transport": "ssh",
-      "status": "active"
+      "status": "active",
+      "console_host": "172.22.37.68",
+      "console_port": 5008
     },
     {
       "id": "cisco-iosvl2-sw1",
