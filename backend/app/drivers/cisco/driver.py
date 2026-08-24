@@ -179,7 +179,7 @@ class CiscoDriver(BaseDriver):
         return {"data": IOSParser.parse_arp(raw), "raw": raw}
 
     async def get_cpu_memory(self):
-        cpu = await self.exec_logged("show processes cpu summary")
+        cpu = await self.exec_logged("show processes cpu")
         mem = await self.exec_logged("show memory summary")
         return {"data": IOSParser.parse_cpu_memory(cpu, mem), "raw": f"CPU:\n{cpu}\n\nMemory:\n{mem}"}
 
@@ -205,7 +205,7 @@ class CiscoDriver(BaseDriver):
 
     async def get_logs(self):
         raw = await self.exec_logged("show logging")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_logs(raw), "raw": raw}
 
     async def get_config(self):
         raw = await self.exec_logged("show running-config")

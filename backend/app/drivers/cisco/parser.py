@@ -97,11 +97,34 @@ class IOSParser:
         if memory_text and "invalid" not in memory_text.lower():
             mem_lines = memory_text.strip().split('\n')
             mem_data = {}
+
+            # Header: Head    Total(b)     Used(b)     Free(b)   Lowest(b)  Largest(b)
+            # Row:    Processor    CAAE880   322509696   64640180   257869516   252452416   251641220
+            #         I/O    8DAE880    63963136    52713804    11249332    11212064    11072572
+            mem_pool_re = re.compile(
+                r'^(Processor|I/O)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)'
+            )
             for line in mem_lines:
                 line = line.strip()
                 if not line:
                     continue
-                # Processor Pool: Total: 757624832, Used: 123456789, Free: 634168043
+                m = mem_pool_re.match(line)
+                if m:
+                    pool = m.group(1).lower()
+                    mem_data[f'{pool}_pool'] = {
+                        'head': m.group(2),
+                        'total': int(m.group(3)),
+                        'used': int(m.group(4)),
+                        'free': int(m.group(5)),
+                        'lowest': int(m.group(6)),
+                        'largest': int(m.group(7)),
+                    }
+                    continue
+                # "Processor memory" section header
+                if 'processor memory' in line.lower():
+                    mem_data['section'] = 'processor memory'
+                    continue
+                # Fallback old-style: "Processor Pool: Total: x, Used: y, Free: z"
                 pool_match = re.search(r'Processor.*Total:\s*(\d+),?\s*Used:\s*(\d+),?\s*Free:\s*(\d+)', line, re.IGNORECASE)
                 if pool_match:
                     mem_data['processor_pool'] = {
@@ -109,7 +132,6 @@ class IOSParser:
                         'used': int(pool_match.group(2)),
                         'free': int(pool_match.group(3))
                     }
-                # I/O memory
                 io_match = re.search(r'I/O\s+[A-Z0-9]+\s+Total:\s*(\d+),?\s*Used:\s*(\d+),?\s*Free:\s*(\d+)', line)
                 if io_match:
                     mem_data['io_pool'] = {
@@ -117,16 +139,12 @@ class IOSParser:
                         'used': int(io_match.group(2)),
                         'free': int(io_match.group(3))
                     }
-                # Memory summary line
-                if 'Total' in line and 'Used' in line and 'Free' in line:
-                    if 'processor' not in line.lower() and 'i/o' not in line.lower():
-                        mem_data['summary'] = line
             if mem_data:
                 result['memory'] = mem_data
             elif memory_text and memory_text.strip():
                 # Fallback: include raw if we couldn't parse
                 result['memory_raw'] = memory_text.strip()
-        
+
         return result
 
     @staticmethod
@@ -578,3 +596,69 @@ class IOSParser:
                 vlans.append(vlan)
         
         return vlans
+
+    @staticmethod
+    def parse_logs(raw_text: str) -> Dict[str, Any]:
+        """Parse 'show logging' output into structured data.
+
+        Output shape:
+            Syslog logging: enabled (0 messages dropped, 3 messages rate-limited, ...)
+            No Active Message Discriminator.
+            Console logging: level debugging, 836 messages logged, ...
+            Monitor logging: level debugging, 0 messages logged, ...
+            Buffer logging:  level debugging, 836 messages logged, ...
+            Trap logging:    level informational, ...
+        """
+        info: Dict[str, Any] = {
+            "syslog": {}, "console": {}, "monitor": {}, "buffer": {}, "trap": {},
+            "messages": [],
+        }
+        if not raw_text:
+            return info
+
+        in_message_list = False
+        for line in raw_text.strip().replace('\r', '').split('\n'):
+            line = line.strip()
+            if not line:
+                continue
+
+            # Match: "<target> logging: <detail>"
+            m = re.match(r'^(Syslog|Console|Monitor|Buffer|Trap)\s+logging:\s+(.+)$', line)
+            if m:
+                target = m.group(1).lower()
+                detail = m.group(2)
+                info[target] = {
+                    "summary": detail,
+                    "enabled": 'enabled' in detail,
+                    "level": '',
+                    "messages": None,
+                }
+                lvl = re.search(r'level\s+(\S+)', detail)
+                if lvl:
+                    info[target]["level"] = lvl.group(1)
+                msgs = re.search(r'(\d+)\s+messages logged', detail)
+                if msgs:
+                    info[target]["messages"] = int(msgs.group(1))
+                continue
+
+            if 'Active Message Discriminator' in line or 'Inactive Message Discriminator' in line:
+                continue
+
+            # Message list starts after buffer logging block; entries often
+            # timestamped or sequential numbers
+            if line.startswith('Buffer logging') or 'messages logged, xml disabled' in line:
+                in_message_list = True
+                continue
+
+            if in_message_list and re.match(r'^\d{2}\s', line) or (
+                in_message_list and re.match(r'^\S', line)
+            ):
+                # cap message list to avoid noise
+                info["messages"].append(line)
+                if len(info["messages"]) > 200:
+                    in_message_list = False
+
+        # drop empty message list
+        if not info["messages"]:
+            info.pop("messages", None)
+        return info
