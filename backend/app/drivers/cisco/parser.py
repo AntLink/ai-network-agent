@@ -143,40 +143,41 @@ class IOSParser:
             return interfaces
         
         lines = raw_text.strip().replace('\r', '').split('\n')
-        # Skip header line
-        if len(lines) > 1:
-            for line in lines[1:]:
-                line = line.strip()
-                if not line:
-                    continue
-                # Use regex to handle variable spacing
-                # Format: Interface IP-Address OK? Method Status Protocol
-                match = re.match(
-                    r'^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+?)\s+(\S+)$',
-                    line
-                )
-                if match:
-                    name, ip_addr, ok, method, status, protocol = match.groups()
+        # Skip header line(s): the column header contains "Interface" + "IP-Address"
+        for line in lines[1:]:
+            line = line.strip()
+            if not line:
+                continue
+            if 'Interface' in line and 'IP-Address' in line and 'OK' in line:
+                continue
+            # Use regex to handle variable spacing
+            # Format: Interface IP-Address OK? Method Status Protocol
+            match = re.match(
+                r'^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+?)\s+(\S+)$',
+                line
+            )
+            if match:
+                name, ip_addr, ok, method, status, protocol = match.groups()
+                interfaces.append({
+                    "name": name,
+                    "ip_address": ip_addr if ip_addr != 'unassigned' else None,
+                    "is_ok": ok == 'YES',
+                    "method": method,
+                    "status": status.strip(),
+                    "protocol": protocol
+                })
+            else:
+                # Fallback: split by whitespace
+                parts = [p for p in line.split(' ') if p]
+                if len(parts) >= 5:
                     interfaces.append({
-                        "name": name,
-                        "ip_address": ip_addr if ip_addr != 'unassigned' else None,
-                        "is_ok": ok == 'YES',
-                        "method": method,
-                        "status": status.strip(),
-                        "protocol": protocol
+                        "name": parts[0],
+                        "ip_address": parts[1] if parts[1] != 'unassigned' else None,
+                        "is_ok": parts[2] == 'YES',
+                        "method": parts[3],
+                        "status": ' '.join(parts[4:-1]) if len(parts) > 5 else parts[4],
+                        "protocol": parts[-1] if len(parts) > 5 else ""
                     })
-                else:
-                    # Fallback: split by whitespace
-                    parts = [p for p in line.split(' ') if p]
-                    if len(parts) >= 5:
-                        interfaces.append({
-                            "name": parts[0],
-                            "ip_address": parts[1] if parts[1] != 'unassigned' else None,
-                            "is_ok": parts[2] == 'YES',
-                            "method": parts[3],
-                            "status": ' '.join(parts[4:-1]) if len(parts) > 5 else parts[4],
-                            "protocol": parts[-1] if len(parts) > 5 else ""
-                        })
         return interfaces
 
     @staticmethod
@@ -258,50 +259,84 @@ class IOSParser:
 
     @staticmethod
     def parse_routes(raw_text: str) -> List[Dict[str, Any]]:
-        """Parse 'show ip route' output into list of route dicts."""
+        """Parse 'show ip route' output into list of route dicts.
+
+        Handles:
+        - Connected:  C        10.0.0.0/24 is directly connected, Loopback0
+        - Local:      L        10.0.0.1/32 is directly connected, Loopback0
+        - OSPF/static:O        10.255.20.0/30 [110/2] via 10.255.12.2, 11:27:12, Gi0/3
+        - Default:    S*       0.0.0.0/0 [1/0] via 10.0.0.1
+        """
         routes = []
         if not raw_text:
             return routes
-        
-        for line in raw_text.strip().split('\n'):
+
+        # Connected / Local: "C  10.0.0.0/24 is directly connected, Gi0/1"
+        connected_re = re.compile(
+            r'^([A-Za-z]+)\*?\s+(\d+\.\d+\.\d+\.\d+(?:/\d+)?)\s+is directly connected,?\s*(\S+)'
+        )
+        # Via routes: "O  10.255.20.0/30 [110/2] via 10.255.12.2, 11:27:12, Gi0/3"
+        via_re = re.compile(
+            r'^([A-Za-z]+)\*?\s+(\d+\.\d+\.\d+\.\d+(?:/\d+)?)\s+'
+            r'\[(\d+)/(\d+)\]\s+via\s+(\S+),?\s*(.*)$'
+        )
+        # Via routes without metric: "S  10.0.0.0/8 via 10.0.0.1"
+        via_nometric_re = re.compile(
+            r'^([A-Za-z]+)\*?\s+(\d+\.\d+\.\d+\.\d+(?:/\d+)?)\s+via\s+(\S+),?\s*(.*)$'
+        )
+
+        for line in raw_text.strip().replace('\r', '').split('\n'):
             line = line.strip()
-            if not line or line.startswith('Codes:') or line.startswith('Gateway'):
+            if not line:
                 continue
-            
-            # Skip empty or header lines
-            if re.match(r'^[A-Z]\s+[-=]+', line):
+            if line.startswith('Codes:') or line.startswith('Gateway'):
                 continue
-            
-            # Parse route line: "C        192.168.10.0/24 is directly connected, GigabitEthernet0/1"
-            parts = re.split(r'\s{2,}', line)
-            if len(parts) >= 3:
+
+            m = connected_re.match(line)
+            if m:
+                code, network, iface = m.groups()
+                routes.append({
+                    "code": code,
+                    "network": network,
+                    "type": "connected",
+                    "interface": iface,
+                    "next_hop": "-",
+                    "distance": 0,
+                    "metric": 0,
+                })
+                continue
+
+            m = via_re.match(line)
+            if m:
+                code, network, distance, metric, next_hop, rest = m.groups()
                 route = {
-                    "code": parts[0],
-                    "network": parts[1],
+                    "code": code,
+                    "network": network,
+                    "type": "static" if code.upper() == 'S' else "dynamic",
+                    "next_hop": next_hop.rstrip(','),
+                    "distance": int(distance),
+                    "metric": int(metric),
                 }
-                
-                # Check if it's directly connected
-                if 'directly connected' in line:
-                    route["type"] = "connected"
-                    route["interface"] = parts[-1].rstrip('\r')
-                    route["next_hop"] = "-"
-                elif 'via' in line:
-                    route["type"] = "static" if parts[0] == 'S' else "dynamic"
-                    via_idx = [i for i, p in enumerate(parts) if 'via' in p]
-                    if via_idx:
-                        next_hop = parts[via_idx[0] + 1].rstrip(',').rstrip('\r')
-                        route["next_hop"] = next_hop
-                        if len(parts) > via_idx[0] + 2:
-                            route["interface"] = parts[via_idx[0] + 2].rstrip('\r')
-                
-                # Add distance if available
-                metric_match = re.search(r'\[(\d+)/(\d+)\]', line)
-                if metric_match:
-                    route["distance"] = int(metric_match.group(1))
-                    route["metric"] = int(metric_match.group(2))
-                
+                # rest may contain age + interface: "11:27:12, GigabitEthernet0/3"
+                if ',' in rest:
+                    _, iface = rest.rsplit(',', 1)
+                    route["interface"] = iface.strip()
                 routes.append(route)
-        
+                continue
+
+            m = via_nometric_re.match(line)
+            if m:
+                code, network, next_hop, rest = m.groups()
+                route = {
+                    "code": code,
+                    "network": network,
+                    "type": "static" if code.upper() == 'S' else "dynamic",
+                    "next_hop": next_hop.rstrip(','),
+                }
+                if rest:
+                    route["interface"] = rest.strip().rstrip(',')
+                routes.append(route)
+
         return routes
 
     @staticmethod
@@ -311,17 +346,18 @@ class IOSParser:
         if not raw_text:
             return arp_entries
         
-        lines = raw_text.strip().split('\n')
-        # Skip header
-        if len(lines) > 1:
-            for line in lines[1:]:
-                line = line.strip()
-                if not line:
-                    continue
-                
-                parts = re.split(r'\s{2,}', line)
-                if len(parts) >= 5:
-                    arp_entries.append({
+        lines = raw_text.strip().replace('\r', '').split('\n')
+        # Skip header line (column titles)
+        for line in lines[1:]:
+            line = line.strip()
+            if not line:
+                continue
+            if 'Protocol' in line and 'Hardware Addr' in line:
+                continue
+            
+            parts = re.split(r'\s{2,}', line)
+            if len(parts) >= 5:
+                arp_entries.append({
                         "protocol": parts[0],
                         "address": parts[1],
                         "age": parts[2],

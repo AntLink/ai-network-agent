@@ -13,6 +13,7 @@ from app.drivers.cisco.cli import (
     run_config_lines,
     send_interactive,
 )
+from app.drivers.cisco.parser import IOSParser
 from app.transports.ssh import SSHTransport, SSHConnectError, SSHTimeoutError, PromptTimeoutError
 from app.transports.console import ConsoleTransport
 
@@ -154,44 +155,49 @@ class CiscoDriver(BaseDriver):
     # ------------------------------------------------------------------
 
     async def identify(self):
-        return {"vendor": "cisco", "raw": await self.exec_logged("show version")}
+        raw = await self.exec_logged("show version")
+        return {"vendor": "cisco", "data": IOSParser.parse_version(raw), "raw": raw}
 
     async def get_facts(self):
         raw = await self.exec_logged("show version")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_version(raw), "raw": raw}
 
     async def get_interfaces(self):
         raw = await self.exec_logged("show ip interface brief")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_interfaces_brief(raw), "raw": raw}
 
     async def get_interfaces_detail(self):
         raw = await self.exec_logged("show interfaces")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_interfaces_detail(raw), "raw": raw}
 
     async def get_routes(self):
         raw = await self.exec_logged("show ip route")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_routes(raw), "raw": raw}
 
     async def get_arp(self):
         raw = await self.exec_logged("show ip arp")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_arp(raw), "raw": raw}
 
     async def get_cpu_memory(self):
         cpu = await self.exec_logged("show processes cpu summary")
         mem = await self.exec_logged("show memory summary")
-        return {"data": {"cpu": cpu, "memory": mem}, "raw": f"CPU:\n{cpu}\n\nMemory:\n{mem}"
+        return {"data": IOSParser.parse_cpu_memory(cpu, mem), "raw": f"CPU:\n{cpu}\n\nMemory:\n{mem}"}
 
     async def get_acls(self):
         raw = await self.exec_logged("show access-lists")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_access_lists(raw), "raw": raw}
 
     async def get_cdp_neighbors(self):
         raw = await self.exec_logged("show cdp neighbors detail")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_cdp_neighbors(raw), "raw": raw}
 
     async def get_nat_translations(self):
         raw = await self.exec_logged("show ip nat translation")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_nat_translations(raw), "raw": raw}
+
+    async def get_vlans(self):
+        raw = await self.exec_logged("show vlan brief")
+        return {"data": IOSParser.parse_vlans_brief(raw), "raw": raw}
 
     async def get_startup_config(self):
         raw = await self.exec_logged("show startup-config")

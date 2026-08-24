@@ -79,19 +79,19 @@ class MikroTikDriver(BaseDriver):
         cmd = "/interface vlan print detail without-paging"
         log_event(self.device["id"], "get_vlans", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_bridge(self):
         cmd = "/interface bridge print detail without-paging"
         log_event(self.device["id"], "get_bridge", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_bridge_ports(self):
         cmd = "/interface bridge port print detail without-paging"
         log_event(self.device["id"], "get_bridge_ports", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_ip_addresses(self):
         cmd = "/ip address print detail without-paging"
@@ -104,7 +104,7 @@ class MikroTikDriver(BaseDriver):
         cmd = "/ip pool print detail without-paging"
         log_event(self.device["id"], "get_ip_pool", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_dhcp_server(self):
         cmd = "/ip dhcp-server print detail without-paging"
@@ -117,91 +117,91 @@ class MikroTikDriver(BaseDriver):
         cmd = "/ip dhcp-server lease print detail without-paging"
         log_event(self.device["id"], "get_dhcp_lease", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_firewall_filter(self):
         cmd = "/ip firewall filter print detail without-paging"
         log_event(self.device["id"], "get_firewall_filter", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_firewall_nat(self):
         cmd = "/ip firewall nat print detail without-paging"
         log_event(self.device["id"], "get_firewall_nat", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_firewall_mangle(self):
         cmd = "/ip firewall mangle print detail without-paging"
         log_event(self.device["id"], "get_firewall_mangle", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_firewall_address_list(self):
         cmd = "/ip firewall address-list print detail without-paging"
         log_event(self.device["id"], "get_firewall_address_list", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_routing_ospf(self):
         cmd = "/routing ospf instance print detail without-paging"
         log_event(self.device["id"], "get_routing_ospf", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_routing_bgp(self):
         cmd = "/routing bgp instance print detail without-paging"
         log_event(self.device["id"], "get_routing_bgp", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_routing_static(self):
         cmd = "/ip route print detail without-paging where static"
         log_event(self.device["id"], "get_routing_static", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_ppp_secret(self):
         cmd = "/ppp secret print detail without-paging"
         log_event(self.device["id"], "get_ppp_secret", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_ppp_profile(self):
         cmd = "/ppp profile print detail without-paging"
         log_event(self.device["id"], "get_ppp_profile", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_wireless(self):
         cmd = "/interface wireless print detail without-paging"
         log_event(self.device["id"], "get_wireless", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_wireless_security(self):
         cmd = "/interface wireless security-profiles print detail without-paging"
         log_event(self.device["id"], "get_wireless_security", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_snmp(self):
         cmd = "/snmp print detail without-paging"
         log_event(self.device["id"], "get_snmp", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_resource(raw), "raw": raw}
 
     async def get_ntp(self):
         cmd = "/system ntp client print detail without-paging"
         log_event(self.device["id"], "get_ntp", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_resource(raw), "raw": raw}
 
     async def get_dns(self):
         cmd = "/ip dns print detail without-paging"
         log_event(self.device["id"], "get_dns", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_resource(raw), "raw": raw}
 
     async def get_system_users(self):
         cmd = "/user print detail without-paging"
@@ -214,7 +214,7 @@ class MikroTikDriver(BaseDriver):
         cmd = "/system logging print detail without-paging"
         log_event(self.device["id"], "get_system_logging", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def backup(self):
         cmd = "/export terse"
@@ -433,49 +433,49 @@ class MikroTikDriver(BaseDriver):
         cmd = "/ip hotspot print detail without-paging"
         log_event(self.device["id"], "get_hotspot_servers", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_hotspot_profiles(self):
         cmd = "/ip hotspot profile print detail without-paging"
         log_event(self.device["id"], "get_hotspot_profiles", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_hotspot_users(self):
         cmd = "/ip hotspot user print detail without-paging"
         log_event(self.device["id"], "get_hotspot_users", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_hotspot_user_profiles(self):
         cmd = "/ip hotspot user profile print detail without-paging"
         log_event(self.device["id"], "get_hotspot_user_profiles", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_hotspot_active(self):
         cmd = "/ip hotspot active print detail without-paging"
         log_event(self.device["id"], "get_hotspot_active", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_hotspot_hosts(self):
         cmd = "/ip hotspot host print detail without-paging"
         log_event(self.device["id"], "get_hotspot_hosts", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_hotspot_ip_bindings(self):
         cmd = "/ip hotspot ip-binding print detail without-paging"
         log_event(self.device["id"], "get_hotspot_ip_bindings", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def get_hotspot_walled_garden(self):
         cmd = "/ip hotspot walled-garden print detail without-paging"
         log_event(self.device["id"], "get_hotspot_walled_garden", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     # ------------------------------------------------------------------
     # Hotspot: server management
@@ -614,7 +614,7 @@ class MikroTikDriver(BaseDriver):
         cmd = "/ppp active print detail without-paging"
         log_event(self.device["id"], "get_ppp_active", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def add_ppp_secret(self, name: str, password: str = "", service: str = "any",
                              profile: str = "default", local_address: str = "",
@@ -664,7 +664,7 @@ class MikroTikDriver(BaseDriver):
         cmd = f"/interface {tunnel_type} server print"
         log_event(self.device["id"], "get_tunnel_server_status", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def set_tunnel_server(self, tunnel_type: str, enabled: bool = None, **kwargs):
         self._check_tunnel_type(tunnel_type)
@@ -686,7 +686,7 @@ class MikroTikDriver(BaseDriver):
         cmd = "/interface pppoe server print detail without-paging"
         log_event(self.device["id"], "get_pppoe_servers", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def add_pppoe_server(self, service_name: str, interface: str,
                                default_profile: str = "default-encryption",
@@ -712,7 +712,7 @@ class MikroTikDriver(BaseDriver):
         cmd = f"/interface {tunnel_type}-client print detail without-paging"
         log_event(self.device["id"], "get_tunnel_clients", cmd)
         raw = await self._transport().run(cmd)
-        return {"data": raw, "raw": raw}
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
     async def add_tunnel_client(self, tunnel_type: str, name: str, target: str,
                                 user: str, password: str = "", profile: str = "",
