@@ -68,3 +68,13 @@ Semua endpoint backend (Cisco, MikroTik, Generic) sekarang mengembalikan format 
 - **MikroTik**: `backend/app/drivers/mikrotik/parser.py` - 8+ parser untuk perintah /system, /interface, /ip *
 
 Lihat `CHANGES_SUMMARY.md` untuk detail lengkap semua perubahan.
+
+## Frontend Detail UX Update (2026-08-24)
+
+Detail device UI di frontend sekarang lebih vendor-aware dan lebih responsif:
+- Skeleton loading dipakai saat membuka `device -> details`.
+- Overlay loading sudah disederhanakan agar tidak menampilkan teks yang mengganggu.
+- Toast notification memiliki animasi masuk dan keluar.
+- Layout detail dipisah per profil perangkat: Cisco router, Cisco switch, dan MikroTik router.
+
+Lihat `logs/SESSION-2026-08-24-frontend-ui-update.md` untuk catatan perubahan UI terbaru.
