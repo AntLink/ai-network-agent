@@ -58,6 +58,58 @@ Lab GNS3 multi-vendor (R1/R2/SW1/SW2/MK1 + 5 VPCS): lihat
 `logs/LAB-GNS3-REFERENCE.md` (topologi, port konsol, aturan IDE,
 API controller) dan `logs/SESSION-2026-08-23-gns3-lab-recovery.md`.
 Suite pengujian: `backend/grand_finale_ping.py` (8/8 lulus).
+
+Cisco driver refactoring (2026-08-24): lihat `logs/SESSION-2026-08-24-cisco-driver-refactor.md`
+untuk detail perbaikan duplikasi kode dan analisis SSH timeout.
+
+## API Response Format Standardization (2026-08-24)
+
+Semua driver backend sekarang mengimplementasikan format response JSON terstruktur:
+
+```json
+{
+  "data": <parsed_structured_json>,
+  "raw": "<original_cli_output>"
+}
+```
+
+### WRITE endpoints (POST/DELETE/PATCH) — 2026-08-24
+
+Semua write endpoint dinormalisasi via `write_response()` helper
+(`backend/app/api/v1/endpoints/helpers.py`):
+
+```json
+{
+  "status": "applied",
+  "operation": "create_vlan",
+  "success": true,
+  "output": ""
+}
+```
+
+- `status`: applied | deleted | saved | committed | failed
+- `operation`: nama method driver
+- `success`: boolean
+- `output`: raw device output (biasanya kosong / warning device)
+- Endpoint TIDAK double-wrap (return driver result langsung)
+
+### Driver Implementation:
+- **Cisco IOS**: `backend/app/drivers/cisco/driver.py` + `parser.py`
+  - 15+ read methods dengan parser khusus
+  - Parse output: version, interfaces, routes, ARP, CPU/memory, ACLs, CDP, NAT
+- **MikroTik RouterOS**: `backend/app/drivers/mikrotik/driver.py` + `parser.py`
+  - 25+ read methods dengan parser khusus
+  - Parse output: identity, resource, interfaces, routes, IP addresses, users, DHCP
+- **Generic SSH**: `backend/app/drivers/generic/driver.py`
+  - Format standar untuk perangkat tidak dikenal
+
+### Monitoring Endpoint (`/api/v1/monitoring/{device_id}`)
+Menggunakan data terstruktur dari driver dengan fallback ke raw text:
+- `cpu_memory`: CPU utilization dan memory statistics
+- `interfaces`: Status dan statistik interface
+- `routes`: Tabel routing
+- `facts`: Informasi device (versi, uptime, dll)
+- `health`: Health check device
 ```
 
 `.opencode/skills/` is the AI knowledge and safety layer.

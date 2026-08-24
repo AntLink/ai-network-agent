@@ -4,6 +4,19 @@ Add mocked vendor outputs and unit tests here before production use.
 
 ---
 
+## API Response Format (standardisasi 2026-08-24)
+
+**Semua endpoint FastAPI return JSON terstruktur** (bukan raw CLI):
+
+| Tipe | Format |
+|------|--------|
+| **READ (GET)** | `{"data": <structured list/dict>, "raw": "<cli text>"}` |
+| **WRITE (POST/DELETE/PATCH)** | `{"status": "applied", "operation": "<method>", "success": true, "output": ""}` |
+
+- Write normalized via `write_response()` di `backend/app/api/v1/endpoints/helpers.py`
+- `data` berisi hasil parsing (parser di `drivers/<vendor>/parser.py`)
+- `raw` selalu dipertahankan untuk debugging
+
 ## Skrip Pengujian & Diagnostik Lab GNS3
 
 Skrip operasional berada di `backend/` (dijalankan dari folder `backend/`,

@@ -50,3 +50,72 @@ See also `gns3-lab` skill. Hard rules learned 2026-08-23:
   submits an empty password.
 - Initial boot wizard: answer `no` to "Would you like to enter the
   initial configuration dialog?" before any configuration.
+
+## Driver Implementation Notes (2026-08-24)
+
+### Code Structure
+The Cisco IOS driver is split across multiple files for maintainability:
+- `backend/app/drivers/cisco/base.py` - Common utilities and constants
+- `backend/app/drivers/cisco/driver.py` - Async CiscoDriver (primary)
+- `backend/app/drivers/cisco/netmiko_driver.py` - Sync NetmikoCiscoDriver
+- `backend/app/drivers/cisco/connection.py` - Netmiko connection wrapper
+- `backend/app/drivers/cisco/cli.py` - CLI session logic and error parsing
+- `backend/app/drivers/cisco/parser.py` - Output parsers for structured JSON responses
+
+### Credential Management (Single Source of Truth)
+All credential logic is centralized in `base.py::get_credentials()`:
+- Priority: Device-specific env vars > Global env vars > Defaults
+- Pattern: `{DEVICE_ID}_USERNAME`, `{DEVICE_ID}_PASSWORD`, `{DEVICE_ID}_SECRET`
+- Fallback: `NETWORK_USERNAME`, `NETWORK_PASSWORD`, `NETWORK_SECRET`
+- Default: username='admin', password='', secret=password
+
+### SSH Timeout Handling
+- Default timeout: 20s (`SSH_COMMAND_TIMEOUT` in config.py)
+- **Note**: IOSv in GNS3 may need 30-45s for config operations
+- **Console fallback**: All operations automatically fall back to console if SSH times out
+- Legacy SSH options required for IOSv 15.6 are in `base.py::IOSV_LEGACY_SSH_OPTIONS`
+
+### API Response Format (2026-08-24)
+**All driver methods now return structured JSON:**
+
+```python
+# READ methods (GET) -> {"data": <structured>, "raw": "<original_cli_text>"}
+{
+    "data": <parsed_structured_data>,
+    "raw": "<original_cli_text>"
+}
+
+# WRITE methods (POST/DELETE/PATCH) -> normalized via write_response helper
+{
+    "status": "applied",           # applied | deleted | saved | committed | failed
+    "operation": "create_vlan",    # driver method name
+    "success": true,
+    "output": ""                   # raw device output (usually empty / warning)
+}
+```
+
+**Available Parsers in `parser.py` (IOSParser):**
+- `parse_version()` - show version output
+- `parse_interfaces_brief()` - show ip interface brief
+- `parse_interfaces_detail()` - show interfaces
+- `parse_routes()` - show ip route (connected/local/via/default)
+- `parse_arp()` - show ip arp
+- `parse_cpu_memory()` - show processes cpu + show memory
+  (command yang valid: `show processes cpu`, bukan `show processes cpu summary`)
+- `parse_access_lists()` - show access-lists
+- `parse_cdp_neighbors()` - show cdp neighbors detail
+- `parse_nat_translations()` - show ip nat translation
+- `parse_vlans_brief()` - show vlan brief
+- `parse_logs()` - show logging (syslog/console/monitor/buffer/trap)
+
+**Endpoint JSON convention:**
+- READ: `data` berisi structured list/dict, `raw` = CLI asli (untuk debug)
+- WRITE: `write_response()` helper di `app/api/v1/endpoints/helpers.py`
+  → `{status, operation, success, output}` — TIDAK double-wrap
+
+### Refactoring Best Practices Applied
+1. **Extract common logic**: Shared utilities moved to base.py
+2. **No code duplication**: Credential logic now in one place only
+3. **Backward compatibility**: No changes to external API
+4. **Structured responses**: All read methods return parsed JSON
+5. **Test coverage**: All utilities tested and verified

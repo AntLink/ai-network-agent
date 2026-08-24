@@ -48,6 +48,42 @@ Use standardized tools. Prefer REST API.
 | OSPF config | ✅ `set_ospf_*` | ✅ `add_ospf_instance/area/interface-template/network` |
 | Save verification | ✅ startup-config compare | ✅ backup file verify |
 
+## API Response Format (2026-08-24)
+
+**All MikroTik driver methods now return structured JSON:**
+
+```python
+# READ methods (GET) -> {"data": <structured>, "raw": "<original_cli_text>"}
+{
+    "data": <parsed_structured_data>,
+    "raw": "<original_cli_text>"
+}
+
+# WRITE methods (POST/DELETE/PATCH) -> normalized via write_response helper
+{
+    "status": "applied",           # applied | deleted | saved | committed | failed
+    "operation": "add_vlan",       # driver method name
+    "success": true,
+    "output": ""                   # raw device output (usually empty / warning)
+}
+```
+
+**Available Parsers in `backend/app/drivers/mikrotik/parser.py` (MikroTikParser):**
+- `parse_records()` - GENERIC parser for `print detail` output (key=value
+  multi-line records, quoted values, flag-led records tanpa index seperti
+  routes `DAd`). Dipakai oleh ~25 read methods.
+- `parse_resource()` / `parse_identity()` - colon `key: value` format
+  (resource, identity, snmp, ntp, dns)
+- `parse_config()` - /export terse
+
+**RouterOS output dua bentuk:**
+- `print detail` (tables) → `key=value` multi-line records → `parse_records()`
+- `print` (single object: /snmp, /ip dns, /system ntp client) → `key: value`
+  colon → `parse_resource()`
+
+**Note:** All read methods in the driver use these parsers to return structured data.
+Raw CLI text is always included in the `raw` field for debugging and backward compatibility.
+
 ## API Endpoints (MikroTik)
 
 All under `/api/v1/mikrotik/{device_id}/...`
