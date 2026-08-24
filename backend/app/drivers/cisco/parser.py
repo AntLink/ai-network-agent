@@ -52,55 +52,84 @@ class IOSParser:
         return routes
 
     @staticmethod
-    def parse_cpu_memory(cpu_text: str, memory_text: str) -> Dict[str, Optional[str]]:
-        """Parse 'show processes cpu' and 'show memory' output into structured data."""
-        result = {}
-        
-        # Parse CPU
+    def parse_cpu_memory(cpu_text: str, memory_text: str) -> Dict[str, Any]:
+        """Parse CPU and memory output into a UI-friendly JSON shape."""
+        result: Dict[str, Any] = {
+            "cpu": {
+                "summary": "",
+                "five_seconds": None,
+                "interrupt": None,
+                "one_minute": None,
+                "five_minutes": None,
+            },
+            "memory": {
+                "pools": [],
+                "summary": {},
+            },
+            "processes": [],
+            "warnings": [],
+        }
+
         if cpu_text and "invalid" not in cpu_text.lower() and "autocommand" not in cpu_text.lower():
             cpu_lines = cpu_text.strip().split('\n')
-            cpu_data = {}
             for line in cpu_lines:
                 line = line.strip()
                 if not line:
                     continue
-                # CPU utilization line: "CPU utilization for five seconds: 2%/0%; one minute: 2%; five minutes: 2%"
+
                 if 'CPU utilization' in line or 'CPU usage' in line:
-                    cpu_data['summary'] = line
-                    # Extract percentages - handle different formats
-                    pcts = re.findall(r'(\d+(?:\.\d+)?)%', line)
-                    if len(pcts) >= 3:
-                        cpu_data['5sec'] = f"{pcts[0]}%"
-                        cpu_data['1min'] = f"{pcts[1]}%"
-                        cpu_data['5min'] = f"{pcts[2]}%"
-                    elif len(pcts) >= 1:
-                        cpu_data['current'] = f"{pcts[0]}%"
-                # Top processes - match lines starting with PID
-                if re.match(r'^[\d]+\s+', line):
-                    parts = re.split(r'\s{2,}', line.strip())
-                    if len(parts) >= 2:
-                        if 'cpu_data' not in result:
-                            result['cpu_processes'] = []
-                        proc_info = {
-                            'pid': parts[0] if parts[0].isdigit() else '',
-                            'process': parts[1] if len(parts) > 1 else '',
+                    result["cpu"]["summary"] = line
+                    m = re.search(
+                        r'five seconds:\s*(\d+(?:\.\d+)?)%/?(\d+(?:\.\d+)?)?%;\s*'
+                        r'one minute:\s*(\d+(?:\.\d+)?)%;\s*'
+                        r'five minutes:\s*(\d+(?:\.\d+)?)%',
+                        line,
+                        re.IGNORECASE,
+                    )
+                    if m:
+                        result["cpu"]["five_seconds"] = float(m.group(1))
+                        result["cpu"]["interrupt"] = float(m.group(2)) if m.group(2) else None
+                        result["cpu"]["one_minute"] = float(m.group(3))
+                        result["cpu"]["five_minutes"] = float(m.group(4))
+                    else:
+                        pcts = re.findall(r'(\d+(?:\.\d+)?)%', line)
+                        if pcts:
+                            result["cpu"]["five_seconds"] = float(pcts[0])
+                    continue
+
+                # IOS process rows usually start with PID then runtime fields.
+                if re.match(r'^\d+\s+', line):
+                    parts = line.split()
+                    if len(parts) >= 2 and parts[0].isdigit():
+                        process = {
+                            "pid": int(parts[0]),
+                            "runtime_ms": None,
+                            "invoked": None,
+                            "usecs": None,
+                            "five_sec": None,
+                            "one_min": None,
+                            "five_min": None,
+                            "tty": None,
+                            "process": "",
                         }
-                        if len(parts) > 2:
-                            proc_info['cpu_percent'] = parts[2]
-                        if len(parts) > 3:
-                            proc_info['memory'] = parts[3]
-                        result['cpu_processes'].append(proc_info)
-            if cpu_data:
-                result['cpu'] = cpu_data
-        
-        # Parse Memory
+                        if len(parts) >= 8:
+                            process["runtime_ms"] = int(parts[1]) if parts[1].isdigit() else None
+                            process["invoked"] = int(parts[2]) if parts[2].isdigit() else None
+                            process["usecs"] = int(parts[3]) if parts[3].isdigit() else None
+                            process["five_sec"] = parts[4]
+                            process["one_min"] = parts[5]
+                            process["five_min"] = parts[6]
+                            process["tty"] = parts[7]
+                            process["process"] = " ".join(parts[8:])
+                        else:
+                            process["process"] = " ".join(parts[1:])
+                        result["processes"].append(process)
+        elif cpu_text:
+            result["warnings"].append("CPU output could not be parsed")
+
         if memory_text and "invalid" not in memory_text.lower():
             mem_lines = memory_text.strip().split('\n')
-            mem_data = {}
 
-            # Header: Head    Total(b)     Used(b)     Free(b)   Lowest(b)  Largest(b)
-            # Row:    Processor    CAAE880   322509696   64640180   257869516   252452416   251641220
-            #         I/O    8DAE880    63963136    52713804    11249332    11212064    11072572
             mem_pool_re = re.compile(
                 r'^(Processor|I/O)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)'
             )
@@ -110,40 +139,51 @@ class IOSParser:
                     continue
                 m = mem_pool_re.match(line)
                 if m:
-                    pool = m.group(1).lower()
-                    mem_data[f'{pool}_pool'] = {
-                        'head': m.group(2),
-                        'total': int(m.group(3)),
-                        'used': int(m.group(4)),
-                        'free': int(m.group(5)),
-                        'lowest': int(m.group(6)),
-                        'largest': int(m.group(7)),
-                    }
+                    total = int(m.group(3))
+                    used = int(m.group(4))
+                    free = int(m.group(5))
+                    result["memory"]["pools"].append({
+                        "pool": m.group(1),
+                        "head": m.group(2),
+                        "total_bytes": total,
+                        "used_bytes": used,
+                        "free_bytes": free,
+                        "lowest_bytes": int(m.group(6)),
+                        "largest_bytes": int(m.group(7)),
+                        "used_percent": round((used / total) * 100, 2) if total else None,
+                        "free_percent": round((free / total) * 100, 2) if total else None,
+                    })
                     continue
-                # "Processor memory" section header
-                if 'processor memory' in line.lower():
-                    mem_data['section'] = 'processor memory'
-                    continue
-                # Fallback old-style: "Processor Pool: Total: x, Used: y, Free: z"
+
                 pool_match = re.search(r'Processor.*Total:\s*(\d+),?\s*Used:\s*(\d+),?\s*Free:\s*(\d+)', line, re.IGNORECASE)
                 if pool_match:
-                    mem_data['processor_pool'] = {
-                        'total': int(pool_match.group(1)),
-                        'used': int(pool_match.group(2)),
-                        'free': int(pool_match.group(3))
-                    }
-                io_match = re.search(r'I/O\s+[A-Z0-9]+\s+Total:\s*(\d+),?\s*Used:\s*(\d+),?\s*Free:\s*(\d+)', line)
-                if io_match:
-                    mem_data['io_pool'] = {
-                        'total': int(io_match.group(1)),
-                        'used': int(io_match.group(2)),
-                        'free': int(io_match.group(3))
-                    }
-            if mem_data:
-                result['memory'] = mem_data
-            elif memory_text and memory_text.strip():
-                # Fallback: include raw if we couldn't parse
-                result['memory_raw'] = memory_text.strip()
+                    total = int(pool_match.group(1))
+                    used = int(pool_match.group(2))
+                    free = int(pool_match.group(3))
+                    result["memory"]["pools"].append({
+                        "pool": "Processor",
+                        "head": "",
+                        "total_bytes": total,
+                        "used_bytes": used,
+                        "free_bytes": free,
+                        "lowest_bytes": None,
+                        "largest_bytes": None,
+                        "used_percent": round((used / total) * 100, 2) if total else None,
+                        "free_percent": round((free / total) * 100, 2) if total else None,
+                    })
+
+            total_memory = sum(pool["total_bytes"] for pool in result["memory"]["pools"] if pool["total_bytes"])
+            used_memory = sum(pool["used_bytes"] for pool in result["memory"]["pools"] if pool["used_bytes"])
+            free_memory = sum(pool["free_bytes"] for pool in result["memory"]["pools"] if pool["free_bytes"])
+            result["memory"]["summary"] = {
+                "total_bytes": total_memory,
+                "used_bytes": used_memory,
+                "free_bytes": free_memory,
+                "used_percent": round((used_memory / total_memory) * 100, 2) if total_memory else None,
+                "free_percent": round((free_memory / total_memory) * 100, 2) if total_memory else None,
+            }
+        elif memory_text:
+            result["warnings"].append("Memory output could not be parsed")
 
         return result
 
@@ -662,3 +702,146 @@ class IOSParser:
         if not info["messages"]:
             info.pop("messages", None)
         return info
+
+    @staticmethod
+    def parse_running_config(raw_text: str) -> Dict[str, Any]:
+        """Parse IOS running-config into practical JSON sections.
+
+        The raw config remains the source of truth; this parser extracts the
+        sections most useful for UI tables and config review.
+        """
+        result: Dict[str, Any] = {
+            "hostname": None,
+            "version": None,
+            "interfaces": [],
+            "vlans": [],
+            "routing": {"static_routes": [], "protocols": []},
+            "access_lists": [],
+            "users": [],
+            "line_sections": [],
+            "services": [],
+            "global": [],
+            "sections": [],
+        }
+        if not raw_text:
+            return result
+
+        lines = raw_text.replace('\r', '').splitlines()
+        current: Dict[str, Any] | None = None
+
+        def flush_section():
+            nonlocal current
+            if not current:
+                return
+            result["sections"].append(current)
+            header = current["header"]
+            body = current["commands"]
+
+            if header.startswith("interface "):
+                name = header.removeprefix("interface ").strip()
+                iface: Dict[str, Any] = {
+                    "name": name,
+                    "description": None,
+                    "ip_addresses": [],
+                    "switchport_mode": None,
+                    "access_vlan": None,
+                    "trunk_allowed_vlans": None,
+                    "encapsulation": None,
+                    "shutdown": False,
+                    "commands": body,
+                }
+                for cmd in body:
+                    if cmd.startswith("description "):
+                        iface["description"] = cmd.removeprefix("description ").strip()
+                    elif cmd.startswith("ip address "):
+                        iface["ip_addresses"].append(cmd.removeprefix("ip address ").strip())
+                    elif cmd.startswith("switchport mode "):
+                        iface["switchport_mode"] = cmd.removeprefix("switchport mode ").strip()
+                    elif cmd.startswith("switchport access vlan "):
+                        iface["access_vlan"] = cmd.removeprefix("switchport access vlan ").strip()
+                    elif cmd.startswith("switchport trunk allowed vlan "):
+                        iface["trunk_allowed_vlans"] = cmd.removeprefix("switchport trunk allowed vlan ").strip()
+                    elif cmd.startswith("encapsulation "):
+                        iface["encapsulation"] = cmd.removeprefix("encapsulation ").strip()
+                    elif cmd == "shutdown":
+                        iface["shutdown"] = True
+                result["interfaces"].append(iface)
+            elif header.startswith("vlan "):
+                vlan: Dict[str, Any] = {
+                    "vlan_id": header.removeprefix("vlan ").strip(),
+                    "name": None,
+                    "commands": body,
+                }
+                for cmd in body:
+                    if cmd.startswith("name "):
+                        vlan["name"] = cmd.removeprefix("name ").strip()
+                result["vlans"].append(vlan)
+            elif header.startswith("router "):
+                result["routing"]["protocols"].append({
+                    "name": header,
+                    "commands": body,
+                })
+            elif header.startswith("line "):
+                result["line_sections"].append({
+                    "name": header,
+                    "commands": body,
+                })
+            current = None
+
+        section_prefixes = ("interface ", "router ", "line ", "vlan ", "ip access-list ")
+        skip_prefixes = (
+            "Building configuration",
+            "Current configuration",
+            "!",
+            "end",
+        )
+
+        for raw_line in lines:
+            line = raw_line.rstrip()
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if any(stripped.startswith(prefix) for prefix in skip_prefixes):
+                continue
+
+            if not line.startswith(" ") and stripped.startswith(section_prefixes):
+                flush_section()
+                current = {"header": stripped, "commands": []}
+                continue
+
+            if current and line.startswith(" "):
+                current["commands"].append(stripped)
+                continue
+
+            flush_section()
+
+            if stripped.startswith("hostname "):
+                result["hostname"] = stripped.removeprefix("hostname ").strip()
+            elif stripped.startswith("version "):
+                result["version"] = stripped.removeprefix("version ").strip()
+            elif stripped.startswith("username "):
+                parts = stripped.split()
+                result["users"].append({
+                    "username": parts[1] if len(parts) > 1 else "",
+                    "privilege": parts[parts.index("privilege") + 1] if "privilege" in parts and parts.index("privilege") + 1 < len(parts) else None,
+                    "has_secret": "secret" in parts,
+                    "command": stripped,
+                })
+            elif stripped.startswith("ip route "):
+                result["routing"]["static_routes"].append(stripped)
+            elif stripped.startswith("access-list "):
+                result["access_lists"].append(stripped)
+            elif stripped.startswith(("service ", "no service ", "ip ssh ", "ip domain-", "enable secret", "aaa ")):
+                result["services"].append(stripped)
+            else:
+                result["global"].append(stripped)
+
+        flush_section()
+
+        for vlan in result["vlans"]:
+            try:
+                vlan["vlan_id"] = int(vlan["vlan_id"])
+            except (TypeError, ValueError):
+                pass
+
+        return result

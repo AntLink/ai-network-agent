@@ -25,6 +25,17 @@ IOSV_LEGACY_SSH_OPTIONS = {
 }
 
 TXN_FLASH_FILE = "flash0:pre-txn.cfg"
+_DEVICE_LOCKS: dict[tuple[int, str], asyncio.Lock] = {}
+
+
+def _device_lock(device_id: str) -> asyncio.Lock:
+    """Serialize CLI access per device within the active event loop."""
+    key = (id(asyncio.get_running_loop()), device_id)
+    lock = _DEVICE_LOCKS.get(key)
+    if lock is None:
+        lock = asyncio.Lock()
+        _DEVICE_LOCKS[key] = lock
+    return lock
 
 
 def _prefix_to_mask(address: str) -> tuple[str, str]:
@@ -101,54 +112,56 @@ class CiscoDriver(BaseDriver):
         - otherwise SSH first; if SSH connection fails and a console is
           configured, retry once over console (auto-fallback, audited).
         """
-        if self._prefer_console:
-            con = self._console_transport()
-            if con:
+        async with _device_lock(self.device["id"]):
+            if self._prefer_console:
+                con = self._console_transport()
+                if con:
+                    out = (await con.run(command)).strip()
+                    raise_for_ios_error(out, command)
+                    return out
+
+            try:
+                out = (await self._transport().run(command)).strip()
+                raise_for_ios_error(out, command)
+                return out
+            except CiscoCLIError:
+                raise  # command reached device and failed; console won't help
+            except Exception as e:
+                con = self._console_transport()
+                if not con:
+                    raise
+                log_event(
+                    self.device["id"], "CONSOLE-FALLBACK",
+                    f"SSH failed ({type(e).__name__}: {e}); retrying via console",
+                )
                 out = (await con.run(command)).strip()
                 raise_for_ios_error(out, command)
                 return out
-
-        try:
-            out = (await self._transport().run(command)).strip()
-            raise_for_ios_error(out, command)
-            return out
-        except CiscoCLIError:
-            raise  # command reached device and failed; console won't help
-        except Exception as e:
-            con = self._console_transport()
-            if not con:
-                raise
-            log_event(
-                self.device["id"], "CONSOLE-FALLBACK",
-                f"SSH failed ({type(e).__name__}: {e}); retrying via console",
-            )
-            out = (await con.run(command)).strip()
-            raise_for_ios_error(out, command)
-            return out
 
     async def exec_logged(self, command: str) -> str:
         return await self._logged("EXEC", command, lambda: self._exec(command))
 
     async def _configure(self, lines: list[str]) -> str:
         """Run configuration commands with console fallback on SSH failure."""
-        if self._prefer_console:
-            con = self._console_transport()
-            if con:
-                return await self._logged("CONFIG", "; ".join(lines), lambda: con.run_config(lines))
+        async with _device_lock(self.device["id"]):
+            if self._prefer_console:
+                con = self._console_transport()
+                if con:
+                    return await self._logged("CONFIG", "; ".join(lines), lambda: con.run_config(lines))
 
-        try:
-            return await self._logged("CONFIG", "; ".join(lines), lambda: run_config_lines(self._transport(), lines))
-        except CiscoCLIError:
-            raise
-        except Exception as e:
-            con = self._console_transport()
-            if not con:
+            try:
+                return await self._logged("CONFIG", "; ".join(lines), lambda: run_config_lines(self._transport(), lines))
+            except CiscoCLIError:
                 raise
-            log_event(
-                self.device["id"], "CONSOLE-FALLBACK",
-                f"SSH config failed ({type(e).__name__}: {e}); retrying via console",
-            )
-            return await self._logged("CONFIG", "; ".join(lines), lambda: con.run_config(lines))
+            except Exception as e:
+                con = self._console_transport()
+                if not con:
+                    raise
+                log_event(
+                    self.device["id"], "CONSOLE-FALLBACK",
+                    f"SSH config failed ({type(e).__name__}: {e}); retrying via console",
+                )
+                return await self._logged("CONFIG", "; ".join(lines), lambda: con.run_config(lines))
 
     # ------------------------------------------------------------------
     # Read-only (READ)
@@ -209,7 +222,7 @@ class CiscoDriver(BaseDriver):
 
     async def get_config(self):
         raw = await self.exec_logged("show running-config")
-        return {"data": raw, "raw": raw}
+        return {"data": IOSParser.parse_running_config(raw), "raw": raw}
 
     async def backup(self):
         cmd = "show running-config"
@@ -455,7 +468,7 @@ class CiscoDriver(BaseDriver):
             )
             result["reachable"] = True
         except Exception as e:
-            result.update(reachable=False, reason=f"TCP/22 unreachable: {e}")
+            result.update(status="unreachable", reachable=False, reason=f"TCP/22 unreachable: {e}")
             return result
         try:
             banner = await asyncio.wait_for(reader.readline(), timeout=5.0)
@@ -468,7 +481,7 @@ class CiscoDriver(BaseDriver):
         try:
             version_out = await self.exec_logged("show version")
         except Exception as e:
-            result.update(flash_ok=None, reason=f"show version failed: {e}")
+            result.update(status="degraded", flash_ok=None, reason=f"show version failed: {e}")
             return result
 
         m = re.search(r"(\S+) bytes of .*[Cc]ompact[Ff]lash", version_out)
@@ -483,6 +496,7 @@ class CiscoDriver(BaseDriver):
             result["flash_ok"] = None
 
         result["flash_broken_hint"] = "%Error opening flash" in version_out
+        result["status"] = "degraded" if result.get("flash_ok") is False else "online"
         return result
 
     # ------------------------------------------------------------------

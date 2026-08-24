@@ -12,6 +12,25 @@ env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env"
 load_dotenv(env_path)
 
 
+def ros_value(value) -> str:
+    """Quote RouterOS CLI values so spaces/quotes do not alter commands."""
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    text = str(value)
+    if text == "":
+        return '""'
+    safe = all(ch.isalnum() or ch in "._:-/@,+=" for ch in text)
+    if safe:
+        return text
+    return '"' + text.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def ros_kv(key: str, value) -> str:
+    return f"{key}={ros_value(value)}"
+
+
 class MikroTikDriver(BaseDriver):
     def _transport(self):
         prefix = self.device["id"].upper().replace("-", "_")
@@ -239,51 +258,51 @@ class MikroTikDriver(BaseDriver):
 
     # Configuration Methods (for plan/apply workflow)
     async def add_ip_address(self, address: str, interface: str, comment: str = ""):
-        cmd = f'/ip address add address={address} interface={interface}'
+        cmd = f'/ip address add {ros_kv("address", address)} {ros_kv("interface", interface)}'
         if comment:
-            cmd += f' comment="{comment}"'
+            cmd += f' {ros_kv("comment", comment)}'
         log_event(self.device["id"], "add_ip_address", cmd)
         return await self._transport().run(cmd)
 
     async def remove_ip_address(self, address: str, interface: str):
-        cmd = f'/ip address remove [find address={address} interface={interface}]'
+        cmd = f'/ip address remove [find {ros_kv("address", address)} {ros_kv("interface", interface)}]'
         log_event(self.device["id"], "remove_ip_address", cmd)
         return await self._transport().run(cmd)
 
     async def add_vlan(self, name: str, vlan_id: int, interface: str, comment: str = ""):
-        cmd = f'/interface vlan add name={name} vlan-id={vlan_id} interface={interface}'
+        cmd = f'/interface vlan add {ros_kv("name", name)} {ros_kv("vlan-id", vlan_id)} {ros_kv("interface", interface)}'
         if comment:
-            cmd += f' comment="{comment}"'
+            cmd += f' {ros_kv("comment", comment)}'
         log_event(self.device["id"], "add_vlan", cmd)
         return await self._transport().run(cmd)
 
     async def remove_vlan(self, name: str):
-        cmd = f'/interface vlan remove [find name={name}]'
+        cmd = f'/interface vlan remove [find {ros_kv("name", name)}]'
         log_event(self.device["id"], "remove_vlan", cmd)
         return await self._transport().run(cmd)
 
     async def add_bridge(self, name: str, comment: str = ""):
-        cmd = f'/interface bridge add name={name}'
+        cmd = f'/interface bridge add {ros_kv("name", name)}'
         if comment:
-            cmd += f' comment="{comment}"'
+            cmd += f' {ros_kv("comment", comment)}'
         log_event(self.device["id"], "add_bridge", cmd)
         return await self._transport().run(cmd)
 
     async def add_bridge_port(self, bridge: str, interface: str):
-        cmd = f'/interface bridge port add bridge={bridge} interface={interface}'
+        cmd = f'/interface bridge port add {ros_kv("bridge", bridge)} {ros_kv("interface", interface)}'
         log_event(self.device["id"], "add_bridge_port", cmd)
         return await self._transport().run(cmd)
 
     async def remove_bridge_port(self, bridge: str, interface: str):
-        cmd = f'/interface bridge port remove [find bridge={bridge} interface={interface}]'
+        cmd = f'/interface bridge port remove [find {ros_kv("bridge", bridge)} {ros_kv("interface", interface)}]'
         log_event(self.device["id"], "remove_bridge_port", cmd)
         return await self._transport().run(cmd)
 
     async def add_firewall_filter(self, chain: str, action: str, **kwargs):
-        parts = [f'/ip firewall filter add chain={chain} action={action}']
+        parts = [f'/ip firewall filter add {ros_kv("chain", chain)} {ros_kv("action", action)}']
         for key, value in kwargs.items():
             if value is not None:
-                parts.append(f'{key}={value}')
+                parts.append(ros_kv(key, value))
         cmd = ' '.join(parts)
         log_event(self.device["id"], "add_firewall_filter", cmd)
         return await self._transport().run(cmd)
@@ -294,10 +313,10 @@ class MikroTikDriver(BaseDriver):
         return await self._transport().run(cmd)
 
     async def add_firewall_nat(self, chain: str, action: str, **kwargs):
-        parts = [f'/ip firewall nat add chain={chain} action={action}']
+        parts = [f'/ip firewall nat add {ros_kv("chain", chain)} {ros_kv("action", action)}']
         for key, value in kwargs.items():
             if value is not None:
-                parts.append(f'{key}={value}')
+                parts.append(ros_kv(key, value))
         cmd = ' '.join(parts)
         log_event(self.device["id"], "add_firewall_nat", cmd)
         return await self._transport().run(cmd)
@@ -308,9 +327,9 @@ class MikroTikDriver(BaseDriver):
         return await self._transport().run(cmd)
 
     async def add_firewall_address_list(self, address: str, list_name: str, comment: str = ""):
-        cmd = f'/ip firewall address-list add address={address} list={list_name}'
+        cmd = f'/ip firewall address-list add {ros_kv("address", address)} {ros_kv("list", list_name)}'
         if comment:
-            cmd += f' comment="{comment}"'
+            cmd += f' {ros_kv("comment", comment)}'
         log_event(self.device["id"], "add_firewall_address_list", cmd)
         return await self._transport().run(cmd)
 
@@ -320,9 +339,9 @@ class MikroTikDriver(BaseDriver):
         return await self._transport().run(cmd)
 
     async def add_static_route(self, dst_address: str, gateway: str, distance: int = 1, comment: str = ""):
-        cmd = f'/ip route add dst-address={dst_address} gateway={gateway} distance={distance}'
+        cmd = f'/ip route add {ros_kv("dst-address", dst_address)} {ros_kv("gateway", gateway)} {ros_kv("distance", distance)}'
         if comment:
-            cmd += f' comment="{comment}"'
+            cmd += f' {ros_kv("comment", comment)}'
         log_event(self.device["id"], "add_static_route", cmd)
         return await self._transport().run(cmd)
 
@@ -351,59 +370,59 @@ class MikroTikDriver(BaseDriver):
         return await self._transport().run(cmd)
 
     async def set_interface(self, name: str, **kwargs):
-        parts = [f'/interface set [find name={name}]']
+        parts = [f'/interface set [find {ros_kv("name", name)}]']
         for key, value in kwargs.items():
             if value is not None:
-                parts.append(f'{key}={value}')
+                parts.append(ros_kv(key, value))
         cmd = ' '.join(parts)
         log_event(self.device["id"], "set_interface", cmd)
         return await self._transport().run(cmd)
 
     async def enable_interface(self, name: str):
-        cmd = f'/interface enable [find name={name}]'
+        cmd = f'/interface enable [find {ros_kv("name", name)}]'
         log_event(self.device["id"], "enable_interface", cmd)
         return await self._transport().run(cmd)
 
     async def disable_interface(self, name: str):
-        cmd = f'/interface disable [find name={name}]'
+        cmd = f'/interface disable [find {ros_kv("name", name)}]'
         log_event(self.device["id"], "disable_interface", cmd)
         return await self._transport().run(cmd)
 
     async def set_system_identity(self, name: str):
-        cmd = f'/system identity set name="{name}"'
+        cmd = f'/system identity set {ros_kv("name", name)}'
         log_event(self.device["id"], "set_system_identity", cmd)
         return await self._transport().run(cmd)
 
     async def add_system_user(self, name: str, password: str, group: str = "full"):
-        cmd = f'/user add name={name} password={password} group={group}'
+        cmd = f'/user add {ros_kv("name", name)} {ros_kv("password", password)} {ros_kv("group", group)}'
         log_event(self.device["id"], "add_system_user", cmd)
         return await self._transport().run(cmd)
 
     async def remove_system_user(self, name: str):
-        cmd = f'/user remove [find name={name}]'
+        cmd = f'/user remove [find {ros_kv("name", name)}]'
         log_event(self.device["id"], "remove_system_user", cmd)
         return await self._transport().run(cmd)
 
     async def set_ntp_client(self, enabled: str = "yes", primary_ntp: str = "", secondary_ntp: str = ""):
-        cmd = f'/system ntp client set enabled={enabled}'
+        cmd = f'/system ntp client set {ros_kv("enabled", enabled)}'
         if primary_ntp:
-            cmd += f' primary-ntp={primary_ntp}'
+            cmd += f' {ros_kv("primary-ntp", primary_ntp)}'
         if secondary_ntp:
-            cmd += f' secondary-ntp={secondary_ntp}'
+            cmd += f' {ros_kv("secondary-ntp", secondary_ntp)}'
         log_event(self.device["id"], "set_ntp_client", cmd)
         return await self._transport().run(cmd)
 
     async def set_dns(self, servers: str, allow_remote_requests: str = "yes"):
-        cmd = f'/ip dns set servers={servers} allow-remote-requests={allow_remote_requests}'
+        cmd = f'/ip dns set {ros_kv("servers", servers)} {ros_kv("allow-remote-requests", allow_remote_requests)}'
         log_event(self.device["id"], "set_dns", cmd)
         return await self._transport().run(cmd)
 
     async def add_wireless_security_profile(self, name: str, authentication_types: str = "wpa2-psk", wpa2_psk: str = "", comment: str = ""):
-        cmd = f'/interface wireless security-profiles add name={name} authentication-types={authentication_types}'
+        cmd = f'/interface wireless security-profiles add {ros_kv("name", name)} {ros_kv("authentication-types", authentication_types)}'
         if wpa2_psk:
-            cmd += f' wpa2-pre-shared-key={wpa2_psk}'
+            cmd += f' {ros_kv("wpa2-pre-shared-key", wpa2_psk)}'
         if comment:
-            cmd += f' comment="{comment}"'
+            cmd += f' {ros_kv("comment", comment)}'
         log_event(self.device["id"], "add_wireless_security_profile", cmd)
         return await self._transport().run(cmd)
 
@@ -625,34 +644,34 @@ class MikroTikDriver(BaseDriver):
     async def add_ppp_secret(self, name: str, password: str = "", service: str = "any",
                              profile: str = "default", local_address: str = "",
                              remote_address: str = "", comment: str = ""):
-        cmd = f'/ppp secret add name={name} service={service} profile={profile}'
+        cmd = f'/ppp secret add {ros_kv("name", name)} {ros_kv("service", service)} {ros_kv("profile", profile)}'
         if password:
-            cmd += f' password={password}'
+            cmd += f' {ros_kv("password", password)}'
         if local_address:
-            cmd += f' local-address={local_address}'
+            cmd += f' {ros_kv("local-address", local_address)}'
         if remote_address:
-            cmd += f' remote-address={remote_address}'
+            cmd += f' {ros_kv("remote-address", remote_address)}'
         if comment:
-            cmd += f' comment="{comment}"'
+            cmd += f' {ros_kv("comment", comment)}'
         log_event(self.device["id"], "add_ppp_secret", cmd)
         return await self._transport().run(cmd)
 
     async def remove_ppp_secret(self, name: str):
-        cmd = f'/ppp secret remove [find name={name}]'
+        cmd = f'/ppp secret remove [find {ros_kv("name", name)}]'
         log_event(self.device["id"], "remove_ppp_secret", cmd)
         return await self._transport().run(cmd)
 
     async def set_ppp_secret(self, name: str, **kwargs):
-        parts = [f'/ppp secret set [find name={name}]']
+        parts = [f'/ppp secret set [find {ros_kv("name", name)}]']
         for key, value in kwargs.items():
             if value is not None:
-                parts.append(f'{key}={value}')
+                parts.append(ros_kv(key, value))
         cmd = ' '.join(parts)
         log_event(self.device["id"], "set_ppp_secret", cmd)
         return await self._transport().run(cmd)
 
     async def kick_ppp_session(self, user: str):
-        cmd = f'/ppp active remove [find name={user}]'
+        cmd = f'/ppp active remove [find {ros_kv("name", user)}]'
         log_event(self.device["id"], "kick_ppp_session", cmd)
         return await self._transport().run(cmd)
 
@@ -681,7 +700,7 @@ class MikroTikDriver(BaseDriver):
         parts = []
         for key, value in kwargs.items():
             if value is not None:
-                parts.append(f'{key}={value}')
+                parts.append(ros_kv(key, value))
         if parts:
             cmd = f'/interface {tunnel_type} server set ' + ' '.join(parts)
             log_event(self.device["id"], "set_tunnel_server", cmd)
@@ -727,33 +746,33 @@ class MikroTikDriver(BaseDriver):
         self._check_tunnel_type(tunnel_type)
         # pppoe-client uses "interface=" (physical iface), others use "connect-to="
         if tunnel_type == "pppoe":
-            cmd = f'/interface pppoe-client add name={name} interface={target} user={user}'
+            cmd = f'/interface pppoe-client add {ros_kv("name", name)} {ros_kv("interface", target)} {ros_kv("user", user)}'
         else:
-            cmd = f'/interface {tunnel_type}-client add name={name} connect-to={target} user={user}'
+            cmd = f'/interface {tunnel_type}-client add {ros_kv("name", name)} {ros_kv("connect-to", target)} {ros_kv("user", user)}'
         if password:
-            cmd += f' password={password}'
+            cmd += f' {ros_kv("password", password)}'
         if profile:
-            cmd += f' profile={profile}'
+            cmd += f' {ros_kv("profile", profile)}'
         if tunnel_type in ("l2tp", "pptp"):
             cmd += f' use-ipsec={"yes" if use_ipsec else "no"}'
             if ipsec_secret:
-                cmd += f' ipsec-secret={ipsec_secret}'
+                cmd += f' {ros_kv("ipsec-secret", ipsec_secret)}'
         cmd += f' add-default-route={"yes" if add_default_route else "no"}'
         if comment:
-            cmd += f' comment="{comment}"'
+            cmd += f' {ros_kv("comment", comment)}'
         log_event(self.device["id"], "add_tunnel_client", cmd)
         return await self._transport().run(cmd)
 
     async def remove_tunnel_client(self, tunnel_type: str, name: str):
         self._check_tunnel_type(tunnel_type)
-        cmd = f'/interface {tunnel_type}-client remove [find name={name}]'
+        cmd = f'/interface {tunnel_type}-client remove [find {ros_kv("name", name)}]'
         log_event(self.device["id"], "remove_tunnel_client", cmd)
         return await self._transport().run(cmd)
 
     async def set_tunnel_client_state(self, tunnel_type: str, name: str, enabled: bool):
         self._check_tunnel_type(tunnel_type)
         action = "enable" if enabled else "disable"
-        cmd = f'/interface {tunnel_type}-client {action} [find name={name}]'
+        cmd = f'/interface {tunnel_type}-client {action} [find {ros_kv("name", name)}]'
         log_event(self.device["id"], "set_tunnel_client_state", cmd)
         return await self._transport().run(cmd)
 
@@ -779,10 +798,11 @@ class MikroTikDriver(BaseDriver):
             )
             banner = await asyncio.wait_for(reader.readline(), timeout=3.0)
             writer.close()
+            result["status"] = "online"
             result["reachable"] = True
             result["ssh_banner"] = banner.decode(errors="replace").strip()
         except Exception as e:
-            result.update(reachable=False, reason=f"TCP/22 unreachable: {e}")
+            result.update(status="unreachable", reachable=False, reason=f"TCP/22 unreachable: {e}")
             return result
 
         try:
@@ -791,6 +811,7 @@ class MikroTikDriver(BaseDriver):
             parsed_resource = MikroTikParser.parse_resource(resource_out)
             result["resource"] = {"data": parsed_resource, "raw": resource_out}
         except Exception as e:
+            result["status"] = "degraded"
             result["resource_error"] = str(e)
 
         return result

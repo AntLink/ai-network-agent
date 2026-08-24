@@ -14,6 +14,14 @@ async def list_devices():
     return await device_service.list_devices()
 
 
+@router.get("/{device_id}")
+async def get_device(device_id: str):
+    try:
+        return await device_service.get_device(device_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
 @router.get("/{device_id}/health")
 async def get_device_health(device_id: str):
     try:

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import devices, config, monitoring, topology, audit, mikrotik, cisco, gns3
+from app.api.v1.endpoints import devices, config, monitoring, topology, audit, mikrotik, cisco, gns3, policy
 
 api_router = APIRouter()
 api_router.include_router(devices.router, prefix="/devices", tags=["devices"])
@@ -10,3 +10,4 @@ api_router.include_router(audit.router, prefix="/audit", tags=["audit"])
 api_router.include_router(mikrotik.router, prefix="/mikrotik", tags=["mikrotik"])
 api_router.include_router(cisco.router, prefix="/cisco", tags=["cisco"])
 api_router.include_router(gns3.router, prefix="/gns3", tags=["gns3"])
+api_router.include_router(policy.router, prefix="/policy", tags=["policy"])

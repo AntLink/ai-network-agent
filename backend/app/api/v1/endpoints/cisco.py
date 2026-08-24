@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
@@ -10,8 +10,9 @@ from app.drivers.factory import get_driver
 from app.repositories.inventory import inventory_repository
 from app.schemas import cisco as schemas
 from .helpers import write_response
+from .safety import direct_write_guard
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(direct_write_guard)])
 
 
 def _get_cisco_driver(device_id: str):

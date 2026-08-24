@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from app.services.device_service import device_service
 from app.repositories.inventory import inventory_repository
 from app.drivers.factory import get_driver
 from app.schemas import mikrotik as schemas
 from .helpers import write_response
+from .safety import direct_write_guard
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(direct_write_guard)])
 
 
 def _get_mikrotik_driver(device_id: str):
@@ -21,6 +22,16 @@ def _get_mikrotik_driver(device_id: str):
 # ---------------------------------------------------------------------------
 # Read-only: resource dumps
 # ---------------------------------------------------------------------------
+
+@router.get("/{device_id}/resources/interfaces")
+async def get_interfaces(device_id: str):
+    return await _get_mikrotik_driver(device_id).get_interfaces()
+
+
+@router.get("/{device_id}/interface")
+async def get_interfaces_legacy(device_id: str):
+    return await get_interfaces(device_id)
+
 
 @router.get("/{device_id}/resources/ip-addresses")
 async def get_ip_addresses(device_id: str):
@@ -217,7 +228,7 @@ async def add_firewall_filter(device_id: str, payload: schemas.FirewallFilterCre
         "dst-port": payload.dst_port,
         "in-interface": payload.in_interface,
         "out-interface": payload.out_interface,
-        "comment": f'"{payload.comment}"' if payload.comment else None,
+        "comment": payload.comment if payload.comment else None,
     }.items() if v is not None}
     output = await _get_mikrotik_driver(device_id).add_firewall_filter(payload.chain, payload.action, **kwargs)
     return write_response(output, operation="add_firewall_filter")
@@ -243,7 +254,7 @@ async def add_firewall_nat(device_id: str, payload: schemas.FirewallNatCreate):
         "out-interface": payload.out_interface,
         "to-addresses": payload.to_addresses,
         "to-ports": payload.to_ports,
-        "comment": f'"{payload.comment}"' if payload.comment else None,
+        "comment": payload.comment if payload.comment else None,
     }.items() if v is not None}
     output = await _get_mikrotik_driver(device_id).add_firewall_nat(payload.chain, payload.action, **kwargs)
     return write_response(output, operation="add_firewall_nat")
@@ -309,7 +320,7 @@ async def set_interface(device_id: str, payload: schemas.InterfaceSet):
     if payload.disabled is not None:
         kwargs["disabled"] = "yes" if payload.disabled else "no"
     if payload.comment:
-        kwargs["comment"] = f'"{payload.comment}"'
+        kwargs["comment"] = payload.comment
     output = await _get_mikrotik_driver(device_id).set_interface(payload.name, **kwargs)
     return write_response(output, operation="set_interface")
 
@@ -476,7 +487,7 @@ async def set_hotspot_user(device_id: str, payload: schemas.HotspotUserUpdate):
         "profile": payload.new_profile,
         "limit-uptime": payload.limit_uptime,
         "limit-bytes-total": payload.limit_bytes_total,
-        "comment": f'"{payload.comment}"' if payload.comment else None,
+        "comment": payload.comment if payload.comment else None,
     }.items() if v is not None}
     if not kwargs:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -575,7 +586,7 @@ async def set_ppp_secret(device_id: str, payload: schemas.PppSecretUpdate):
         "password": payload.new_password,
         "profile": payload.new_profile,
         "remote-address": payload.new_remote_address,
-        "comment": f'"{payload.comment}"' if payload.comment else None,
+        "comment": payload.comment if payload.comment else None,
     }.items() if v is not None}
     if not kwargs:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -737,6 +748,8 @@ async def get_monitoring(device_id: str, payload: schemas.MonitoringRequest):
 async def get_health(device_id: str):
     try:
         return await _get_mikrotik_driver(device_id).health()
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=502, detail=str(e))
 

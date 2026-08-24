@@ -12,9 +12,11 @@ class Settings(BaseSettings):
     INVENTORY_FILE: str = str(ROOT / "inventory" / "devices.json")
     BACKUP_DIR: str = str(ROOT / "backups")
     AUDIT_LOG_FILE: str = str(ROOT / "logs" / "audit.log")
+    CONFIG_PLAN_FILE: str = str(ROOT / "logs" / "config-plans.json")
 
     SSH_CONNECT_TIMEOUT: int = 15
     SSH_COMMAND_TIMEOUT: int = 45
+    ALLOW_DIRECT_WRITE: bool = True
 
     model_config = SettingsConfigDict(
         env_file=".env",

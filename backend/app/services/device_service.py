@@ -10,6 +10,12 @@ class DeviceService:
     async def list_devices(self):
         return inventory_repository.list_devices()
 
+    async def get_device(self, device_id: str):
+        device = inventory_repository.get_device(device_id)
+        if not device:
+            raise ValueError("Device not found")
+        return device
+
     async def identify(self, device_id: str):
         device = inventory_repository.get_device(device_id)
         if not device:
