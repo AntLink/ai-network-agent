@@ -9,6 +9,7 @@ from app.drivers.cisco.netmiko_driver import NetmikoCiscoDriver
 from app.drivers.factory import get_driver
 from app.repositories.inventory import inventory_repository
 from app.schemas import cisco as schemas
+from .helpers import write_response
 
 router = APIRouter()
 
@@ -84,31 +85,31 @@ async def get_logs(device_id: str):
 @router.post("/{device_id}/system/hostname")
 async def set_hostname(device_id: str, payload: dict):
     output = await _get_cisco_driver(device_id).set_hostname(payload["name"])
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="set_hostname")
 
 
 @router.post("/{device_id}/system/dns")
 async def set_dns(device_id: str, payload: schemas.DnsSet):
     output = await _get_cisco_driver(device_id).set_dns(payload.servers)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="set_dns")
 
 
 @router.post("/{device_id}/system/ntp")
 async def add_ntp_server(device_id: str, payload: schemas.NtpServerAdd):
     output = await _get_cisco_driver(device_id).add_ntp_server(payload.server)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="add_ntp_server")
 
 
 @router.delete("/{device_id}/system/ntp/{server}")
 async def remove_ntp_server(device_id: str, server: str):
     output = await _get_cisco_driver(device_id).remove_ntp_server(server)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="remove_ntp_server")
 
 
 @router.post("/{device_id}/system/banner")
 async def set_banner(device_id: str, payload: schemas.BannerSet):
     output = await _get_cisco_driver(device_id).set_banner_motd(payload.text)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="set_banner_motd")
 
 
 @router.post("/{device_id}/users")
@@ -116,13 +117,13 @@ async def create_local_user(device_id: str, payload: schemas.LocalUserCreate):
     output = await _get_cisco_driver(device_id).create_local_user(
         payload.username, payload.password, payload.privilege
     )
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="create_local_user")
 
 
 @router.delete("/{device_id}/users/{username}")
 async def delete_local_user(device_id: str, username: str):
     output = await _get_cisco_driver(device_id).delete_local_user(username)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="delete_local_user")
 
 
 # ---------------------------------------------------------------------------
@@ -137,7 +138,7 @@ async def interface_description(device_id: str, payload: schemas.InterfaceDescri
         )
     except RuntimeError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="interface_set_description")
 
 
 @router.post("/{device_id}/interface/address")
@@ -149,19 +150,19 @@ async def interface_address(device_id: str, payload: schemas.InterfaceAddressSet
         raise HTTPException(status_code=422, detail=str(e))
     except RuntimeError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="interface_set_address")
 
 
 @router.delete("/{device_id}/interface/{interface}/address")
 async def interface_remove_address(device_id: str, interface: str):
     output = await _get_cisco_driver(device_id).interface_remove_address(interface)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="interface_remove_address")
 
 
 @router.post("/{device_id}/interface/mtu")
 async def interface_mtu(device_id: str, payload: schemas.InterfaceMtuSet):
     output = await _get_cisco_driver(device_id).interface_set_mtu(payload.interface, payload.mtu)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="interface_set_mtu")
 
 
 @router.post("/{device_id}/interface/{name}/{action}")
@@ -169,7 +170,7 @@ async def interface_state(device_id: str, name: str, action: str):
     if action not in ("shutdown", "no-shutdown"):
         raise HTTPException(status_code=400, detail="action must be shutdown|no-shutdown")
     output = await _get_cisco_driver(device_id).interface_set_state(name, action == "no-shutdown")
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="interface_set_state")
 
 
 # ---------------------------------------------------------------------------
@@ -183,7 +184,7 @@ async def add_static_route(device_id: str, payload: schemas.StaticRouteCreate):
         output = await driver.add_static_route(payload.prefix, payload.gateway, payload.distance)
     except RuntimeError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="add_static_route")
 
 
 @router.delete("/{device_id}/static-route")
@@ -193,7 +194,7 @@ async def remove_static_route(device_id: str, payload: schemas.StaticRouteDelete
         output = await driver.remove_static_route(payload.prefix, payload.gateway)
     except RuntimeError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="remove_static_route")
 
 
 # ---------------------------------------------------------------------------
@@ -209,7 +210,7 @@ async def create_acl(device_id: str, payload: schemas.AclCreate):
         raise HTTPException(status_code=422, detail=str(e))
     except RuntimeError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="acl_create")
 
 
 @router.delete("/{device_id}/acl")
@@ -219,7 +220,7 @@ async def delete_acl(device_id: str, payload: schemas.AclDelete):
         output = await driver.acl_delete(payload.name, payload.acl_type)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="acl_delete")
 
 
 @router.post("/{device_id}/acl/apply")
@@ -231,7 +232,7 @@ async def apply_acl(device_id: str, payload: schemas.AclApply):
         raise HTTPException(status_code=422, detail=str(e))
     except RuntimeError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="acl_apply")
 
 
 @router.post("/{device_id}/acl/unapply")
@@ -243,7 +244,7 @@ async def unapply_acl(device_id: str, payload: schemas.AclApply):
         raise HTTPException(status_code=422, detail=str(e))
     except RuntimeError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="acl_unapply")
 
 
 # ---------------------------------------------------------------------------
@@ -253,25 +254,25 @@ async def unapply_acl(device_id: str, payload: schemas.AclApply):
 @router.post("/{device_id}/l2/vlan")
 async def create_vlan(device_id: str, payload: schemas.VlanCreate):
     output = await _get_cisco_driver(device_id).create_vlan(payload.vlan_id, payload.name)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="create_vlan")
 
 
 @router.delete("/{device_id}/l2/vlan/{vlan_id}")
 async def delete_vlan(device_id: str, vlan_id: int):
     output = await _get_cisco_driver(device_id).delete_vlan(vlan_id)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="delete_vlan")
 
 
 @router.post("/{device_id}/l2/access")
 async def set_access_port(device_id: str, payload: schemas.AccessPortSet):
     output = await _get_cisco_driver(device_id).set_access_port(payload.interface, payload.vlan_id)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="set_access_port")
 
 
 @router.post("/{device_id}/l2/trunk")
 async def set_trunk_port(device_id: str, payload: schemas.TrunkPortSet):
     output = await _get_cisco_driver(device_id).set_trunk_port(payload.interface, payload.allowed_vlans)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="set_trunk_port")
 
 
 @router.post("/{device_id}/l2/subinterface")
@@ -279,13 +280,13 @@ async def create_subinterface(device_id: str, payload: schemas.SubinterfaceCreat
     output = await _get_cisco_driver(device_id).create_subinterface(
         payload.parent_interface, payload.sub_id, payload.vlan_id, payload.ip_address
     )
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="create_subinterface")
 
 
 @router.post("/{device_id}/l2/svi")
 async def set_svi(device_id: str, payload: schemas.SviSet):
     output = await _get_cisco_driver(device_id).set_svi(payload.vlan_id, payload.ip_address, payload.shutdown)
-    return {"status": "applied", "output": output}
+    return write_response(output, operation="set_svi")
 
 
 # ---------------------------------------------------------------------------
