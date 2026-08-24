@@ -122,6 +122,12 @@ async def get_system_logging(device_id: str):
     return await _get_mikrotik_driver(device_id).get_system_logging()
 
 
+@router.get("/{device_id}/resources/log/messages")
+async def get_log_messages(device_id: str):
+    """Riwayat log messages (/log print) — waktu, topik, isi pesan."""
+    return await _get_mikrotik_driver(device_id).get_log_messages()
+
+
 # ---------------------------------------------------------------------------
 # IP address management
 # ---------------------------------------------------------------------------

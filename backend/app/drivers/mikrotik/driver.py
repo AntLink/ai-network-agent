@@ -216,6 +216,12 @@ class MikroTikDriver(BaseDriver):
         raw = await self._transport().run(cmd)
         return {"data": MikroTikParser.parse_records(raw), "raw": raw}
 
+    async def get_log_messages(self):
+        cmd = "/log print detail without-paging"
+        log_event(self.device["id"], "get_log_messages", cmd)
+        raw = await self._transport().run(cmd)
+        return {"data": MikroTikParser.parse_records(raw), "raw": raw}
+
     async def backup(self):
         cmd = "/export terse"
         log_event(self.device["id"], "backup", cmd)

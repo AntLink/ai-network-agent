@@ -99,7 +99,8 @@ All under `/api/v1/mikrotik/{device_id}/...`
 - `GET /resources/ospf` `/bgp` `/static-routes`
 - `GET /resources/ppp-secrets` `/ppp-profiles`
 - `GET /resources/wireless` `/wireless-security-profiles`
-- `GET /resources/snmp` `/users` `/logging`
+- `GET /resources/snmp` `/users` `/logging` (config rules: topics/action)
+- `GET /resources/log/messages` (riwayat log `/log print`: time/topics/message)
 - `GET /resources/hotspot/servers|profiles|users|user-profiles|active|hosts|ip-bindings|walled-garden`
 - `GET /resources/ppp-active`
 - `GET /resources/tunnel/{type}/server`

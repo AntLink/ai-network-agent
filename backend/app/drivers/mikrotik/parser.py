@@ -71,13 +71,17 @@ class MikroTikParser:
                 is_new = True
                 record_index = int(m_idx.group(1))
                 payload = stripped[m_idx.end():].strip()
-            # Case 2: flag-led record without index: "   DAd    dst-address=..."
-            # (flags are 1-4 letters, optional trailing '+'; only on shallow indent)
             elif indent <= 5:
+                # Case 2: flag-led record without index: "   DAd    dst-address=..."
                 m_flags = re.match(r'^[A-Za-z*;+]{1,4}\s+', stripped.lstrip())
                 if m_flags:
                     is_new = True
                     payload = stripped.lstrip()[m_flags.end():].strip()
+                else:
+                    # Case 3: record starts directly with key=value (e.g. /log print)
+                    if indent <= 1 and re.match(r'^[\w.-]+=', stripped.lstrip()):
+                        is_new = True
+                        payload = stripped.lstrip()
 
             if is_new:
                 if '=' not in payload:
@@ -99,10 +103,19 @@ class MikroTikParser:
 
     @staticmethod
     def _ingest_pairs(record: Dict[str, Any], payload: str) -> None:
-        """Extract `key=value` pairs; quoted values handled."""
-        for m in re.finditer(r'([\w.-]+)=("[^"]*"|\S+)', payload):
+        """Extract `key=value` pairs; quoted and multi-word values handled.
+
+        Value forms:
+          key="quoted value with spaces"
+          key=bare_token
+          key=value with spaces  (spans until next `key=` or end)
+        """
+        # Match key=value where value is either a quoted string or a bare
+        # run up to the next key=... marker or end of payload.
+        pat = re.compile(r'([\w.-]+)=("[^"]*"|[^=]+?)(?=\s+[\w.-]+=|\s*$|"?(?:\s+[\w.-]+=))')
+        for m in pat.finditer(payload):
             key = m.group(1)
-            value = m.group(2)
+            value = m.group(2).strip()
             if value.startswith('"') and value.endswith('"'):
                 value = value[1:-1]
             record[key] = value
