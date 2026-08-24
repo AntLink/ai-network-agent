@@ -410,9 +410,14 @@ const TerminalPage = () => {
                     className="font-mono"
                     placeholder={selectedDevice?.vendor === 'mikrotik' ? 'Ketik perintah MikroTik...' : 'Ketik perintah...'}
                   />
-                  <Badge variant="outline" className={cn('flex h-auto w-28 shrink-0 items-center justify-center self-stretch rounded-lg px-3 leading-none uppercase', riskClass[risk.level])}>
+                  <span
+                    className={cn(
+                      'flex h-8 w-28 shrink-0 items-center justify-center rounded-md border px-3 font-mono text-xs font-semibold uppercase leading-none',
+                      riskClass[risk.level],
+                    )}
+                  >
                     {risk.level}
-                  </Badge>
+                  </span>
                 </div>
                 {showSuggestions && (suggestions.length > 0 || suggestionStatus !== 'idle') && (
                   <div className="absolute bottom-full left-0 right-0 z-20 mb-2 overflow-hidden rounded-lg border border-border bg-popover shadow-lg">
