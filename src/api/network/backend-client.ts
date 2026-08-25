@@ -102,9 +102,50 @@ export async function backendOrMock<T>(backendLoader: () => Promise<T>, mockPath
   }
 }
 
+type DeviceMetrics = {
+  device_id: string
+  status: 'online' | 'offline'
+  cpu: number
+  memory: number
+  latency_ms: number | null
+}
+
+export async function loadBackendDeviceStatuses(): Promise<DeviceMetrics[]> {
+  try {
+    const payload = await apiRequest<unknown>('/api/v1/devices/batch-status')
+    return extractArray(payload).map((item: unknown) => {
+      const r = asRecord(item)
+      return {
+        device_id: String(r.device_id ?? ''),
+        status: String(r.status ?? 'offline') as 'online' | 'offline',
+        cpu: numberValue(r.cpu, 0),
+        memory: numberValue(r.memory, 0),
+        latency_ms: numberOrNull(r.latency_ms),
+      }
+    })
+  } catch {
+    return []
+  }
+}
+
 export async function loadBackendDevices(): Promise<Device[]> {
-  const payload = await apiRequest<unknown>('/api/v1/devices')
-  return extractArray(payload).map(normalizeDevice)
+  const [devices, statuses] = await Promise.all([
+    apiRequest<unknown>('/api/v1/devices'),
+    loadBackendDeviceStatuses(),
+  ])
+  const statusMap = new Map(statuses.map((s) => [s.device_id, s]))
+
+  return extractArray(devices).map((item) => {
+    const device = normalizeDevice(item)
+    const m = statusMap.get(device.id)
+    if (m) {
+      device.status = m.status
+      device.cpu = m.cpu
+      device.memory = m.memory
+      device.latencyMs = m.latency_ms
+    }
+    return device
+  })
 }
 
 export async function loadBackendDeviceDetail(deviceId: string): Promise<{

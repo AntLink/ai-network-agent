@@ -40,6 +40,11 @@ async def console_exec(device_id: str, payload: ConsoleExecRequest):
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"console failed: {e}")
 
+@router.get("/batch-status")
+async def batch_device_status():
+    """Status + CPU + Memory + Latency untuk semua device (satu panggilan)."""
+    return await device_service.batch_status()
+
 @router.get("/{device_id}/identify")
 async def identify_device(device_id: str):
     try:
