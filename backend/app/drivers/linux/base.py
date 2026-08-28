@@ -13,7 +13,32 @@ load_dotenv(env_path)
 class LinuxBaseDriver(BaseDriver):
     """Base driver for all Linux systems with common functionality."""
 
+    def _prefer_console(self) -> bool:
+        return str(self.device.get("transport") or "").lower() in ("console", "telnet")
+
+    def _console_transport(self):
+        """Console (telnet) path untuk perangkat GNS3/gang terpencil (mis. VPCS)."""
+        host = self.device.get("console_host")
+        port = self.device.get("console_port")
+        if not host or not port:
+            return None
+        from app.transports.console import ConsoleTransport
+        prefix = self.device["id"].upper().replace("-", "_")
+        username = os.getenv(f"{prefix}_USERNAME", os.getenv("NETWORK_USERNAME", "root"))
+        password = os.getenv(f"{prefix}_PASSWORD", os.getenv("NETWORK_PASSWORD"))
+        return ConsoleTransport(
+            host, int(port),
+            username=username,
+            password=password or None,
+            allow_empty_password=True,
+            device_id=self.device["id"],
+        )
+
     def _transport(self):
+        if self._prefer_console():
+            con = self._console_transport()
+            if con:
+                return con
         prefix = self.device["id"].upper().replace("-", "_")
         username = os.getenv(f"{prefix}_USERNAME", os.getenv("NETWORK_USERNAME", "root"))
         password = os.getenv(f"{prefix}_PASSWORD", os.getenv("NETWORK_PASSWORD"))

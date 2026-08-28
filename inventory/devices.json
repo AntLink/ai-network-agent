@@ -7,7 +7,8 @@
       "vendor": "mikrotik",
       "platform": "routeros",
       "transport": "ssh",
-      "status": "active"
+      "status": "active",
+      "device_type": "physical"
     },
     {
       "id": "mikrotik-rb951ui-2hnd-home-bagem",
@@ -16,7 +17,8 @@
       "vendor": "mikrotik",
       "platform": "routeros",
       "transport": "ssh",
-      "status": "active"
+      "status": "active",
+      "device_type": "physical"
     },
     {
       "id": "mikrotik-chr-mk-1",
@@ -25,7 +27,8 @@
       "vendor": "mikrotik",
       "platform": "routeros",
       "transport": "ssh",
-      "status": "active"
+      "status": "active",
+      "device_type": "virtual"
     },
     {
       "id": "cisco-iosv-r1",
@@ -36,7 +39,8 @@
       "transport": "ssh",
       "status": "active",
       "console_host": "172.22.46.196",
-      "console_port": 5006
+      "console_port": 5006,
+      "device_type": "virtual"
     },
     {
       "id": "cisco-iosv-r2",
@@ -47,7 +51,8 @@
       "transport": "ssh",
       "status": "active",
       "console_host": "172.22.46.196",
-      "console_port": 5008
+      "console_port": 5008,
+      "device_type": "virtual"
     },
     {
       "id": "cisco-iosvl2-sw1",
@@ -58,7 +63,8 @@
       "transport": "ssh",
       "console_host": "172.22.46.196",
       "console_port": 5002,
-      "status": "active"
+      "status": "active",
+      "device_type": "virtual"
     },
     {
       "id": "cisco-iosvl2-sw2",
@@ -69,7 +75,8 @@
       "transport": "ssh",
       "console_host": "172.22.46.196",
       "console_port": 5004,
-      "status": "active"
+      "status": "active",
+      "device_type": "virtual"
     },
     {
       "id": "linux-embedded",
@@ -78,7 +85,8 @@
       "vendor": "linux",
       "platform": "embedded",
       "transport": "ssh",
-      "status": "active"
+      "status": "active",
+      "device_type": "physical"
     },
     {
       "id": "linux-debian",
@@ -87,7 +95,8 @@
       "vendor": "linux",
       "platform": "debian",
       "transport": "ssh",
-      "status": "active"
+      "status": "active",
+      "device_type": "physical"
     },
     {
       "id": "linux-ubuntu",
@@ -96,7 +105,215 @@
       "vendor": "linux",
       "platform": "ubuntu",
       "transport": "ssh",
-      "status": "active"
+      "status": "active",
+      "device_type": "physical"
+    },
+    {
+      "id": "static-routing-r1",
+      "hostname": "SR-R1",
+      "management_address": "172.22.134.144",
+      "management_port": 2201,
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "ssh",
+      "status": "active",
+      "console_host": "172.22.134.144",
+      "console_port": 5026,
+      "device_type": "virtual",
+      "model": "IOSv",
+      "lab": "Static-Routing-Lab"
+    },
+    {
+      "id": "static-routing-r2",
+      "hostname": "SR-R2",
+      "management_address": "172.22.134.144",
+      "management_port": 2202,
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "ssh",
+      "status": "active",
+      "console_host": "172.22.134.144",
+      "console_port": 5029,
+      "device_type": "virtual",
+      "model": "IOSv",
+      "lab": "Static-Routing-Lab"
+    },
+    {
+      "id": "static-routing-mt1",
+      "hostname": "SR-MT1",
+      "management_address": "172.22.134.144",
+      "management_port": 2203,
+      "vendor": "mikrotik",
+      "platform": "routeros",
+      "transport": "ssh",
+      "status": "active",
+      "console_host": "172.22.134.144",
+      "console_port": 5008,
+      "device_type": "virtual",
+      "model": "CHR",
+      "lab": "Static-Routing-Lab"
+    },
+    {
+      "id": "static-routing-pc1",
+      "hostname": "SR-PC1",
+      "management_address": "192.168.10.10",
+      "vendor": "linux",
+      "platform": "vpcs",
+      "transport": "api",
+      "status": "active",
+      "console_host": "172.22.134.144",
+      "console_port": 5031,
+      "device_type": "virtual",
+      "model": "VPCS",
+      "lab": "Static-Routing-Lab"
+    },
+    {
+      "id": "static-routing-pc2",
+      "hostname": "SR-PC2",
+      "management_address": "192.168.20.10",
+      "vendor": "linux",
+      "platform": "vpcs",
+      "transport": "api",
+      "status": "active",
+      "console_host": "172.22.134.144",
+      "console_port": 5033,
+      "device_type": "virtual",
+      "model": "VPCS",
+      "lab": "Static-Routing-Lab"
+    },
+    {
+      "id": "static-routing-pc3",
+      "hostname": "SR-PC3",
+      "management_address": "192.168.30.10",
+      "vendor": "linux",
+      "platform": "vpcs",
+      "transport": "api",
+      "status": "active",
+      "console_host": "172.22.134.144",
+      "console_port": 5010,
+      "device_type": "virtual",
+      "model": "VPCS",
+      "lab": "Static-Routing-Lab"
+    },
+    {
+      "id": "cisco-1",
+      "hostname": "Cisco-1",
+      "management_address": "172.22.134.144",
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "cisco"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5002
+    },
+    {
+      "id": "mikrotik-1",
+      "hostname": "MikroTik-1",
+      "management_address": "172.22.134.144",
+      "vendor": "mikrotik",
+      "platform": "routeros",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "mikrotik"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5000
+    },
+    {
+      "id": "firewall-1",
+      "hostname": "Firewall-1",
+      "management_address": "172.22.134.144",
+      "vendor": "cisco",
+      "platform": "asa",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "cisco"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5004
+    },
+    {
+      "id": "pc-vm-1",
+      "hostname": "PC-VM-1",
+      "management_address": "172.22.134.144",
+      "vendor": "linux",
+      "platform": "ubuntu",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "linux"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5007
+    },
+    {
+      "id": "fw-asav",
+      "hostname": "FW-ASAv",
+      "management_address": "172.22.134.144",
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "cisco"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5001
+    },
+    {
+      "id": "r-cisco",
+      "hostname": "R-Cisco",
+      "management_address": "172.22.134.144",
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "cisco"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5003
+    },
+    {
+      "id": "r-mikrotik",
+      "hostname": "R-MikroTik",
+      "management_address": "172.22.134.144",
+      "vendor": "mikrotik",
+      "platform": "routeros",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "mikrotik"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5005
+    },
+    {
+      "id": "pc-attacker",
+      "hostname": "PC-Attacker",
+      "management_address": "172.22.134.144",
+      "vendor": "linux",
+      "platform": "debian",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "linux"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5007
     }
   ]
 }

@@ -1,14 +1,26 @@
 import type {
+  AgentMessage,
+  Alert,
   ApiResponse,
   AuditLog,
+  Backup,
+  Configuration,
   ConfigApplyResult,
   ConfigPlan,
+  CredentialProfile,
   DashboardSummary,
   Device,
   DeviceStatus,
+  DiscoveryResult,
+  ExecutionPlan,
   HealthPoint,
+  Lab,
   NetworkInterface,
+  NetworkSettings,
   RouteEntry,
+  Task,
+  TaskStep,
+  TaskStatus,
   TerminalCommandResult,
   TerminalLiveSession,
   TerminalSuggestion,
@@ -148,6 +160,101 @@ export async function loadBackendDevices(): Promise<Device[]> {
   })
 }
 
+export async function createBackendDevice(input: {
+  id: string
+  hostname: string
+  managementAddress: string
+  vendor: string
+  platform: string
+  transport?: string
+  status?: string
+  deviceType?: string
+  consoleHost?: string
+  consolePort?: number | null
+  model?: string
+  serial?: string
+  lab?: string
+  tags?: string[]
+  osVersion?: string
+  uptime?: string
+  privilegeLevel?: string
+}): Promise<unknown> {
+  return apiRequest<unknown>('/api/v1/devices', {
+    method: 'POST',
+    body: JSON.stringify({
+      id: input.id,
+      hostname: input.hostname,
+      management_address: input.managementAddress,
+      vendor: input.vendor,
+      platform: input.platform,
+      transport: input.transport ?? 'ssh',
+      status: input.status ?? 'active',
+      device_type: input.deviceType ?? 'virtual',
+      console_host: input.consoleHost || undefined,
+      console_port: input.consolePort ?? undefined,
+      model: input.model || undefined,
+      serial: input.serial || undefined,
+      lab: input.lab || undefined,
+      tags: input.tags ?? [],
+      os_version: input.osVersion || undefined,
+      uptime: input.uptime || undefined,
+      privilege_level: input.privilegeLevel || undefined,
+    }),
+  })
+}
+
+export async function updateBackendDevice(
+  deviceId: string,
+  input: {
+    id?: string
+    hostname?: string
+    managementAddress?: string
+    vendor?: string
+    platform?: string
+    transport?: string
+    status?: string
+    deviceType?: string
+    consoleHost?: string
+    consolePort?: number | null
+    model?: string
+    serial?: string
+    lab?: string
+    tags?: string[]
+    osVersion?: string
+    uptime?: string
+    privilegeLevel?: string
+  },
+): Promise<unknown> {
+  return apiRequest<unknown>(`/api/v1/devices/${encodeURIComponent(deviceId)}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      id: input.id,
+      hostname: input.hostname,
+      management_address: input.managementAddress,
+      vendor: input.vendor,
+      platform: input.platform,
+      transport: input.transport,
+      status: input.status,
+      device_type: input.deviceType,
+      console_host: input.consoleHost || undefined,
+      console_port: input.consolePort ?? undefined,
+      model: input.model || undefined,
+      serial: input.serial || undefined,
+      lab: input.lab || undefined,
+      tags: input.tags ?? undefined,
+      os_version: input.osVersion || undefined,
+      uptime: input.uptime || undefined,
+      privilege_level: input.privilegeLevel || undefined,
+    }),
+  })
+}
+
+export async function deleteBackendDevice(deviceId: string): Promise<unknown> {
+  return apiRequest<unknown>(`/api/v1/devices/${encodeURIComponent(deviceId)}`, {
+    method: 'DELETE',
+  })
+}
+
 export async function loadBackendDeviceDetail(deviceId: string): Promise<{
   device: Device
   interfaces: NetworkInterface[]
@@ -248,21 +355,42 @@ export async function loadBackendHealthSeries(range: string): Promise<HealthPoin
   }))
 }
 
-export async function loadBackendTopology(): Promise<Topology> {
-  const payload = await apiRequest<unknown>('/api/v1/topology')
+export async function loadBackendTopology(projectId?: string): Promise<Topology> {
+  const qs = projectId ? `?project_id=${encodeURIComponent(projectId)}` : ''
+  return normalizeTopology(await apiRequest<unknown>(`/api/v1/topology${qs}`))
+}
+
+export async function saveBackendTopology(topology: Topology, projectId?: string): Promise<Topology> {
+  return normalizeTopology(await apiRequest<unknown>('/api/v1/topology', {
+    method: 'POST',
+    body: JSON.stringify({
+      data: topology,
+      project_id: projectId ?? topology.projectId,
+    }),
+  }))
+}
+
+function normalizeTopology(payload: unknown): Topology {
   const record = asRecord(payload)
-  const nodes = extractArray(record.nodes)
-  const links = extractArray(record.links)
+  const data = asRecord(record.data ?? record)
+  const nodes = extractArray(data.nodes)
+  const links = extractArray(data.links)
 
   return {
-    id: stringValue(record.id, 'backend-topology'),
-    name: stringValue(record.name, 'Backend Topology'),
+    id: stringValue(data.id, 'backend-topology'),
+    name: stringValue(data.name, 'Backend Topology'),
+    projectId: stringValue(data.projectId ?? data.project_id, '') || undefined,
+    layout: normalizeTopologyLayout(data.layout),
     nodes: nodes.map((node, index) => {
       const item = asRecord(node)
+      const hostname = stringValue(item.hostname ?? item.name ?? item.label, `Node ${index + 1}`)
+      const vendor = normalizeVendor(item.vendor ?? item.type ?? item.platform)
       return {
         id: stringValue(item.id, `node-${index}`),
-        hostname: stringValue(item.hostname ?? item.name ?? item.label, `Node ${index + 1}`),
-        vendor: normalizeVendor(item.vendor ?? item.type ?? item.platform),
+        hostname,
+        vendor,
+        kind: normalizeTopologyKind(item.kind ?? item.role ?? item.node_type ?? item.type, vendor, hostname),
+        nodeType: normalizeNodeType(item.nodeType ?? item.node_type ?? item.type),
         status: normalizeStatus(item.status),
         ip: managementIp(item),
       }
@@ -281,21 +409,116 @@ export async function loadBackendTopology(): Promise<Topology> {
   }
 }
 
-export async function loadBackendAuditLogs(): Promise<AuditLog[]> {
-  const payload = await apiRequest<unknown>('/api/v1/audit')
-  return extractArray(asRecord(payload).events ?? payload).map((event, index) => {
-    const item = asRecord(event)
-    return {
-      id: stringValue(item.id, `audit-${index}`),
-      time: stringValue(item.time ?? item.timestamp, '-'),
-      user: stringValue(item.user, 'system'),
-      action: stringValue(item.action, 'Unknown action'),
-      device: stringValue(item.device ?? item.device_id, '-'),
-      result: normalizeAuditResult(item.result),
-      source: 'api',
-      details: stringValue(item.details ?? item.command, '-'),
-    }
+function normalizeTopologyKind(input: unknown, vendor: Vendor, hostname: string): Topology['nodes'][number]['kind'] {
+  const value = String(input ?? '').toLowerCase()
+  if (value === 'router' || value === 'switch' || value === 'host' || value === 'cloud' || value === 'nat' || value === 'firewall' || value === 'loopback' || value === 'other') {
+    return value
+  }
+
+  const name = hostname.toLowerCase()
+  if (name.startsWith('r') || name.includes('router') || vendor === 'mikrotik') return 'router'
+  if (name.startsWith('sw') || name.includes('switch') || name.includes('vlan')) return 'switch'
+  if (name.startsWith('pc') || name.startsWith('host') || name.includes('vm') || name.includes('server')) return 'host'
+  if (name.includes('cloud') || name === 'nat' || name.includes('internet')) return 'cloud'
+  return vendor === 'aruba' && name.includes('sw') ? 'switch' : 'other'
+}
+
+function normalizeNodeType(value: unknown): Topology['nodes'][number]['nodeType'] {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized === 'qemu' || normalized === 'vpcs' || normalized === 'dynamips' || normalized === 'cloud' || normalized === 'ethernet_switch' || normalized === 'docker' || normalized === 'other') {
+    return normalized
+  }
+  return 'other'
+}
+
+function normalizeTopologyLayout(input: unknown): Record<string, { x: number; y: number }> | undefined {
+  const record = asRecord(input)
+  const entries = Object.entries(record).filter(([, value]) => {
+    const point = asRecord(value)
+    return typeof point.x === 'number' && typeof point.y === 'number'
   })
+
+  if (entries.length === 0) return undefined
+
+  return Object.fromEntries(
+    entries.map(([id, value]) => {
+      const point = asRecord(value)
+      return [id, { x: Number(point.x), y: Number(point.y) }]
+    })
+  )
+}
+
+export interface AuditLogFilters {
+  actions: string[]
+  devices: string[]
+  users: string[]
+  results: string[]
+  sources: string[]
+}
+
+export interface AuditLogPage {
+  logs: AuditLog[]
+  total: number
+  page: number
+  limit: number
+  pages: number
+  filters: AuditLogFilters
+}
+
+export interface AuditLogQuery {
+  page?: number
+  limit?: number
+  search?: string
+  action?: string
+  device?: string
+  result?: string
+  source?: string
+  user?: string
+}
+
+export async function loadBackendAuditLogs(query: AuditLogQuery = {}): Promise<AuditLogPage> {
+  const params = new URLSearchParams()
+  if (query.page) params.set('page', String(query.page))
+  if (query.limit) params.set('limit', String(query.limit))
+  if (query.search) params.set('search', query.search)
+  if (query.action) params.set('action', query.action)
+  if (query.device) params.set('device', query.device)
+  if (query.result) params.set('result', query.result)
+  if (query.source) params.set('source', query.source)
+  if (query.user) params.set('user', query.user)
+
+  const qs = params.toString()
+  const payload = await apiRequest<unknown>(`/api/v1/audit${qs ? '?' + qs : ''}`)
+  const record = asRecord(payload)
+  const events = extractArray(record.events ?? payload)
+  const filters = asRecord(record.filters ?? {})
+
+  return {
+    logs: events.map((event, index) => {
+      const item = asRecord(event)
+      return {
+        id: stringValue(item.id, `audit-${index}`),
+        time: stringValue(item.time ?? item.timestamp, '-'),
+        user: stringValue(item.user, 'system'),
+        action: stringValue(item.action, 'Unknown action'),
+        device: stringValue(item.device ?? item.device_id, '-'),
+        result: normalizeAuditResult(item.result),
+        source: normalizeAuditSource(item.source),
+        details: stringValue(item.details ?? item.command, '-'),
+      }
+    }),
+    total: Number(record.total ?? 0),
+    page: Number(record.page ?? query.page ?? 1),
+    limit: Number(record.limit ?? query.limit ?? 25),
+    pages: Number(record.pages ?? 1),
+    filters: {
+      actions: extractArray(filters.actions).map((value) => stringValue(value, '')),
+      devices: extractArray(filters.devices).map((value) => stringValue(value, '')),
+      users: extractArray(filters.users).map((value) => stringValue(value, '')),
+      results: extractArray(filters.results).map((value) => stringValue(value, '')),
+      sources: extractArray(filters.sources).map((value) => stringValue(value, '')),
+    },
+  }
 }
 
 export async function runBackendTerminalCommand(device: Device, command: string): Promise<TerminalCommandResult> {
@@ -364,6 +587,13 @@ export async function createBackendTerminalSession(deviceId: string): Promise<Te
 export async function closeBackendTerminalSession(sessionId: string): Promise<void> {
   await apiRequest<unknown>(`/api/v1/terminal/sessions/${sessionId}`, {
     method: 'DELETE',
+  })
+}
+
+export async function sendBackendTerminalInput(sessionId: string, data: string): Promise<Record<string, unknown>> {
+  return apiRequest<Record<string, unknown>>(`/api/v1/terminal/sessions/${sessionId}/input`, {
+    method: 'POST',
+    body: JSON.stringify({ data }),
   })
 }
 
@@ -443,6 +673,30 @@ export async function applyBackendConfigPlan(planId: string, approvedBy: string)
   }
 }
 
+export async function rollbackBackendConfigPlan(input: {
+  deviceId: string
+  planId?: string
+  backupId?: string
+}): Promise<ConfigApplyResult> {
+  const response = await apiRequest<unknown>('/api/v1/config/rollback', {
+    method: 'POST',
+    body: JSON.stringify({
+      device_id: input.deviceId,
+      plan_id: input.planId ?? undefined,
+      backup_id: input.backupId ?? undefined,
+    }),
+  })
+  const record = asRecord(response)
+
+  return {
+    planId: stringValue(record.plan_id ?? record.planId ?? input.planId ?? '', ''),
+    approvedBy: stringValue(record.approved_by ?? record.approvedBy ?? 'system', 'system'),
+    status: stringValue(record.status, 'rolled_back'),
+    output: extractOutputLines(record.output ?? record.report ?? response),
+    raw: response,
+  }
+}
+
 function normalizeDevice(input: unknown, healthInput?: unknown): Device {
   const item = asRecord(input)
   const health = asRecord(healthInput)
@@ -470,6 +724,7 @@ function normalizeDevice(input: unknown, healthInput?: unknown): Device {
     osVersion: stringValue(item.osVersion ?? item.os_version ?? item.version, 'Unknown'),
     uptime: stringValue(item.uptime, '-'),
     serial: stringValue(item.serial ?? item.serial_number, id),
+    deviceType: normalizeDeviceType(item.deviceType ?? item.device_type ?? item.type),
     connection: {
       protocol: normalizeProtocol(item.protocol ?? item.transport),
       status: status === 'online' ? 'connected' : status === 'warning' ? 'degraded' : 'disconnected',
@@ -673,7 +928,12 @@ function numberOrNull(value: unknown) {
 }
 
 function managementIp(item: UnknownRecord) {
-  return stringValue(item.managementIp ?? item.management_ip ?? item.management_address ?? item.host ?? item.ip, '-').split('/')[0]
+  const host = stringValue(item.managementIp ?? item.management_ip ?? item.management_address ?? item.host ?? item.ip, '-').split('/')[0]
+  const port = item.management_port ?? item.managementPort
+  if (host !== '-' && typeof port === 'number' && port > 0 && port !== 22) {
+    return `${host}:${port}`
+  }
+  return host
 }
 
 function normalizeVendor(value: unknown): Vendor {
@@ -683,6 +943,14 @@ function normalizeVendor(value: unknown): Vendor {
   if (normalized.includes('aruba') || normalized.includes('aos')) return 'aruba'
   if (normalized.includes('linux') || normalized.includes('ubuntu')) return 'linux'
   return 'other'
+}
+
+function normalizeDeviceType(value: unknown): 'physical' | 'virtual' {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('virtual') || normalized.includes('gns3') || normalized.includes('vm') || normalized.includes('emulated')) {
+    return 'virtual'
+  }
+  return 'physical'
 }
 
 function normalizeStatus(value: unknown): DeviceStatus {
@@ -727,6 +995,14 @@ function normalizeAuditResult(value: unknown): AuditLog['result'] {
   return 'success'
 }
 
+function normalizeAuditSource(value: unknown): AuditLog['source'] {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('ai') || normalized.includes('agent')) return 'ai-agent'
+  if (normalized.includes('auto')) return 'automation'
+  if (normalized.includes('api') || normalized.includes('webhook')) return 'api'
+  return 'user'
+}
+
 function average(values: number[]) {
   if (!values.length) return 0
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)
@@ -736,4 +1012,838 @@ function makeHealthLabel(range: string, index: number, total: number) {
   if (range === '1H' || range === '6H') return `-${total - index - 1}h`
   if (range === '24H') return `${index * 3}h`
   return `D${index + 1}`
+}
+
+// ------------------------------------------------------------------
+// GNS3 backend helpers
+// ------------------------------------------------------------------
+
+type Gns3LocalConfig = {
+  found: boolean
+  path: string
+  controller_url: string
+  username: string
+  auth_enabled: boolean
+  password_available: boolean
+}
+
+export type Gns3Project = {
+  project_id: string
+  name: string
+  status: string
+  nodes_count: number
+  created_at: string
+}
+
+export type Gns3Node = {
+  node_id: string
+  name: string
+  status: string
+  node_type: string
+  console_host: string | null
+  console_port: number | null
+}
+
+export type Gns3Link = {
+  link_id: string
+  nodes: Array<{ node_id: string; adapter_number: number; port_number: number }>
+  status: string
+}
+
+export type Gns3Snapshot = {
+  snapshot_id: string
+  name: string
+  created_at: string
+}
+
+let _cachedGns3Config: Gns3LocalConfig | null = null
+
+export async function loadGns3LocalConfig(): Promise<Gns3LocalConfig> {
+  if (_cachedGns3Config) return _cachedGns3Config
+  const payload = await apiRequest<unknown>('/api/v1/gns3/local-config')
+  _cachedGns3Config = payload as Gns3LocalConfig
+  return _cachedGns3Config
+}
+
+export function clearGns3ConfigCache() {
+  _cachedGns3Config = null
+}
+
+function gns3ConfigBody(config: Gns3LocalConfig, password?: string) {
+  return {
+    controller_url: config.controller_url,
+    username: config.username,
+    password: password || undefined,
+    verify_ssl: false,
+  }
+}
+
+export async function testGns3Connection(password?: string): Promise<{ status: string; projects_count: number }> {
+  const config = await loadGns3LocalConfig()
+  return apiRequest<unknown>('/api/v1/gns3/test-connection', {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  }) as Promise<{ status: string; projects_count: number }>
+}
+
+export async function loadGns3Projects(password?: string): Promise<Gns3Project[]> {
+  const config = await loadGns3LocalConfig()
+  const payload = await apiRequest<unknown>('/api/v1/gns3/projects', {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+  return extractArray(payload).map((item, index) => {
+    const r = asRecord(item)
+    return {
+      project_id: stringValue(r.project_id ?? r.id, `proj-${index}`),
+      name: stringValue(r.name, `Project ${index + 1}`),
+      status: stringValue(r.status, 'closed'),
+      nodes_count: numberValue(r.nodes_count ?? r.nodes, 0),
+      created_at: stringValue(r.created_at ?? r.created, '-'),
+    }
+  })
+}
+
+export async function createGns3Project(name: string, password?: string): Promise<Gns3Project> {
+  const config = await loadGns3LocalConfig()
+  const payload = await apiRequest<unknown>('/api/v1/gns3/projects/create', {
+    method: 'POST',
+    body: JSON.stringify({ ...gns3ConfigBody(config, password), name }),
+  })
+  const r = asRecord(payload)
+  return {
+    project_id: stringValue(r.project_id ?? r.id, ''),
+    name: stringValue(r.name, name),
+    status: stringValue(r.status, 'closed'),
+    nodes_count: numberValue(r.nodes_count, 0),
+    created_at: stringValue(r.created_at, '-'),
+  }
+}
+
+export async function openGns3Project(projectId: string, password?: string): Promise<unknown> {
+  const config = await loadGns3LocalConfig()
+  return apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/open`, {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+}
+
+export async function closeGns3Project(projectId: string, password?: string): Promise<unknown> {
+  const config = await loadGns3LocalConfig()
+  return apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/close`, {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+}
+
+export async function deleteGns3Project(projectId: string, password?: string): Promise<void> {
+  const config = await loadGns3LocalConfig()
+  await apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}`, {
+    method: 'DELETE',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+}
+
+export async function loadGns3Nodes(projectId: string, password?: string): Promise<Gns3Node[]> {
+  const config = await loadGns3LocalConfig()
+  const payload = await apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/nodes`, {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+  return extractArray(payload).map((item, index) => {
+    const r = asRecord(item)
+    return {
+      node_id: stringValue(r.node_id ?? r.id, `node-${index}`),
+      name: stringValue(r.name, `Node ${index + 1}`),
+      status: stringValue(r.status, 'stopped'),
+      node_type: stringValue(r.node_type ?? r.type, 'unknown'),
+      console_host: typeof r.console_host === 'string' ? r.console_host : null,
+      console_port: typeof r.console_port === 'number' ? r.console_port : null,
+    }
+  })
+}
+
+export async function startGns3Node(projectId: string, nodeId: string, password?: string): Promise<unknown> {
+  const config = await loadGns3LocalConfig()
+  return apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/nodes/${nodeId}/start`, {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+}
+
+export async function stopGns3Node(projectId: string, nodeId: string, password?: string): Promise<unknown> {
+  const config = await loadGns3LocalConfig()
+  return apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/nodes/${nodeId}/stop`, {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+}
+
+export async function deleteGns3Node(projectId: string, nodeId: string, password?: string): Promise<void> {
+  const config = await loadGns3LocalConfig()
+  await apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/nodes/${nodeId}`, {
+    method: 'DELETE',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+}
+
+export async function loadGns3Links(projectId: string, password?: string): Promise<Gns3Link[]> {
+  const config = await loadGns3LocalConfig()
+  const payload = await apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/links`, {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+  return extractArray(payload).map((item, index) => {
+    const r = asRecord(item)
+    return {
+      link_id: stringValue(r.link_id ?? r.id, `link-${index}`),
+      nodes: extractArray(r.nodes).map((n) => {
+        const nr = asRecord(n)
+        return {
+          node_id: stringValue(nr.node_id, ''),
+          adapter_number: numberValue(nr.adapter_number, 0),
+          port_number: numberValue(nr.port_number, 0),
+        }
+      }),
+      status: stringValue(r.status, 'up'),
+    }
+  })
+}
+
+export async function loadGns3Snapshots(projectId: string, password?: string): Promise<Gns3Snapshot[]> {
+  const config = await loadGns3LocalConfig()
+  const payload = await apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/snapshots`, {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+  return extractArray(payload).map((item, index) => {
+    const r = asRecord(item)
+    return {
+      snapshot_id: stringValue(r.snapshot_id ?? r.id, `snap-${index}`),
+      name: stringValue(r.name, `Snapshot ${index + 1}`),
+      created_at: stringValue(r.created_at, '-'),
+    }
+  })
+}
+
+export async function createGns3Snapshot(projectId: string, name: string, password?: string): Promise<Gns3Snapshot> {
+  const config = await loadGns3LocalConfig()
+  const payload = await apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/snapshots/create`, {
+    method: 'POST',
+    body: JSON.stringify({ ...gns3ConfigBody(config, password), name }),
+  })
+  const r = asRecord(payload)
+  return {
+    snapshot_id: stringValue(r.snapshot_id ?? r.id, ''),
+    name: stringValue(r.name, name),
+    created_at: stringValue(r.created_at, '-'),
+  }
+}
+
+export async function restoreGns3Snapshot(projectId: string, snapshotId: string, password?: string): Promise<unknown> {
+  const config = await loadGns3LocalConfig()
+  return apiRequest<unknown>(`/api/v1/gns3/projects/${projectId}/snapshots/${snapshotId}/restore`, {
+    method: 'POST',
+    body: JSON.stringify(gns3ConfigBody(config, password)),
+  })
+}
+
+// ------------------------------------------------------------------
+// Tasks backend helpers
+// ------------------------------------------------------------------
+
+export async function loadBackendTasks(): Promise<Task[]> {
+  const payload = await apiRequest<unknown>('/api/v1/tasks')
+  return extractArray(asRecord(payload).tasks ?? payload).map((item, index) => {
+    const r = asRecord(item)
+    return {
+      id: stringValue(r.id, `task-${index}`),
+      name: stringValue(r.name, 'Unnamed task'),
+      device: stringValue(r.device_id ?? r.device, '-'),
+      action: stringValue(r.action, '-'),
+      status: normalizeTaskStatus(r.status),
+      started: stringValue(r.started ?? r.created_at, '-'),
+      duration: stringValue(r.duration, '-'),
+      user: stringValue(r.user, 'system'),
+      agent: stringValue(r.agent, 'manual'),
+    }
+  })
+}
+
+export async function loadBackendTaskDetail(taskId: string): Promise<{ task: Task; steps: TaskStep[] }> {
+  const payload = await apiRequest<unknown>(`/api/v1/tasks/${taskId}`)
+  const r = asRecord(payload)
+  const taskRecord = asRecord(r.task ?? r)
+  return {
+    task: {
+      id: stringValue(taskRecord.id, taskId),
+      name: stringValue(taskRecord.name, 'Unnamed task'),
+      device: stringValue(taskRecord.device_id ?? taskRecord.device, '-'),
+      action: stringValue(taskRecord.action, '-'),
+      status: normalizeTaskStatus(taskRecord.status),
+      started: stringValue(taskRecord.started ?? taskRecord.created_at, '-'),
+      duration: stringValue(taskRecord.duration, '-'),
+      user: stringValue(taskRecord.user, 'system'),
+      agent: stringValue(taskRecord.agent, 'manual'),
+    },
+    steps: extractArray(r.steps ?? taskRecord.steps).map((step, index) => {
+      const s = asRecord(step)
+      return {
+        id: stringValue(s.id, `step-${index}`),
+        taskId: taskId,
+        name: stringValue(s.name, `Step ${index + 1}`),
+        status: normalizeTaskStatus(s.status),
+        timestamp: stringValue(s.timestamp ?? s.created_at, '-'),
+        output: stringValue(s.output, ''),
+        errors: typeof s.errors === 'string' ? s.errors : undefined,
+      }
+    }),
+  }
+}
+
+function normalizeTaskStatus(value: unknown): TaskStatus {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('running') || normalized.includes('progress')) return 'running'
+  if (normalized.includes('success') || normalized.includes('complete') || normalized.includes('done')) return 'success'
+  if (normalized.includes('fail') || normalized.includes('error')) return 'failed'
+  if (normalized.includes('cancel')) return 'cancelled'
+  return 'queued'
+}
+
+// ------------------------------------------------------------------
+// Alerts backend helpers
+// ------------------------------------------------------------------
+
+export async function loadBackendAlerts(): Promise<Alert[]> {
+  const payload = await apiRequest<unknown>('/api/v1/alerts')
+  return extractArray(asRecord(payload).alerts ?? payload).map((item, index) => {
+    const r = asRecord(item)
+    return {
+      id: stringValue(r.id, `alert-${index}`),
+      type: stringValue(r.type, 'system'),
+      severity: normalizeSeverity(r.severity),
+      device: stringValue(r.device_id ?? r.device, '-'),
+      message: stringValue(r.message, ''),
+      createdAt: stringValue(r.created_at ?? r.createdAt, '-'),
+      status: normalizeAlertStatus(r.status),
+    }
+  })
+}
+
+function normalizeSeverity(value: unknown): Alert['severity'] {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('critical')) return 'critical'
+  if (normalized.includes('high') || normalized.includes('major')) return 'high'
+  if (normalized.includes('medium') || normalized.includes('warning')) return 'medium'
+  if (normalized.includes('low') || normalized.includes('minor')) return 'low'
+  return 'info'
+}
+
+function normalizeAlertStatus(value: unknown): Alert['status'] {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('ack')) return 'acknowledged'
+  if (normalized.includes('resolv') || normalized.includes('close')) return 'resolved'
+  return 'open'
+}
+
+// ------------------------------------------------------------------
+// Backups backend helpers
+// ------------------------------------------------------------------
+
+export async function loadBackendBackups(): Promise<Backup[]> {
+  const payload = await apiRequest<unknown>('/api/v1/backups')
+  return extractArray(asRecord(payload).backups ?? payload).map((item, index) => {
+    const r = asRecord(item)
+    return {
+      id: stringValue(r.id, `backup-${index}`),
+      deviceId: stringValue(r.device_id ?? r.deviceId, '-'),
+      device: stringValue(r.device ?? r.device_id, '-'),
+      backupTime: stringValue(r.backup_time ?? r.backupTime, '-'),
+      type: normalizeBackupType(r.type),
+      size: stringValue(r.size, '-'),
+      createdBy: stringValue(r.created_by ?? r.createdBy, 'system'),
+    }
+  })
+}
+
+function normalizeBackupType(value: unknown): Backup['type'] {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('startup')) return 'startup'
+  if (normalized.includes('candidate')) return 'candidate'
+  return 'running'
+}
+
+// ------------------------------------------------------------------
+// Credentials backend helpers
+// ------------------------------------------------------------------
+
+export async function loadBackendCredentials(): Promise<CredentialProfile[]> {
+  const payload = await apiRequest<unknown>('/api/v1/credentials')
+  return extractArray(asRecord(payload).credentials ?? payload).map((item, index) => {
+    const r = asRecord(item)
+    return {
+      id: stringValue(r.id, `cred-${index}`),
+      name: stringValue(r.name, ''),
+      vendor: normalizeVendor(r.vendor),
+      username: stringValue(r.username, ''),
+      authType: normalizeAuthType(r.auth_type),
+      secretPreview: stringValue(r.secret_preview, '****'),
+      lastTest: stringValue(r.last_test, '-'),
+      status: normalizeCredStatus(r.status),
+    }
+  })
+}
+
+function normalizeAuthType(value: unknown): CredentialProfile['authType'] {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('key')) return 'ssh-key'
+  if (normalized.includes('token')) return 'api-token'
+  return 'password'
+}
+
+function normalizeCredStatus(value: unknown): CredentialProfile['status'] {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('valid') || normalized.includes('pass')) return 'valid'
+  if (normalized.includes('fail') || normalized.includes('error')) return 'failed'
+  return 'untested'
+}
+
+// ------------------------------------------------------------------
+// Settings backend helpers
+// ------------------------------------------------------------------
+
+export async function loadBackendSettings(): Promise<NetworkSettings> {
+  const payload = await apiRequest<unknown>('/api/v1/settings')
+  const r = asRecord(payload)
+  const general = asRecord(r.general)
+  const ai = asRecord(r.ai)
+  const ssh = asRecord(r.ssh)
+  return {
+    general: {
+      workspaceName: stringValue(general.workspace_name, 'AI Network Agent'),
+      timezone: stringValue(general.timezone, 'UTC'),
+      defaultView: stringValue(general.default_view, 'dashboard'),
+    },
+    ai: {
+      provider: stringValue(ai.provider, 'openai'),
+      model: stringValue(ai.model, 'gpt-4'),
+      temperature: numberValue(ai.temperature, 0.7),
+      maximumTokens: numberValue(ai.maximum_tokens, 4096),
+      requireApproval: Boolean(ai.require_approval),
+      automaticBackup: Boolean(ai.automatic_backup),
+      postChangeValidation: Boolean(ai.post_change_validation),
+      automaticRollback: Boolean(ai.automatic_rollback),
+      allowDestructiveCommands: Boolean(ai.allow_destructive_commands),
+    },
+    ssh: {
+      timeoutSeconds: numberValue(ssh.timeout_seconds, 30),
+      commandTimeoutSeconds: numberValue(ssh.command_timeout_seconds, 60),
+      strictHostKeyChecking: Boolean(ssh.strict_host_key_checking),
+    },
+  }
+}
+
+// ------------------------------------------------------------------
+// Discovery backend helpers
+// ------------------------------------------------------------------
+
+export async function loadBackendDiscoveryResults(): Promise<DiscoveryResult[]> {
+  const payload = await apiRequest<unknown>('/api/v1/discovery')
+  return extractArray(asRecord(payload).results ?? payload).flatMap((item) => {
+    const r = asRecord(item)
+    return extractArray(r.devices).map((device, index) => {
+      const d = asRecord(device)
+      return {
+        id: stringValue(d.id, `disc-${index}`),
+        ip: stringValue(d.ip, '-'),
+        hostname: stringValue(d.hostname, '-'),
+        vendor: normalizeVendor(d.vendor),
+        platform: stringValue(d.platform, 'Unknown'),
+        ssh: normalizeProbeStatus(d.ssh),
+        snmp: normalizeProbeStatus(d.snmp),
+        status: normalizeDiscoveryStatus(d.status),
+      }
+    })
+  })
+}
+
+function normalizeProbeStatus(value: unknown): 'open' | 'closed' | 'unknown' {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('open') || normalized.includes('true')) return 'open'
+  if (normalized.includes('closed') || normalized.includes('false')) return 'closed'
+  return 'unknown'
+}
+
+function normalizeDiscoveryStatus(value: unknown): DiscoveryResult['status'] {
+  const normalized = String(value ?? '').toLowerCase()
+  if (normalized.includes('added')) return 'added'
+  if (normalized.includes('ignored')) return 'ignored'
+  return 'ready'
+}
+
+// ------------------------------------------------------------------
+// Agent backend helpers
+// ------------------------------------------------------------------
+
+export async function sendAgentChat(
+  message: string,
+  deviceId?: string,
+  options?: {
+    sessionId?: string
+    deviceIds?: string[]
+    labId?: string
+    projectId?: string
+    environment?: 'lab' | 'staging' | 'production'
+    mode?: string
+  },
+): Promise<AgentMessage> {
+  const payload = await apiRequest<unknown>('/api/v1/agent/chat', {
+    method: 'POST',
+    body: JSON.stringify({
+      message,
+      device_id: deviceId,
+      session_id: options?.sessionId,
+      device_ids: options?.deviceIds ?? (deviceId ? [deviceId] : []),
+      lab_id: options?.labId,
+      project_id: options?.projectId,
+      environment: options?.environment ?? 'lab',
+      mode: options?.mode ?? 'guarded',
+    }),
+  })
+  const r = asRecord(payload)
+  return {
+    id: stringValue(r.id, `msg-${Date.now()}`),
+    role: 'assistant',
+    content: stringValue(r.content, ''),
+    createdAt: stringValue(r.created_at, new Date().toISOString()),
+  }
+}
+
+export async function createAgentPlan(intent: string, deviceIds: string[]): Promise<ExecutionPlan> {
+  const payload = await apiRequest<unknown>('/api/v1/agent/plan', {
+    method: 'POST',
+    body: JSON.stringify({ intent, device_ids: deviceIds }),
+  })
+  const r = asRecord(payload)
+  return {
+    id: stringValue(r.id, `plan-${Date.now()}`),
+    task: stringValue(r.task, intent),
+    devices: extractArray(r.devices).map(String),
+    plannedActions: extractArray(r.planned_actions).map(String),
+    risk: normalizePlanRisk(r.risk) as ExecutionPlan['risk'],
+    requiresApproval: Boolean(r.requires_approval),
+  }
+}
+
+export async function executeAgentPlan(planId: string, approvedBy: string): Promise<Record<string, unknown>> {
+  return apiRequest<Record<string, unknown>>('/api/v1/agent/execute', {
+    method: 'POST',
+    body: JSON.stringify({
+      plan_id: planId,
+      approved_by: approvedBy,
+    }),
+  })
+}
+
+export async function cancelAgentPlan(planId: string, cancelledBy: string): Promise<Record<string, unknown>> {
+  return apiRequest<Record<string, unknown>>('/api/v1/agent/cancel', {
+    method: 'POST',
+    body: JSON.stringify({
+      plan_id: planId,
+      cancelled_by: cancelledBy,
+    }),
+  })
+}
+
+// ------------------------------------------------------------------
+// Containerlab backend helpers
+// ------------------------------------------------------------------
+
+export type ContainerlabLab = {
+  id: string
+  name: string
+  topology_file: string
+  status: string
+  created_at: string
+  nodes: Array<{ name: string; kind: string; status: string }>
+}
+
+export async function loadContainerlabLabs(): Promise<ContainerlabLab[]> {
+  const payload = await apiRequest<unknown>('/api/v1/containerlab/labs')
+  return extractArray(asRecord(payload).labs ?? payload).map((item, index) => {
+    const r = asRecord(item)
+    return {
+      id: stringValue(r.id, `clab-${index}`),
+      name: stringValue(r.name, `Lab ${index + 1}`),
+      topology_file: stringValue(r.topology_file, ''),
+      status: stringValue(r.status, 'stopped'),
+      created_at: stringValue(r.created_at, '-'),
+      nodes: extractArray(r.nodes).map((n) => {
+        const nr = asRecord(n)
+        return {
+          name: stringValue(nr.name, ''),
+          kind: stringValue(nr.kind, 'unknown'),
+          status: stringValue(nr.status, 'stopped'),
+        }
+      }),
+    }
+  })
+}
+
+export async function loadBackendLabs(): Promise<Lab[]> {
+  const [gns3Result, containerlabResult] = await Promise.allSettled([
+    loadGns3Projects(),
+    loadContainerlabLabs(),
+  ])
+
+  const labs: Lab[] = []
+
+  if (gns3Result.status === 'fulfilled') {
+    const nodeCounts = await Promise.allSettled(
+      gns3Result.value.map(async (project) => {
+        const nodes = await loadGns3Nodes(project.project_id)
+        return { projectId: project.project_id, nodes: nodes.length }
+      })
+    )
+    const nodeCountByProject = new Map(
+      nodeCounts.flatMap((result) =>
+        result.status === 'fulfilled' ? [[result.value.projectId, result.value.nodes] as const] : []
+      )
+    )
+
+    labs.push(
+      ...gns3Result.value.map((project) => ({
+        id: project.project_id,
+        name: project.name,
+        engine: 'gns3' as const,
+        nodes: nodeCountByProject.get(project.project_id) ?? project.nodes_count,
+        status: (project.status === 'opened' ? 'running' : project.status === 'degraded' ? 'degraded' : 'stopped') as Lab['status'],
+        cpu: 0,
+        ram: 0,
+        created: project.created_at,
+      }))
+    )
+  }
+
+  if (containerlabResult.status === 'fulfilled') {
+    labs.push(...containerlabResult.value.map((lab) => ({
+      id: lab.id,
+      name: lab.name,
+      engine: 'containerlab' as const,
+      nodes: lab.nodes.length,
+      status: (lab.status === 'running' || lab.status === 'deploying' ? 'running' : 'stopped') as Lab['status'],
+      cpu: 0,
+      ram: 0,
+      created: lab.created_at,
+    })))
+  }
+
+  return labs.sort((a, b) => a.created < b.created ? 1 : -1)
+}
+
+export async function loadBackendLabDetail(labId: string): Promise<{ lab: Lab; topology: Topology }> {
+  const labs = await loadBackendLabs()
+  const lab = labs.find((item) => item.id === labId)
+  if (!lab) {
+    throw new Error('Lab not found')
+  }
+
+  if (lab.engine === 'gns3') {
+    const topology = await loadBackendTopology(lab.id)
+    return {
+      lab: {
+        ...lab,
+        nodes: topology.nodes.length || lab.nodes,
+      },
+      topology,
+    }
+  }
+
+  const inventory = await loadContainerlabLabs()
+  const found = inventory.find((item) => item.id === labId)
+  if (!found) {
+    return {
+      lab,
+      topology: {
+        id: lab.id,
+        name: lab.name,
+        nodes: [],
+        links: [],
+      },
+    }
+  }
+
+  return {
+    lab,
+    topology: {
+      id: lab.id,
+      name: lab.name,
+      nodes: found.nodes.map((node, index) => ({
+        id: `${lab.id}-node-${index}`,
+        hostname: node.name,
+        vendor: node.kind.includes('mikrotik') ? 'mikrotik' : node.kind.includes('cisco') ? 'cisco' : node.kind.includes('aruba') ? 'aruba' : 'linux',
+        status: node.status === 'running' ? 'online' : 'offline',
+        ip: '-',
+      })),
+      links: [],
+    },
+  }
+}
+
+export async function deployContainerlabLab(name: string, topologyFile: string): Promise<ContainerlabLab> {
+  const payload = await apiRequest<unknown>('/api/v1/containerlab/labs/deploy', {
+    method: 'POST',
+    body: JSON.stringify({ name, topology_file: topologyFile }),
+  })
+  const r = asRecord(payload)
+  return {
+    id: stringValue(r.id, ''),
+    name: stringValue(r.name, name),
+    topology_file: stringValue(r.topology_file, topologyFile),
+    status: stringValue(r.status, 'deploying'),
+    created_at: stringValue(r.created_at, '-'),
+    nodes: [],
+  }
+}
+
+export async function destroyContainerlabLab(labId: string): Promise<void> {
+  await apiRequest<unknown>(`/api/v1/containerlab/labs/${labId}/destroy`, {
+    method: 'POST',
+  })
+}
+
+// ------------------------------------------------------------------
+// 9Router backend helpers
+// ------------------------------------------------------------------
+
+export type NineRouterSearchResult = {
+  title: string
+  url: string
+  snippet: string
+  score?: number
+  published_at?: string | null
+}
+
+export type NineRouterSearchResponse = {
+  provider: string
+  query: string
+  results: NineRouterSearchResult[]
+  answer?: string | null
+}
+
+export type NineRouterFetchResponse = {
+  provider: string
+  url: string
+  title?: string
+  content?: {
+    format: string
+    text: string
+    length?: number
+  }
+  metadata?: Record<string, unknown>
+}
+
+export async function searchNineRouter(query: string, maxResults?: number, searchType?: string): Promise<NineRouterSearchResponse> {
+  return apiRequest<NineRouterSearchResponse>('/api/v1/ninerouter/search', {
+    method: 'POST',
+    body: JSON.stringify({
+      query,
+      max_results: maxResults ?? 5,
+      search_type: searchType ?? 'web',
+    }),
+  })
+}
+
+export async function fetchNineRouterUrl(url: string, format?: string, maxCharacters?: number): Promise<NineRouterFetchResponse> {
+  return apiRequest<NineRouterFetchResponse>('/api/v1/ninerouter/fetch', {
+    method: 'POST',
+    body: JSON.stringify({
+      url,
+      format: format ?? 'markdown',
+      max_characters: maxCharacters ?? 12000,
+    }),
+  })
+}
+
+export async function getNineRouterStatus(): Promise<{ status: string; url?: string; error?: string }> {
+  return apiRequest<{ status: string; url?: string; error?: string }>('/api/v1/ninerouter/status')
+}
+
+export type NineRouterFreeModel = {
+  id: string
+  name: string
+  description: string
+  tier: string
+}
+
+export async function getNineRouterFreeModels(): Promise<NineRouterFreeModel[]> {
+  const payload = await apiRequest<unknown>('/api/v1/ninerouter/models/free')
+  const record = asRecord(payload)
+  return extractArray(record.models).map((item) => {
+    const r = asRecord(item)
+    return {
+      id: stringValue(r.id, ''),
+      name: stringValue(r.name, ''),
+      description: stringValue(r.description, ''),
+      tier: stringValue(r.tier, 'free'),
+    }
+  }).filter((m) => m.id)
+}
+
+// ------------------------------------------------------------------
+// Agent tools backend helpers
+// ------------------------------------------------------------------
+
+export type AgentTool = {
+  name: string
+  description: string
+  parameters: Record<string, unknown>
+}
+
+export async function loadAgentTools(): Promise<AgentTool[]> {
+  const payload = await apiRequest<unknown>('/api/v1/agent/tools')
+  return extractArray(asRecord(payload).tools).map((item) => {
+    const r = asRecord(item)
+    return {
+      name: stringValue(r.name, ''),
+      description: stringValue(r.description, ''),
+      parameters: asRecord(r.parameters),
+    }
+  }).filter((t) => t.name)
+}
+
+export async function executeAgentTool(toolName: string, params: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return apiRequest<Record<string, unknown>>('/api/v1/agent/tools/execute', {
+    method: 'POST',
+    body: JSON.stringify({ tool: toolName, ...params }),
+  })
+}
+
+// ------------------------------------------------------------------
+// Configurations backend helpers
+// ------------------------------------------------------------------
+
+export async function loadBackendConfigurations(): Promise<Configuration[]> {
+  const payload = await apiRequest<unknown>('/api/v1/config/plans')
+  const plans = extractArray(asRecord(payload).plans ?? payload)
+  return plans.map((item, index) => {
+    const r = asRecord(item)
+    const commands = extractOutputLines(r.commands)
+    return {
+      id: stringValue(r.plan_id ?? r.id, `config-${index}`),
+      deviceId: stringValue(r.device_id ?? r.deviceId, '-'),
+      mode: 'raw-cli' as const,
+      candidate: commands.join('\n'),
+      risk: normalizePlanRisk(r.risk_level ?? r.risk) as Configuration['risk'],
+      generated: stringValue(r.created_at ?? r.createdAt, '-'),
+      validation: extractArray(r.checks).map((check) => {
+        const c = asRecord(check)
+        return {
+          check: stringValue(c.check, ''),
+          result: stringValue(c.result, 'safe') as 'safe' | 'warning' | 'blocked',
+          detail: stringValue(c.detail, ''),
+        }
+      }),
+    }
+  })
 }

@@ -1,0 +1,76 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 1307 >>
+stream
+BT
+/F1 9 Tf
+1 0 0 1 48.0 794.0 Tm
+(Network Device Report) Tj
+1 0 0 1 48.0 781.0 Tm
+() Tj
+1 0 0 1 48.0 768.0 Tm
+(SR-R2 \(static-routing-r2\) — Summary) Tj
+1 0 0 1 48.0 755.0 Tm
+(Field  |  Value) Tj
+1 0 0 1 48.0 742.0 Tm
+(Hostname  |  SR-R2) Tj
+1 0 0 1 48.0 729.0 Tm
+(Vendor  |  cisco) Tj
+1 0 0 1 48.0 716.0 Tm
+(Platform  |  ios) Tj
+1 0 0 1 48.0 703.0 Tm
+(Reachable  |  yes) Tj
+1 0 0 1 48.0 690.0 Tm
+() Tj
+1 0 0 1 48.0 677.0 Tm
+(SR-R2 \(static-routing-r2\) — Routes) Tj
+1 0 0 1 48.0 664.0 Tm
+(Network  |  Next Hop  |  Interface  |  Distance  |  Metric) Tj
+1 0 0 1 48.0 651.0 Tm
+(0.0.0.0/0  |  192.168.42.1  |    |  0  |  0) Tj
+1 0 0 1 48.0 638.0 Tm
+(10.10.12.0/30  |  -  |  GigabitEthernet0/1  |  0  |  0) Tj
+1 0 0 1 48.0 625.0 Tm
+(10.10.12.2/32  |  -  |  GigabitEthernet0/1  |  0  |  0) Tj
+1 0 0 1 48.0 612.0 Tm
+(192.168.10.0/24  |  10.10.12.1  |    |  0  |  0) Tj
+1 0 0 1 48.0 599.0 Tm
+(192.168.20.0/24  |  -  |  GigabitEthernet0/0  |  0  |  0) Tj
+1 0 0 1 48.0 586.0 Tm
+(192.168.20.1/32  |  -  |  GigabitEthernet0/0  |  0  |  0) Tj
+1 0 0 1 48.0 573.0 Tm
+(192.168.30.0/24  |  10.10.12.1  |    |  0  |  0) Tj
+1 0 0 1 48.0 560.0 Tm
+(192.168.42.0/24  |  -  |  GigabitEthernet0/2  |  0  |  0) Tj
+1 0 0 1 48.0 547.0 Tm
+(192.168.42.136/32  |  -  |  GigabitEthernet0/2  |  0  |  0) Tj
+1 0 0 1 48.0 534.0 Tm
+() Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001600 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1697
+%%EOF

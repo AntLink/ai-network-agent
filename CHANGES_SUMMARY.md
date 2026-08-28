@@ -3,6 +3,21 @@
 ## Objective
 Convert ALL backend endpoints (Cisco, MikroTik, Switch) to return structured JSON instead of raw CLI text for easier frontend data management.
 
+## Follow-up Fix - Agent Chat History Persistence
+The AI agent chat UI was stabilized after a follow-up regression where the previous assistant bubble could render empty and older history could disappear after refresh.
+
+### What Was Fixed
+
+- Backend session message storage now upserts by message ID instead of blindly appending duplicates.
+- Frontend agent runtime now replays the stored session transcript back into the thread on reload.
+- Assistant bubble rendering now falls back to persisted session text when runtime content is temporarily empty.
+- Follow-up runs no longer wipe earlier messages when the session is refreshed.
+
+### Validation
+
+- `npm run lint` passed
+- `npm run build` passed
+
 ## Frontend Follow-up
 The device detail UI was updated after the backend normalization to make the frontend more operationally useful:
 

@@ -1,0 +1,322 @@
+{
+  "plans": {
+    "099357a0": {
+      "commands": [
+        "! AI request: Configure GigabitEthernet0/1 on R1 as 192.168.10.1/24 and keep management connectivity safe.",
+        "interface GigabitEthernet0/1",
+        " ip address 192.168.10.1/24",
+        " no shutdown"
+      ],
+      "created_at": "2026-08-25T10:15:40.008967+00:00",
+      "description": "Frontend generated ai configuration for R1",
+      "device_id": "cisco-iosv-r1",
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-25T10:15:40.008967+00:00",
+      "verify": [
+        {
+          "command": "show ip interface brief",
+          "expect": null
+        }
+      ]
+    },
+    "1059a24c": {
+      "commands": [
+        "interface GigabitEthernet0/1",
+        "description frontend-plan-test"
+      ],
+      "created_at": "2026-08-24T16:32:44.562830+00:00",
+      "description": "frontend contract sanity check",
+      "device_id": "cisco-iosv-r1",
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-24T16:32:44.562830+00:00",
+      "verify": [
+        {
+          "command": "show ip interface brief",
+          "expect": null
+        }
+      ]
+    },
+    "1e5392e9": {
+      "commands": [
+        "/ip address add address=192.168.80.1/128 interface=ether3 network=192.168.80.1"
+      ],
+      "created_at": "2026-08-27T18:45:39.765110+00:00",
+      "description": "Add IP address 192.168.80.1/128 on interface ether3 with explicit network",
+      "device_id": "static-routing-mt1",
+      "report": {
+        "description": "Add IP address 192.168.80.1/128 on interface ether3 with explicit network",
+        "reason": "apply failed: Command failed: 1",
+        "rollback": {
+          "output": "Command failed: 1",
+          "status": "FAIL"
+        },
+        "status": "rolled_back",
+        "steps": []
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-27T18:45:47.358210+00:00",
+      "verify": []
+    },
+    "21ca7a0d": {
+      "commands": [
+        "show version"
+      ],
+      "created_at": "2026-08-25T09:41:08.232803+00:00",
+      "description": "Smoke test plan",
+      "device_id": "cisco-iosv-r1",
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-25T09:41:08.232803+00:00",
+      "verify": []
+    },
+    "2f4d8e0d": {
+      "commands": [
+        "show version"
+      ],
+      "created_at": "2026-08-25T10:26:46.305390+00:00",
+      "description": "Smoke test",
+      "device_id": "cisco-iosv-r1",
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-25T10:26:46.305390+00:00",
+      "verify": []
+    },
+    "64204bd7": {
+      "commands": [
+        "interface GigabitEthernet0/1",
+        " ip address 192.168.10.1/24",
+        " no shutdown"
+      ],
+      "created_at": "2026-08-24T19:27:41.197946+00:00",
+      "description": "Frontend generated structured configuration for R1",
+      "device_id": "cisco-iosv-r1",
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-24T19:27:41.197946+00:00",
+      "verify": [
+        {
+          "command": "show ip interface brief",
+          "expect": null
+        }
+      ]
+    },
+    "6b0e4dfa": {
+      "commands": [
+        "interface GigabitEthernet0/1",
+        " ip address 192.168.10.1/24",
+        " no shutdown"
+      ],
+      "created_at": "2026-08-24T19:27:43.287272+00:00",
+      "description": "Frontend generated structured configuration for R1",
+      "device_id": "cisco-iosv-r1",
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-24T19:27:43.287272+00:00",
+      "verify": [
+        {
+          "command": "show ip interface brief",
+          "expect": null
+        }
+      ]
+    },
+    "6dabf075": {
+      "commands": [
+        "interface GigabitEthernet0/1",
+        " ip address 192.168.10.1/24",
+        " no shutdown"
+      ],
+      "created_at": "2026-08-25T10:16:02.617688+00:00",
+      "description": "Frontend generated structured configuration for R1",
+      "device_id": "cisco-iosv-r1",
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-25T10:16:02.617688+00:00",
+      "verify": [
+        {
+          "command": "show ip interface brief",
+          "expect": null
+        }
+      ]
+    },
+    "7dc427c1": {
+      "commands": [
+        "interface GigabitEthernet0/1",
+        " ip address 192.168.10.1/24",
+        " no shutdown"
+      ],
+      "created_at": "2026-08-24T19:27:42.266455+00:00",
+      "description": "Frontend generated structured configuration for R1",
+      "device_id": "cisco-iosv-r1",
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-24T19:27:42.266455+00:00",
+      "verify": [
+        {
+          "command": "show ip interface brief",
+          "expect": null
+        }
+      ]
+    },
+    "8352c081": {
+      "commands": [
+        "/ip address add address=192.168.80.1/128 interface=ether3"
+      ],
+      "created_at": "2026-08-27T18:34:40.928905+00:00",
+      "description": "Add IP address 192.168.80.1/128 on interface ether3",
+      "device_id": "static-routing-mt1",
+      "report": {
+        "description": "Add IP address 192.168.80.1/128 on interface ether3",
+        "reason": "apply failed: Command failed: 1",
+        "rollback": {
+          "output": "Script Error: failure: already have such address (/ip/address/add; line 10) (:import; line 1)",
+          "status": "?"
+        },
+        "status": "rolled_back",
+        "steps": []
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-27T18:34:47.701662+00:00",
+      "verify": []
+    },
+    "8ddbc634": {
+      "commands": [
+        "/ip address add address=192.168.80.1/24 interface=ether3"
+      ],
+      "created_at": "2026-08-27T18:46:32.784432+00:00",
+      "description": "Add IP address 192.168.80.1/24 on interface ether3",
+      "device_id": "static-routing-mt1",
+      "report": {
+        "description": "Add IP address 192.168.80.1/24 on interface ether3",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 0,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-27T18:46:37.517777+00:00",
+      "verify": []
+    },
+    "9d3c398d": {
+      "commands": [
+        "ip address add address=192.168.80.1/128 interface=ether3"
+      ],
+      "created_at": "2026-08-27T18:20:31.135250+00:00",
+      "description": "Add IP address 192.168.80.1/128 on interface ether3",
+      "device_id": "static-routing-mt1",
+      "report": {
+        "description": "Add IP address 192.168.80.1/128 on interface ether3",
+        "reason": "export backup failed; no changes applied",
+        "status": "failed_preapply",
+        "steps": []
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "failed_preapply",
+      "updated_at": "2026-08-27T18:21:36.040040+00:00",
+      "verify": []
+    },
+    "aa65c716": {
+      "commands": [
+        "/ip address add address=192.168.80.1/128 interface=ether3"
+      ],
+      "created_at": "2026-08-27T18:28:25.238062+00:00",
+      "description": "Add IP address 192.168.80.1/128 on interface ether3 (retry)",
+      "device_id": "static-routing-mt1",
+      "report": {
+        "description": "Add IP address 192.168.80.1/128 on interface ether3 (retry)",
+        "reason": "export backup failed; no changes applied",
+        "status": "failed_preapply",
+        "steps": []
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "failed_preapply",
+      "updated_at": "2026-08-27T18:28:30.528841+00:00",
+      "verify": []
+    },
+    "bae596b2": {
+      "commands": [
+        "/ip address add address=192.168.80.1/128 interface=ether3"
+      ],
+      "created_at": "2026-08-27T18:23:34.340754+00:00",
+      "description": "Add IP address 192.168.80.1/128 on interface ether3",
+      "device_id": "static-routing-mt1",
+      "report": {
+        "description": "Add IP address 192.168.80.1/128 on interface ether3",
+        "reason": "export backup failed; no changes applied",
+        "status": "failed_preapply",
+        "steps": []
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "failed_preapply",
+      "updated_at": "2026-08-27T18:23:46.638171+00:00",
+      "verify": []
+    },
+    "c6133287": {
+      "commands": [
+        "interface GigabitEthernet0/1",
+        " ip address 192.168.10.1/24",
+        " no shutdown"
+      ],
+      "created_at": "2026-08-25T10:31:32.991298+00:00",
+      "description": "Frontend generated structured configuration for MK-1",
+      "device_id": "mikrotik-chr-mk-1",
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-25T10:31:32.991298+00:00",
+      "verify": [
+        {
+          "command": "show ip interface brief",
+          "expect": null
+        }
+      ]
+    },
+    "fca24b97": {
+      "commands": [
+        "! AI request: Configure GigabitEthernet0/1 on R1 as 192.168.10.1/24 and keep management connectivity safe.",
+        "interface GigabitEthernet0/1",
+        " ip address 192.168.10.1/24",
+        " no shutdown"
+      ],
+      "created_at": "2026-08-25T10:15:42.642748+00:00",
+      "description": "Frontend generated ai configuration for R1",
+      "device_id": "cisco-iosv-r1",
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-25T10:15:42.642748+00:00",
+      "verify": [
+        {
+          "command": "show ip interface brief",
+          "expect": null
+        }
+      ]
+    }
+  }
+}

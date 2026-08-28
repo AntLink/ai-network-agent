@@ -60,10 +60,12 @@ def _device_credentials(device: dict) -> tuple[str, str, str]:
 class CiscoDriver(BaseDriver):
     def _transport(self):
         username, password, _ = _device_credentials(self.device)
+        port = int(self.device.get("management_port") or 22)
         return SSHTransport(
             self.device["management_address"],
             username,
             password,
+            port=port,
             connect_options=IOSV_LEGACY_SSH_OPTIONS,
         )
 
@@ -80,6 +82,8 @@ class CiscoDriver(BaseDriver):
             int(port),
             password=password,
             enable_password=secret,
+            username=None,
+            enable=True,
             device_id=self.device["id"],
         )
 
@@ -462,16 +466,17 @@ class CiscoDriver(BaseDriver):
         result: dict = {"device_id": self.device["id"]}
         addr = self.device.get("management_address") or ""
         host = addr.split("/")[0]
+        port = int(self.device.get("management_port") or 22)
         try:
             reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(host, 22), timeout=5.0
+                asyncio.open_connection(host, port), timeout=2.0
             )
             result["reachable"] = True
         except Exception as e:
             result.update(status="unreachable", reachable=False, reason=f"TCP/22 unreachable: {e}")
             return result
         try:
-            banner = await asyncio.wait_for(reader.readline(), timeout=5.0)
+            banner = await asyncio.wait_for(reader.readline(), timeout=2.0)
             result["ssh_banner"] = banner.decode(errors="replace").strip()
         except Exception:
             result["ssh_banner"] = None  # slow banner != unreachable

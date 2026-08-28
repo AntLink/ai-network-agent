@@ -64,6 +64,7 @@ Do not modify files until this discovery is complete.
 Read `references/repo-conventions.md` before implementing routes, API mocks, charts, or layouts.
 Read `references/frontend-blueprint.md` when planning or implementing product pages.
 Read `references/network-safety-ux.md` before implementing configuration or destructive workflows.
+Read `docs/AI_NETWORK_COPILOT_ARCHITECTURE.md` before implementing or changing `/agent`, `/tasks`, `/terminal`, configuration approval, or real-time event rendering.
 
 ## Preserve the base stack
 
@@ -216,6 +217,28 @@ Example requests:
 - Back up all network devices.
 
 Never present an AI-generated configuration as already applied unless the backend confirms successful execution.
+
+The AI experience should behave as a Network Copilot:
+
+```text
+Plan -> Validate -> Execute -> Verify
+```
+
+The UI should render agent output as typed operational cards when backend data is available:
+
+- `message`
+- `plan`
+- `device_state`
+- `command_output`
+- `config_diff`
+- `approval`
+- `task_progress`
+- `alert`
+- `verification`
+
+Do not reduce every agent response to Markdown if the response contains structured state. Plans, approvals, diffs, command output, and verification results should use dedicated card layouts.
+
+The frontend must not imply the LLM has direct SSH access. Show generated intent, plan, dry run, approval state, execution progress, and verification results. Backend drivers own the vendor-specific command translation.
 
 ## Network change workflow
 
@@ -439,6 +462,20 @@ agent_message
 alert_created
 topology_change
 ```
+
+Agent/task event payloads may include card-level types such as:
+
+```json
+{
+  "type": "task_progress",
+  "task_id": "task-182",
+  "step": "backup",
+  "status": "success",
+  "message": "Running configuration backed up"
+}
+```
+
+Render these events as progress state, not as raw JSON, except in a debug/raw view.
 
 Do not build a fake polling architecture that makes future streaming unnecessarily difficult if the backend requirements clearly call for streaming.
 

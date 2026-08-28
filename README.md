@@ -1,80 +1,180 @@
-# AI Network Agent V3 — OpenCode Project Structure
+# AI Network Agent — AI-Powered Network Operations Center
 
-This package restructures the supplied V2 generator output into a project-local OpenCode layout.
+AI-driven network management platform for Cisco, MikroTik, Aruba, GNS3, Containerlab, and vrnetlab environments.
 
-## Layout
-- `.opencode/skills/` — original supplied skills / vendor knowledge.
-- `.opencode/agents/` — planner, operator, auditor, troubleshooter.
-- `.opencode/tools/` — original custom OpenCode tools (currently mock/stub implementations from V2).
-- `src/drivers/` — vendor-specific runtime logic.
-- `src/transports/` — SSH / REST / NETCONF transport layer.
-- `src/parsers/` — vendor output parsers.
-- `src/policy/` — policy/risk logic.
-- `src/storage/` — backup and audit persistence.
-- `inventory/` — device inventory; copy `devices.example.json` to `devices.json`.
-- `backups/` — configuration backups.
-- `logs/` — immutable/audit-style event logs.
-- `tests/` — test fixtures and unit tests.
+## Features
 
-## Important
-The supplied OpenCode custom tools are preserved as provided. They are architecture stubs and return mocked data; they do not yet connect to real devices. Implement the runtime transports/drivers and then wire the `.opencode/tools/*.ts` files to them before production use.
+### Frontend (React + Vite + TypeScript + Tailwind CSS)
 
-## Suggested flow
-User -> network-planner -> read-only tools -> plan/validate -> approval -> network-operator -> policy/backup/apply/verify -> rollback on failure.
+| Page | Description |
+|------|-------------|
+| Dashboard | Network health, device status, AI operations |
+| Devices | Device list, detail, interfaces, routes, config |
+| Terminal | Interactive SSH sessions with autocomplete |
+| Configurations | Config plan, dry-run, apply, rollback |
+| GNS3 | Project lifecycle, nodes, links, snapshots |
+| Containerlab | Lab deployment, topology management |
+| Tasks | Task execution tracking |
+| Alerts | Alert management |
+| Backups | Backup inventory |
+| Agent | AI Network Copilot with chat, plan, validate |
+| Credentials | Credential management (secrets never exposed) |
+| Settings | General, AI, SSH, security settings |
+| Discovery | Network discovery and device onboarding |
+| Audit | Audit trail and event history |
+| Topology | Network topology visualization |
 
+### Backend (FastAPI + Python)
 
-## FastAPI Backend
+**19 endpoint modules:**
 
-Python FastAPI control-plane is included in `backend/` and is intended to be called by OpenCode custom tools.
-
-Run: `cd backend && python -m uvicorn app.main:app --port 8000`
-Docs: http://127.0.0.1:8000/docs
-
-### MikroTik API (vendor suite)
-`/api/v1/mikrotik/{device_id}/...` — 88 endpoint: read-only resources, config write
-(ip/vlan/bridge/firewall/route/dhcp/system/wireless), hotspot management,
-PPP (secret/profile/active/kick) dan VPN tunnel server+client untuk
-l2tp/pptp/sstp/ovpn/pppoe. Lihat `ARCHITECTURE.md` untuk rincian dan
-`logs/SESSION-2026-08-22-mikrotik.md` untuk riwayat implementasi + perubahan live.
-
-Device ID mengikuti `mikrotik-<board>-<identity>`; kredensial per device di `backend/.env`.
-
-## Cisco Driver Refactoring (2026-08-24)
-
-Cisco IOS driver telah direfactor untuk menghilangkan duplikasi kode:
-- `backend/app/drivers/cisco/base.py` - Common utilities (credential management, IP parsing)
-- Semua driver (driver.py, netmiko_driver.py, connection.py) sekarang menggunakan base.py
-- Lihat `logs/SESSION-2026-08-24-cisco-driver-refactor.md` untuk detail lengkap.
-
-## API Response Format Standardization (2026-08-24)
-
-Semua endpoint backend (Cisco, MikroTik, Generic) sekarang mengembalikan format JSON terstruktur:
-
-```json
-{
-  "data": {"structured": "parsed_json_data"},
-  "raw": "original_cli_text_output"
-}
+```
+/devices    /config     /monitoring   /topology   /audit
+/mikrotik   /cisco      /gns3         /policy     /terminal
+/tasks      /alerts     /backups      /agent      /credentials
+/settings   /discovery  /containerlab /ninerouter
 ```
 
-### Manfaat:
-- **Frontend-friendly**: Data terstruktur mudah ditampilkan dalam tabel dan UI
-- **Konsistensi**: Semua endpoint menggunakan format yang sama
-- **Backward compatible**: Teks CLI asli masih tersedia untuk debugging
-- **Tahan error**: Frontend dapat mendeteksi dan menangani kegagalan parsing
+### AI Providers
 
-### Parser yang Tersedia:
-- **Cisco**: `backend/app/drivers/cisco/parser.py` - 10+ parser untuk perintah show *
-- **MikroTik**: `backend/app/drivers/mikrotik/parser.py` - 8+ parser untuk perintah /system, /interface, /ip *
+| Provider | Chat | Stream | Web Search | Free Models |
+|----------|------|--------|------------|-------------|
+| OpenAI | ✅ | ✅ | - | - |
+| Anthropic | ✅ | ✅ | - | - |
+| Ollama | ✅ | ✅ | - | ✅ Local |
+| 9Router | ✅ | ✅ | ✅ | ✅ Go/Zen |
 
-Lihat `CHANGES_SUMMARY.md` untuk detail lengkap semua perubahan.
+### Agent Tools
 
-## Frontend Detail UX Update (2026-08-24)
+- `get_device` — Device facts and status
+- `get_interfaces` — Interface status
+- `get_routes` — Routing table
+- `get_running_config` — Running configuration
+- `ping` — Ping from device
+- `traceroute` — Traceroute from device
+- `validate_config` — Validate without applying
+- `backup_config` — Backup configuration
 
-Detail device UI di frontend sekarang lebih vendor-aware dan lebih responsif:
-- Skeleton loading dipakai saat membuka `device -> details`.
-- Overlay loading sudah disederhanakan agar tidak menampilkan teks yang mengganggu.
-- Toast notification memiliki animasi masuk dan keluar.
-- Layout detail dipisah per profil perangkat: Cisco router, Cisco switch, dan MikroTik router.
+### Real-time Streaming
 
-Lihat `logs/SESSION-2026-08-24-frontend-ui-update.md` untuk catatan perubahan UI terbaru.
+- Terminal: WebSocket `WS /api/v1/terminal/sessions/{id}/stream`
+- Agent: SSE `GET /api/v1/agent/events/stream`
+- Tasks: SSE `GET /api/v1/tasks/stream`
+
+## Quick Start
+
+### 1. Backend Setup
+
+```bash
+# Create virtual environment
+python -m venv env
+.\env\Scripts\activate  # Windows
+source env/bin/activate  # Linux/Mac
+
+# Install dependencies
+pip install -r backend/requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# Run backend
+cd backend
+uvicorn app.main:app --reload --port 8000
+```
+
+### 2. Frontend Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Configure environment
+# Create .env file:
+# VITE_API_BASE_URL=http://localhost:8000
+# VITE_USE_MOCKS=false
+
+# Run frontend
+npm run dev
+```
+
+### 3. Environment Variables
+
+```bash
+# Backend
+VITE_API_BASE_URL=http://localhost:8000
+VITE_USE_MOCKS=false
+
+# AI Provider (choose one)
+AI_PROVIDER=9router     # or openai, anthropic, ollama
+
+# 9Router (free models available)
+NINEROUTER_URL=http://127.0.0.1:20128
+NINEROUTER_KEY=your-secret-key
+NINEROUTER_MODEL=opencode-go  # free: opencode-go, opencode-zen
+
+# OpenAI
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4
+
+# Anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+
+# Ollama (local)
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3
+```
+
+## API Documentation
+
+Start the backend and visit:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## Project Structure
+
+```
+ai-network-agent/
+├── backend/
+│   ├── app/
+│   │   ├── agent/          # AI provider abstraction, tools
+│   │   ├── api/v1/         # FastAPI endpoints
+│   │   ├── drivers/        # Cisco, MikroTik, GNS3 drivers
+│   │   ├── core/           # Audit, policy
+│   │   ├── models/         # Data models
+│   │   ├── parsers/        # CLI output parsers
+│   │   ├── services/       # Terminal service
+│   │   └── transports/     # SSH transport
+│   └── tests/
+├── src/
+│   ├── api/network/        # API client, hooks, backend adapter
+│   ├── components/         # Reusable UI components
+│   ├── views/              # Page components
+│   ├── types/              # TypeScript types
+│   └── hooks/              # Custom hooks
+├── inventory/              # Device inventory
+├── backups/                # Configuration backups
+├── logs/                   # Session logs
+└── docs/                   # Documentation
+```
+
+## Safety Principles
+
+1. **No SSH in browser** — All SSH runs through backend
+2. **No credentials in frontend** — Secrets stay backend-side
+3. **Plan → Validate → Execute → Verify** — All changes go through workflow
+4. **Approval required** — Destructive changes need confirmation
+5. **Backup before deploy** — Automatic backup before changes
+6. **Rollback available** — Can undo changes if needed
+
+## Documentation
+
+- `docs/FRONTEND_BACKEND_INTEGRATION.md` — Endpoint sync guide
+- `docs/AI_NETWORK_COPILOT_ARCHITECTURE.md` — AI agent architecture
+- `ARCHITECTURE.md` — System architecture
+- `logs/` — Session logs and history
+
+## License
+
+MIT

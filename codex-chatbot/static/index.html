@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codex Chatbot</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #111827;
+      --border: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-2: #2563eb;
+      --error: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: linear-gradient(135deg, #0b1020 0%, #111827 100%);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(10px);
+    }
+    header h1 { margin: 0; font-size: 18px; }
+    header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .wrap {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
+      padding: 16px;
+      height: calc(100vh - 74px);
+    }
+    .sidebar, .chat {
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .sidebar { padding: 16px; overflow-y: auto; }
+    .sidebar h2 { margin: 0 0 12px; font-size: 14px; }
+    select, input, button, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px;
+      font: inherit;
+    }
+    button { cursor: pointer; background: var(--accent); border: none; font-weight: 600; }
+    button:hover { background: var(--accent-2); }
+    .btn-danger { background: #991b1b; }
+    .btn-danger:hover { background: #b91c1c; }
+    .actions { display: grid; gap: 8px; margin-top: 12px; }
+    .models { display: grid; gap: 8px; }
+    .model-item {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #0f172a;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .model-item:hover { border-color: var(--accent); }
+    .model-item.active { border-color: var(--accent); background: rgba(37, 99, 235, 0.2); }
+    .chat { display: flex; flex-direction: column; }
+    .messages { flex: 1; overflow: auto; padding: 16px; display: grid; gap: 12px; align-content: start; }
+    .msg {
+      max-width: 80%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+    .msg.user { margin-left: auto; background: rgba(37, 99, 235, 0.25); border: 1px solid rgba(59, 130, 246, 0.35); }
+    .msg.assistant { background: rgba(31, 41, 55, 0.9); border: 1px solid var(--border); }
+    .msg.error { background: rgba(127, 29, 29, 0.6); border: 1px solid rgba(239, 68, 68, 0.5); color: #fecaca; }
+    .msg.thinking { color: var(--muted); font-style: italic; }
+    .composer {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.9);
+    }
+    textarea { resize: none; min-height: 80px; }
+    .row { display: flex; gap: 8px; }
+    .row > * { flex: 1; }
+    .status { font-size: 12px; color: var(--muted); margin-top: 12px; }
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; height: auto; }
+      .sidebar { max-height: 200px; }
+      .messages { min-height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Codex Chatbot</h1>
+    <p>9Router-powered network assistant &middot; Codex SDK</p>
+  </header>
+  <div class="wrap">
+    <aside class="sidebar">
+      <h2>Free Models</h2>
+      <div id="models" class="models"></div>
+      <div class="actions">
+        <button id="clearBtn" class="btn-danger">Clear Chat</button>
+      </div>
+      <p class="status" id="status">Loading...</p>
+    </aside>
+
+    <section class="chat">
+      <div id="messages" class="messages"></div>
+      <div class="composer">
+        <textarea id="input" placeholder="Ask about routing, GNS3, MikroTik, Cisco, or network automation..."></textarea>
+        <div class="row">
+          <button id="sendBtn">Send</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('input');
+    const statusEl = document.getElementById('status');
+    const modelsEl = document.getElementById('models');
+    const sessionId = crypto.randomUUID();
+
+    let currentModel = '';
+
+    function addMessage(role, content, extra = '') {
+      const div = document.createElement('div');
+      div.className = `msg ${role}${extra ? ' ' + extra : ''}`;
+      div.textContent = content;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return div;
+    }
+
+    async function loadModels() {
+      try {
+        const res = await fetch('/api/models');
+        const data = await res.json();
+        currentModel = data.current || '';
+        modelsEl.innerHTML = '';
+
+        data.models.forEach((m) => {
+          const item = document.createElement('div');
+          item.className = `model-item${m.id === currentModel ? ' active' : ''}`;
+          item.innerHTML = `<strong>${m.name}</strong><br><span style="color:var(--muted)">${m.id}</span>`;
+          item.onclick = () => {
+            currentModel = m.id;
+            document.querySelectorAll('.model-item').forEach((el) => el.classList.remove('active'));
+            item.classList.add('active');
+          };
+          modelsEl.appendChild(item);
+        });
+
+        statusEl.textContent = `Ready \u2022 ${data.models.length} models`;
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    async function sendMessage() {
+      const message = inputEl.value.trim();
+      if (!message) return;
+
+      addMessage('user', message);
+      inputEl.value = '';
+      inputEl.disabled = true;
+
+      const placeholder = addMessage('assistant', 'Thinking...', 'thinking');
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Session-Id': sessionId,
+          },
+          body: JSON.stringify({ message }),
+        });
+        const data = await res.json();
+        placeholder.remove();
+
+        if (!res.ok) {
+          addMessage('assistant', data.error || 'Request failed', 'error');
+        } else {
+          addMessage('assistant', data.reply);
+        }
+      } catch (err) {
+        placeholder.remove();
+        addMessage('assistant', err.message, 'error');
+      } finally {
+        inputEl.disabled = false;
+        inputEl.focus();
+      }
+    }
+
+    async function clearChat() {
+      await fetch('/api/chat/clear', {
+        method: 'POST',
+        headers: { 'X-Session-Id': sessionId },
+      });
+      messagesEl.innerHTML = '';
+      addMessage('assistant', 'Chat cleared. How can I help you?');
+    }
+
+    document.getElementById('sendBtn').onclick = sendMessage;
+    document.getElementById('clearBtn').onclick = clearChat;
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    loadModels();
+  </script>
+</body>
+</html>

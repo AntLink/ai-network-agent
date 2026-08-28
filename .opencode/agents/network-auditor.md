@@ -1,7 +1,7 @@
 ---
 description: Security audit and compliance verification for network devices. Read-only.
 mode: subagent
-model: claude-3.7-sonnet
+model: 9router/opencode-reasoning
 permission:
   device_get_*: allow
   network_security_scan: allow

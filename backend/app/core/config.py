@@ -14,12 +14,20 @@ class Settings(BaseSettings):
     AUDIT_LOG_FILE: str = str(ROOT / "logs" / "audit.log")
     CONFIG_PLAN_FILE: str = str(ROOT / "logs" / "config-plans.json")
 
+    # Base URL yang dipakai untuk membuat link download backup yang absolut.
+    PUBLIC_BASE_URL: str = "http://127.0.0.1:8000"
+
     SSH_CONNECT_TIMEOUT: int = 15
     SSH_COMMAND_TIMEOUT: int = 45
     ALLOW_DIRECT_WRITE: bool = True
 
+    NINEROUTER_URL: str = "http://127.0.0.1:20128"
+    NINEROUTER_KEY: str = ""
+    NINEROUTER_MODEL: str = "opencode-cheap"
+    AI_PROVIDER: str = "9router"
+
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )

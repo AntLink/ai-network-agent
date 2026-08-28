@@ -19,6 +19,7 @@ class IOSConnection:
         return {
             "device_type": "cisco_ios",
             "host": self.device["management_address"],
+            "port": int(self.device.get("management_port") or 22),
             "username": username,
             "password": password,
             "secret": secret,

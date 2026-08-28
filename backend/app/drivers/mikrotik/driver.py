@@ -32,11 +32,43 @@ def ros_kv(key: str, value) -> str:
 
 
 class MikroTikDriver(BaseDriver):
-    def _transport(self):
+    def _prefer_console(self) -> bool:
+        return str(self.device.get("transport") or "").lower() in ("console", "telnet")
+
+    def _console_transport(self):
+        """Console (telnet) path untuk perangkat GNS3/gang terpencil.
+
+        Dihormati bila inventory memakai transport=telnet/console dan punya
+        console_host/console_port (console serial GNS3).
+        """
+        host = self.device.get("console_host")
+        port = self.device.get("console_port")
+        if not host or not port:
+            return None
+        from app.transports.console import ConsoleTransport
         prefix = self.device["id"].upper().replace("-", "_")
         username = os.getenv(f"{prefix}_USERNAME", os.getenv("NETWORK_USERNAME", "admin"))
         password = os.getenv(f"{prefix}_PASSWORD", os.getenv("NETWORK_PASSWORD"))
-        return SSHTransport(self.device["management_address"], username, password)
+        bootstrap = os.getenv(f"{prefix}_BOOTSTRAP_PASSWORD", os.getenv("NETWORK_BOOTSTRAP_PASSWORD", "admin123"))
+        return ConsoleTransport(
+            host, int(port),
+            username=username,
+            password=password or None,
+            allow_empty_password=True,
+            bootstrap_password=bootstrap,
+            device_id=self.device["id"],
+        )
+
+    def _transport(self):
+        if self._prefer_console():
+            con = self._console_transport()
+            if con:
+                return con
+        prefix = self.device["id"].upper().replace("-", "_")
+        username = os.getenv(f"{prefix}_USERNAME", os.getenv("NETWORK_USERNAME", "admin"))
+        password = os.getenv(f"{prefix}_PASSWORD", os.getenv("NETWORK_PASSWORD"))
+        port = int(self.device.get("management_port") or 22)
+        return SSHTransport(self.device["management_address"], username, password, port=port)
 
     async def _logged(self, action: str, detail: str, fn):
         """Run an operation with timed OK/FAIL audit logging (parity with Cisco)."""
@@ -792,9 +824,10 @@ class MikroTikDriver(BaseDriver):
         result: dict = {"device_id": self.device["id"]}
         addr = self.device.get("management_address") or ""
         host = addr.split("/")[0]
+        port = int(self.device.get("management_port") or 22)
         try:
             reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(host, 22), timeout=5.0
+                asyncio.open_connection(host, port), timeout=5.0
             )
             banner = await asyncio.wait_for(reader.readline(), timeout=3.0)
             writer.close()
@@ -904,8 +937,14 @@ class MikroTikDriver(BaseDriver):
     # ------------------------------------------------------------------
 
     async def _txn_backup_export(self):
-        out = await self._transport().run("/export file=txn-backup")
-        return "txn-backup.rsc" in out
+        # RouterOS 7: `/export file=...` menulis file tanpa echo ke terminal
+        # (stdout kosong), jadi verifikasi lewat `/file print` bukan string di stdout.
+        await self._transport().run("/export file=txn-backup")
+        try:
+            verify = await self._transport().run('/file print where name~"txn-backup"')
+            return "txn-backup.rsc" in verify
+        except Exception:
+            return False
 
     async def _txn_rollback(self):
         try:

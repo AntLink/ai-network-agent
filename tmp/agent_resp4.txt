@@ -1,0 +1,3240 @@
+﻿data: {"type": "start", "id": "evt-start-1787795914", "session_id": null, "device_ids": ["linux-embedded", "linux-debian", "linux-ubuntu", "static-routing-pc1", "static-routing-pc2", "static-routing-pc3"], "lab_id": null, "project_id": null, "environment": "lab"}
+
+data: {"type": "workflow_state", "id": "workflow-fe0dbd5a8b", "taskId": "wf-1787795914", "state": "thinking", "label": "Thinking", "detail": "Backend sedang membaca konteks permintaan.", "activeIndex": 0, "eventsCount": 0, "devices": ["linux-embedded", "linux-debian", "linux-ubuntu", "static-routing-pc1", "static-routing-pc2", "static-routing-pc3"], "createdAt": "2026-08-27T09:58:34.040004"}
+
+data: {"type": "plan", "id": "plan-1787795918", "task": "Analyze network request", "devices": ["linux-embedded", "linux-debian", "linux-ubuntu", "static-routing-pc1", "static-routing-pc2", "static-routing-pc3"], "plannedActions": ["Collect current device state", "Interpret request intent", "Prepare next action"], "risk": "low", "requiresApproval": false, "createdAt": "2026-08-27T09:58:38.044711"}
+
+data: {"type": "workflow_state", "id": "workflow-e2485aacfb", "taskId": "plan-1787795918", "state": "planning", "label": "Planning", "detail": "Rencana tindakan sudah disusun.", "activeIndex": 1, "eventsCount": 1, "devices": ["linux-embedded", "linux-debian", "linux-ubuntu", "static-routing-pc1", "static-routing-pc2", "static-routing-pc3"], "createdAt": "2026-08-27T09:58:38.044835"}
+
+data: {"type": "device_state", "id": "state-0a5c7e434c", "taskId": "plan-1787795918", "deviceId": "linux-embedded", "device": "CSMS-SINGKAWANG", "vendor": "linux", "platform": "embedded", "summary": "6 device snapshot(s) collected", "content": "{\n  \"snapshots\": [\n    {\n      \"device_id\": \"linux-embedded\",\n      \"facts\": {\n        \"id\": \"linux-embedded\",\n        \"hostname\": \"CSMS-SINGKAWANG\",\n        \"management_address\": \"192.168.162.20\",\n        \"vendor\": \"linux\",\n        \"platform\": \"embedded\",\n        \"transport\": \"ssh\",\n        \"status\": \"active\",\n        \"device_type\": \"physical\"\n      },\n      \"health\": {\n        \"device_id\": \"linux-embedded\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    },\n    {\n      \"device_id\": \"linux-debian\",\n      \"facts\": {\n        \"id\": \"linux-debian\",\n        \"hostname\": \"fauzan\",\n        \"management_address\": \"172.23.193.80\",\n        \"vendor\": \"linux\",\n        \"platform\": \"debian\",\n        \"transport\": \"ssh\",\n        \"status\": \"active\",\n        \"device_type\": \"physical\"\n      },\n      \"health\": {\n        \"device_id\": \"linux-debian\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    },\n    {\n      \"device_id\": \"linux-ubuntu\",\n      \"facts\": {\n        \"id\": \"linux-ubuntu\",\n        \"hostname\": \"ubuntu\",\n        \"management_address\": \"192.168.210.51\",\n        \"vendor\": \"linux\",\n        \"platform\": \"ubuntu\",\n        \"transport\": \"ssh\",\n        \"status\": \"active\",\n        \"device_type\": \"physical\"\n      },\n      \"health\": {\n        \"device_id\": \"linux-ubuntu\",\n        \"reachable\": true,\n        \"ssh_banner\": \"SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.18\"\n      },\n      \"interfaces\": [\n        {\n          \"ifindex\": 1,\n          \"ifname\": \"lo\",\n          \"flags\": [\n            \"LOOPBACK\",\n            \"UP\",\n            \"LOWER_UP\"\n          ],\n          \"mtu\": 65536,\n          \"qdisc\": \"noqueue\",\n          \"operstate\": \"UNKNOWN\",\n          \"group\": \"default\",\n          \"txqlen\": 1000,\n          \"link_type\": \"loopback\",\n          \"address\": \"00:00:00:00:00:00\",\n          \"broadcast\": \"00:00:00:00:00:00\",\n          \"addr_info\": [\n            {\n              \"family\": \"inet\",\n              \"local\": \"127.0.0.1\",\n              \"prefixlen\": 8,\n              \"scope\": \"host\",\n              \"label\": \"lo\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            },\n            {\n              \"family\": \"inet6\",\n              \"local\": \"::1\",\n              \"prefixlen\": 128,\n              \"scope\": \"host\",\n              \"noprefixroute\": true,\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            }\n          ]\n        },\n        {\n          \"ifindex\": 2,\n          \"ifname\": \"enp2s0\",\n          \"flags\": [\n            \"BROADCAST\",\n            \"MULTICAST\",\n            \"UP\",\n            \"LOWER_UP\"\n          ],\n          \"mtu\": 1500,\n          \"qdisc\": \"fq_codel\",\n          \"operstate\": \"UP\",\n          \"group\": \"default\",\n          \"txqlen\": 1000,\n          \"link_type\": \"ether\",\n          \"address\": \"08:62:66:ce:1f:76\",\n          \"broadcast\": \"ff:ff:ff:ff:ff:ff\",\n          \"addr_info\": [\n            {\n              \"family\": \"inet\",\n              \"local\": \"192.168.210.51\",\n              \"prefixlen\": 24,\n              \"broadcast\": \"192.168.210.255\",\n              \"scope\": \"global\",\n              \"noprefixroute\": true,\n              \"label\": \"enp2s0\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            },\n            {\n              \"family\": \"inet6\",\n              \"local\": \"fe80::a62:66ff:fece:1f76\",\n              \"prefixlen\": 64,\n              \"scope\": \"link\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            }\n          ]\n        },\n        {\n          \"ifindex\": 3,\n          \"ifname\": \"wlp3s0\",\n          \"flags\": [\n            \"NO-CARRIER\",\n            \"BROADCAST\",\n            \"MULTICAST\",\n            \"UP\"\n          ],\n          \"mtu\": 1500,\n          \"qdisc\": \"noqueue\",\n          \"operstate\": \"DOWN\",\n          \"group\": \"default\",\n          \"txqlen\": 1000,\n          \"link_type\": \"ether\",\n          \"address\": \"40:e2:30:ed:7c:53\",\n          \"broadcast\": \"ff:ff:ff:ff:ff:ff\",\n          \"addr_info\": []\n        },\n        {\n          \"ifindex\": 7,\n          \"ifname\": \"docker0\",\n          \"flags\": [\n            \"BROADCAST\",\n            \"MULTICAST\",\n            \"UP\",\n            \"LOWER_UP\"\n          ],\n          \"mtu\": 1500,\n          \"qdisc\": \"noqueue\",\n          \"operstate\": \"UP\",\n          \"group\": \"default\",\n          \"link_type\": \"ether\",\n          \"address\": \"be:b3:7d:ac:d2:5e\",\n          \"broadcast\": \"ff:ff:ff:ff:ff:ff\",\n          \"addr_info\": [\n            {\n              \"family\": \"inet\",\n              \"local\": \"172.17.0.1\",\n              \"prefixlen\": 16,\n              \"broadcast\": \"172.17.255.255\",\n              \"scope\": \"global\",\n              \"label\": \"docker0\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            },\n            {\n              \"family\": \"inet6\",\n              \"local\": \"fe80::bcb3:7dff:feac:d25e\",\n              \"prefixlen\": 64,\n              \"scope\": \"link\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            }\n          ]\n        },\n        {\n          \"ifindex\": 8,\n          \"ifname\": \"br-dc7a8a53329a\",\n          \"flags\": [\n            \"NO-CARRIER\",\n            \"BROADCAST\",\n            \"MULTICAST\",\n            \"UP\"\n          ],\n          \"mtu\": 1500,\n          \"qdisc\": \"noqueue\",\n          \"operstate\": \"DOWN\",\n          \"group\": \"default\",\n          \"link_type\": \"ether\",\n          \"address\": \"d2:c5:da:7d:f7:3e\",\n          \"broadcast\": \"ff:ff:ff:ff:ff:ff\",\n          \"addr_info\": [\n            {\n              \"family\": \"inet\",\n              \"local\": \"172.18.0.1\",\n              \"prefixlen\": 16,\n              \"broadcast\": \"172.18.255.255\",\n              \"scope\": \"global\",\n              \"label\": \"br-dc7a8a53329a\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            }\n          ]\n        },\n        {\n          \"ifindex\": 13,\n          \"ifname\": \"br-e35e598509e7\",\n          \"flags\": [\n            \"NO-CARRIER\",\n            \"BROADCAST\",\n            \"MULTICAST\",\n            \"UP\"\n          ],\n          \"mtu\": 1500,\n          \"qdisc\": \"noqueue\",\n          \"operstate\": \"DOWN\",\n          \"group\": \"default\",\n          \"link_type\": \"ether\",\n          \"address\": \"92:fd:90:76:5f:ad\",\n          \"broadcast\": \"ff:ff:ff:ff:ff:ff\",\n          \"addr_info\": [\n            {\n              \"family\": \"inet\",\n              \"local\": \"172.19.0.1\",\n              \"prefixlen\": 16,\n              \"broadcast\": \"172.19.255.255\",\n              \"scope\": \"global\",\n              \"label\": \"br-e35e598509e7\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            },\n            {\n              \"family\": \"inet6\",\n              \"local\": \"fe80::90fd:90ff:fe76:5fad\",\n              \"prefixlen\": 64,\n              \"scope\": \"link\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            }\n          ]\n        },\n        {\n          \"ifindex\": 304,\n          \"link_index\": 2,\n          \"ifname\": \"veth4b7792e\",\n          \"flags\": [\n            \"BROADCAST\",\n            \"MULTICAST\",\n            \"UP\",\n            \"LOWER_UP\"\n          ],\n          \"mtu\": 1500,\n          \"qdisc\": \"noqueue\",\n          \"master\": \"docker0\",\n          \"operstate\": \"UP\",\n          \"group\": \"default\",\n          \"link_type\": \"ether\",\n          \"address\": \"7a:03:7e:69:ab:93\",\n          \"broadcast\": \"ff:ff:ff:ff:ff:ff\",\n          \"link_netnsid\": 0,\n          \"addr_info\": [\n            {\n              \"family\": \"inet6\",\n              \"local\": \"fe80::7803:7eff:fe69:ab93\",\n              \"prefixlen\": 64,\n              \"scope\": \"link\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            }\n          ]\n        },\n        {\n          \"ifindex\": 310,\n          \"ifname\": \"ztrf2wa4b7\",\n          \"flags\": [\n            \"BROADCAST\",\n            \"MULTICAST\",\n            \"UP\",\n            \"LOWER_UP\"\n          ],\n          \"mtu\": 2800,\n          \"qdisc\": \"fq_codel\",\n          \"operstate\": \"UNKNOWN\",\n          \"group\": \"default\",\n          \"txqlen\": 1000,\n          \"link_type\": \"ether\",\n          \"address\": \"3a:68:95:8c:9f:c3\",\n          \"broadcast\": \"ff:ff:ff:ff:ff:ff\",\n          \"addr_info\": [\n            {\n              \"family\": \"inet\",\n              \"local\": \"172.25.62.236\",\n              \"prefixlen\": 16,\n              \"broadcast\": \"172.25.255.255\",\n              \"scope\": \"global\",\n              \"label\": \"ztrf2wa4b7\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            },\n            {\n              \"family\": \"inet6\",\n              \"local\": \"fe80::3868:95ff:fe8c:9fc3\",\n              \"prefixlen\": 64,\n              \"scope\": \"link\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            }\n          ]\n        },\n        {\n          \"ifindex\": 311,\n          \"ifname\": \"ppp0\",\n          \"flags\": [\n            \"POINTOPOINT\",\n            \"MULTICAST\",\n            \"NOARP\",\n            \"UP\",\n            \"LOWER_UP\"\n          ],\n          \"mtu\": 1400,\n          \"qdisc\": \"fq_codel\",\n          \"operstate\": \"UNKNOWN\",\n          \"group\": \"default\",\n          \"txqlen\": 3,\n          \"link_type\": \"ppp\",\n          \"addr_info\": [\n            {\n              \"family\": \"inet\",\n              \"local\": \"192.168.6.220\",\n              \"address\": \"192.168.6.80\",\n              \"prefixlen\": 32,\n              \"scope\": \"global\",\n              \"label\": \"ppp0\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            },\n            {\n              \"family\": \"inet6\",\n              \"local\": \"fe80::f432:ea91:83e1:40cd\",\n              \"address\": \"fe80::16d6:d6e7:f0:3e2\",\n              \"prefixlen\": 128,\n              \"scope\": \"link\",\n              \"valid_life_time\": 4294967295,\n              \"preferred_life_time\": 4294967295\n            }\n          ]\n        }\n      ],\n      \"routes\": [\n        {\n          \"dst\": \"default\",\n          \"gateway\": \"192.168.210.1\",\n          \"dev\": \"enp2s0\",\n          \"protocol\": \"static\",\n          \"metric\": 100,\n          \"flags\": []\n        },\n        {\n          \"dst\": \"36.88.39.234\",\n          \"gateway\": \"192.168.210.1\",\n          \"dev\": \"enp2s0\",\n          \"protocol\": \"static\",\n          \"metric\": 50,\n          \"flags\": []\n        },\n        {\n          \"dst\": \"172.17.0.0/16\",\n          \"dev\": \"docker0\",\n          \"protocol\": \"kernel\",\n          \"scope\": \"link\",\n          \"prefsrc\": \"172.17.0.1\",\n          \"flags\": []\n        },\n        {\n          \"dst\": \"172.18.0.0/16\",\n          \"dev\": \"br-dc7a8a53329a\",\n          \"protocol\": \"kernel\",\n          \"scope\": \"link\",\n          \"prefsrc\": \"172.18.0.1\",\n          \"flags\": [\n            \"linkdown\"\n          ]\n        },\n        {\n          \"dst\": \"172.19.0.0/16\",\n          \"dev\": \"br-e35e598509e7\",\n          \"protocol\": \"kernel\",\n          \"scope\": \"link\",\n          \"prefsrc\": \"172.19.0.1\",\n          \"flags\": [\n            \"linkdown\"\n          ]\n        },\n        {\n          \"dst\": \"172.25.0.0/16\",\n          \"dev\": \"ztrf2wa4b7\",\n          \"protocol\": \"kernel\",\n          \"scope\": \"link\",\n          \"prefsrc\": \"172.25.62.236\",\n          \"flags\": []\n        },\n        {\n          \"dst\": \"192.168.6.0/24\",\n          \"dev\": \"ppp0\",\n          \"protocol\": \"static\",\n          \"scope\": \"link\",\n          \"metric\": 50,\n          \"flags\": []\n        },\n        {\n          \"dst\": \"192.168.6.80\",\n          \"dev\": \"ppp0\",\n          \"protocol\": \"kernel\",\n          \"scope\": \"link\",\n          \"prefsrc\": \"192.168.6.220\",\n          \"flags\": []\n        },\n        {\n          \"dst\": \"192.168.6.80\",\n          \"dev\": \"ppp0\",\n          \"protocol\": \"kernel\",\n          \"scope\": \"link\",\n          \"prefsrc\": \"192.168.6.220\",\n          \"metric\": 50,\n          \"flags\": []\n        },\n        {\n          \"dst\": \"192.168.210.0/24\",\n          \"dev\": \"enp2s0\",\n          \"protocol\": \"kernel\",\n          \"scope\": \"link\",\n          \"prefsrc\": \"192.168.210.51\",\n          \"metric\": 100,\n          \"flags\": []\n        },\n        {\n          \"dst\": \"192.168.210.1\",\n          \"dev\": \"enp2s0\",\n          \"protocol\": \"static\",\n          \"scope\": \"link\",\n          \"metric\": 50,\n          \"flags\": []\n        }\n      ]\n    },\n    {\n      \"device_id\": \"static-routing-pc1\",\n      \"facts\": {\n        \"id\": \"static-routing-pc1\",\n        \"hostname\": \"SR-PC1\",\n        \"management_address\": \"192.168.10.10\",\n        \"vendor\": \"linux\",\n        \"platform\": \"vpcs\",\n        \"transport\": \"api\",\n        \"status\": \"active\",\n        \"console_host\": \"172.22.134.144\",\n        \"console_port\": 5031,\n        \"device_type\": \"virtual\",\n        \"model\": \"VPCS\",\n        \"lab\": \"Static-Routing-Lab\"\n      },\n      \"health\": {\n        \"device_id\": \"static-routing-pc1\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    },\n    {\n      \"device_id\": \"static-routing-pc2\",\n      \"facts\": {\n        \"id\": \"static-routing-pc2\",\n        \"hostname\": \"SR-PC2\",\n        \"management_address\": \"192.168.20.10\",\n        \"vendor\": \"linux\",\n        \"platform\": \"vpcs\",\n        \"transport\": \"api\",\n        \"status\": \"active\",\n        \"console_host\": \"172.22.134.144\",\n        \"console_port\": 5033,\n        \"device_type\": \"virtual\",\n        \"model\": \"VPCS\",\n        \"lab\": \"Static-Routing-Lab\"\n      },\n      \"health\": {\n        \"device_id\": \"static-routing-pc2\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    },\n    {\n      \"device_id\": \"static-routing-pc3\",\n      \"facts\": {\n        \"id\": \"static-routing-pc3\",\n        \"hostname\": \"SR-PC3\",\n        \"management_address\": \"192.168.30.10\",\n        \"vendor\": \"linux\",\n        \"platform\": \"vpcs\",\n        \"transport\": \"api\",\n        \"status\": \"active\",\n        \"console_host\": \"172.22.134.144\",\n        \"console_port\": 5010,\n        \"device_type\": \"virtual\",\n        \"model\": \"VPCS\",\n        \"lab\": \"Static-Routing-Lab\"\n      },\n      \"health\": {\n        \"device_id\": \"static-routing-pc3\",\n        \"reachable\": false,\n        \"reason\": \"[WinError 1225] The remote computer refused the network connection\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    }\n  ]\n}", "devices": ["linux-embedded", "linux-debian", "linux-ubuntu", "static-routing-pc1", "static-routing-pc2", "static-routing-pc3"], "createdAt": "2026-08-27T09:58:38.165736"}
+
+data: {"type": "workflow_state", "id": "workflow-aae621cdb0", "taskId": "plan-1787795918", "state": "running", "label": "Running", "detail": "Backend menjalankan langkah yang disepakati.", "activeIndex": 3, "eventsCount": 4, "devices": ["linux-embedded", "linux-debian", "linux-ubuntu", "static-routing-pc1", "static-routing-pc2", "static-routing-pc3"], "createdAt": "2026-08-27T09:58:38.246464"}
+
+data: {"type": "task_progress", "id": "progress-1787795918-1", "taskId": "plan-1787795918", "step": "Collect current device state", "status": "running", "message": "Collect current device state...", "order": 1, "total": 3, "createdAt": "2026-08-27T09:58:38.246600"}
+
+data: {"type": "task_progress", "id": "progress-1787795918-2", "taskId": "plan-1787795918", "step": "Interpret request intent", "status": "running", "message": "Interpret request intent...", "order": 2, "total": 3, "createdAt": "2026-08-27T09:58:38.328079"}
+
+data: {"type": "task_progress", "id": "progress-1787795918-3", "taskId": "plan-1787795918", "step": "Prepare next action", "status": "success", "message": "Prepare next action...", "order": 3, "total": 3, "createdAt": "2026-08-27T09:58:38.409326"}
+
+data: {"type": "text", "text": "Ber"}
+
+data: {"type": "text", "text": "ikut"}
+
+data: {"type": "text", "text": " pand"}
+
+data: {"type": "text", "text": "uan"}
+
+data: {"type": "text", "text": " mem"}
+
+data: {"type": "text", "text": "eri"}
+
+data: {"type": "text", "text": "ks"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": " peng"}
+
+data: {"type": "text", "text": "g"}
+
+data: {"type": "text", "text": "una"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " disk"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " memory"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " server"}
+
+data: {"type": "text", "text": " Linux"}
+
+data: {"type": "text", "text": " Ubuntu"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " dis"}
+
+data: {"type": "text", "text": "us"}
+
+data: {"type": "text", "text": "un"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": " ber"}
+
+data: {"type": "text", "text": "das"}
+
+data: {"type": "text", "text": "ark"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " status"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "bar"}
+
+data: {"type": "text", "text": "u"}
+
+data: {"type": "text", "text": " dari"}
+
+data: {"type": "text", "text": " lab"}
+
+data: {"type": "text", "text": " G"}
+
+data: {"type": "text", "text": "NS"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Ring"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "asan"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Perm"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "aan"}
+
+data: {"type": "text", "text": " Anda"}
+
+data: {"type": "text", "text": " adalah"}
+
+data: {"type": "text", "text": " bag"}
+
+data: {"type": "text", "text": "aim"}
+
+data: {"type": "text", "text": "ana"}
+
+data: {"type": "text", "text": " car"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": " mem"}
+
+data: {"type": "text", "text": "eri"}
+
+data: {"type": "text", "text": "ks"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": " peng"}
+
+data: {"type": "text", "text": "g"}
+
+data: {"type": "text", "text": "una"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "disk"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "memory"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " server"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Linux"}
+
+data: {"type": "text", "text": " Ubuntu"}
+
+data: {"type": "text", "text": "**."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Lab"}
+
+data: {"type": "text", "text": " G"}
+
+data: {"type": "text", "text": "NS"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": " sa"}
+
+data: {"type": "text", "text": "at"}
+
+data: {"type": "text", "text": " ini"}
+
+data: {"type": "text", "text": " mem"}
+
+data: {"type": "text", "text": "il"}
+
+data: {"type": "text", "text": "iki"}
+
+data: {"type": "text", "text": " t"}
+
+data: {"type": "text", "text": "iga"}
+
+data: {"type": "text", "text": " host"}
+
+data: {"type": "text", "text": " Linux"}
+
+data: {"type": "text", "text": " yang"}
+
+data: {"type": "text", "text": " akt"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "linux"}
+
+data: {"type": "text", "text": "-ubuntu"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "hostname"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "ubuntu"}
+
+data: {"type": "text", "text": "**,"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": " \u2192"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "online"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": "ak"}
+
+data: {"type": "text", "text": "ses"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "linux"}
+
+data: {"type": "text", "text": "-debian"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "hostname"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "f"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": "zan"}
+
+data: {"type": "text", "text": "**,"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": " \u2192"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "tid"}
+
+data: {"type": "text", "text": "ak"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": "jang"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": " dalam"}
+
+data: {"type": "text", "text": " snapshot"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "akh"}
+
+data: {"type": "text", "text": "ir"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "linux"}
+
+data: {"type": "text", "text": "-embedded"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "hostname"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "CS"}
+
+data: {"type": "text", "text": "MS"}
+
+data: {"type": "text", "text": "-S"}
+
+data: {"type": "text", "text": "ING"}
+
+data: {"type": "text", "text": "K"}
+
+data: {"type": "text", "text": "AW"}
+
+data: {"type": "text", "text": "ANG"}
+
+data: {"type": "text", "text": "**,"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": " \u2192"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "tid"}
+
+data: {"type": "text", "text": "ak"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": "jang"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": " dalam"}
+
+data: {"type": "text", "text": " snapshot"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "akh"}
+
+data: {"type": "text", "text": "ir"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "ubuntu"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Linux"}
+
+data: {"type": "text", "text": " Ubuntu"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \u2705"}
+
+data: {"type": "text", "text": " Status"}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Hostname"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " ubuntu"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "IP"}
+
+data: {"type": "text", "text": " Man"}
+
+data: {"type": "text", "text": "aj"}
+
+data: {"type": "text", "text": "emen"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Platform"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " Ubuntu"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Transport"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " SSH"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Status"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " A"}
+
+data: {"type": "text", "text": "kt"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "hub"}
+
+data: {"type": "text", "text": "ung"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \ud83d\udda5"}
+
+data: {"type": "text", "text": "\ufe0f"}
+
+data: {"type": "text", "text": " Tem"}
+
+data: {"type": "text", "text": "uan"}
+
+data: {"type": "text", "text": " dari"}
+
+data: {"type": "text", "text": " Snapshot"}
+
+data: {"type": "text", "text": " Ter"}
+
+data: {"type": "text", "text": "bar"}
+
+data: {"type": "text", "text": "u"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "####"}
+
+data: {"type": "text", "text": " \ud83d\udd39"}
+
+data: {"type": "text", "text": " Ant"}
+
+data: {"type": "text", "text": "ar"}
+
+data: {"type": "text", "text": "mu"}
+
+data: {"type": "text", "text": "ka"}
+
+data: {"type": "text", "text": " J"}
+
+data: {"type": "text", "text": "aring"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Ter"}
+
+data: {"type": "text", "text": "d"}
+
+data: {"type": "text", "text": "apat"}
+
+data: {"type": "text", "text": " be"}
+
+data: {"type": "text", "text": "ber"}
+
+data: {"type": "text", "text": "apa"}
+
+data: {"type": "text", "text": " ant"}
+
+data: {"type": "text", "text": "ar"}
+
+data: {"type": "text", "text": "mu"}
+
+data: {"type": "text", "text": "ka"}
+
+data: {"type": "text", "text": " j"}
+
+data: {"type": "text", "text": "aring"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " term"}
+
+data: {"type": "text", "text": "as"}
+
+data: {"type": "text", "text": "uk"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "lo"}
+
+data: {"type": "text", "text": "`:"}
+
+data: {"type": "text", "text": " loopback"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "en"}
+
+data: {"type": "text", "text": "p"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "s"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "`:"}
+
+data: {"type": "text", "text": " ut"}
+
+data: {"type": "text", "text": "ama"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " UP"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " dengan"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "w"}
+
+data: {"type": "text", "text": "lp"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "s"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "`:"}
+
+data: {"type": "text", "text": " tidak"}
+
+data: {"type": "text", "text": " akt"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "NO"}
+
+data: {"type": "text", "text": "-C"}
+
+data: {"type": "text", "text": "AR"}
+
+data: {"type": "text", "text": "RI"}
+
+data: {"type": "text", "text": "ER"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "docker"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "`:"}
+
+data: {"type": "text", "text": " bridge"}
+
+data: {"type": "text", "text": " Docker"}
+
+data: {"type": "text", "text": " akt"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "br"}
+
+data: {"type": "text", "text": "-dc"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": "`,"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "br"}
+
+data: {"type": "text", "text": "-e"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "e"}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "e"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "`:"}
+
+data: {"type": "text", "text": " bridge"}
+
+data: {"type": "text", "text": " tamb"}
+
+data: {"type": "text", "text": "ahan"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "v"}
+
+data: {"type": "text", "text": "eth"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": "b"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "e"}
+
+data: {"type": "text", "text": "`:"}
+
+data: {"type": "text", "text": " virtual"}
+
+data: {"type": "text", "text": " ethernet"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "hub"}
+
+data: {"type": "text", "text": "ung"}
+
+data: {"type": "text", "text": " ke"}
+
+data: {"type": "text", "text": " docker"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": ">"}
+
+data: {"type": "text", "text": " *"}
+
+data: {"type": "text", "text": "Cat"}
+
+data: {"type": "text", "text": "atan"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " Docker"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " bridge"}
+
+data: {"type": "text", "text": " j"}
+
+data: {"type": "text", "text": "aring"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " men"}
+
+data: {"type": "text", "text": "unj"}
+
+data: {"type": "text", "text": "ukkan"}
+
+data: {"type": "text", "text": " s"}
+
+data: {"type": "text", "text": "istem"}
+
+data: {"type": "text", "text": " container"}
+
+data: {"type": "text", "text": " akt"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": ".*"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \ud83d\udcca"}
+
+data: {"type": "text", "text": " Anal"}
+
+data: {"type": "text", "text": "isis"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " Re"}
+
+data: {"type": "text", "text": "kom"}
+
+data: {"type": "text", "text": "end"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "####"}
+
+data: {"type": "text", "text": " \ud83d\udcbe"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Disk"}
+
+data: {"type": "text", "text": " Usage"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Gun"}
+
+data: {"type": "text", "text": "akan"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " ber"}
+
+data: {"type": "text", "text": "ikut"}
+
+data: {"type": "text", "text": " untuk"}
+
+data: {"type": "text", "text": " mem"}
+
+data: {"type": "text", "text": "eri"}
+
+data: {"type": "text", "text": "ks"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": " peng"}
+
+data: {"type": "text", "text": "g"}
+
+data: {"type": "text", "text": "una"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " pen"}
+
+data: {"type": "text", "text": "y"}
+
+data: {"type": "text", "text": "imp"}
+
+data: {"type": "text", "text": "anan"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "df"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": "h"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Cont"}
+
+data: {"type": "text", "text": "oh"}
+
+data: {"type": "text", "text": " k"}
+
+data: {"type": "text", "text": "elu"}
+
+data: {"type": "text", "text": "aran"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "text"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Filesystem"}
+
+data: {"type": "text", "text": "     "}
+
+data: {"type": "text", "text": " Size"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " Used"}
+
+data: {"type": "text", "text": " Av"}
+
+data: {"type": "text", "text": "ail"}
+
+data: {"type": "text", "text": " Use"}
+
+data: {"type": "text", "text": "%"}
+
+data: {"type": "text", "text": " Mounted"}
+
+data: {"type": "text", "text": " on"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "/dev"}
+
+data: {"type": "text", "text": "/sda"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "       "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "G"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "G"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "G"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "%"}
+
+data: {"type": "text", "text": " /"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "tmpfs"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "G"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "G"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "%"}
+
+data: {"type": "text", "text": " /"}
+
+data: {"type": "text", "text": "dev"}
+
+data: {"type": "text", "text": "/shm"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "J"}
+
+data: {"type": "text", "text": "ika"}
+
+data: {"type": "text", "text": " ing"}
+
+data: {"type": "text", "text": "in"}
+
+data: {"type": "text", "text": " mel"}
+
+data: {"type": "text", "text": "i"}
+
+data: {"type": "text", "text": "hat"}
+
+data: {"type": "text", "text": " peng"}
+
+data: {"type": "text", "text": "g"}
+
+data: {"type": "text", "text": "una"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " ru"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": " dire"}
+
+data: {"type": "text", "text": "kt"}
+
+data: {"type": "text", "text": "ori"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "du"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": "sh"}
+
+data: {"type": "text", "text": " /"}
+
+data: {"type": "text", "text": "var"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "du"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": "sh"}
+
+data: {"type": "text", "text": " /"}
+
+data: {"type": "text", "text": "home"}
+
+data: {"type": "text", "text": "/*"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Unt"}
+
+data: {"type": "text", "text": "uk"}
+
+data: {"type": "text", "text": " c"}
+
+data: {"type": "text", "text": "ek"}
+
+data: {"type": "text", "text": " part"}
+
+data: {"type": "text", "text": "isi"}
+
+data: {"type": "text", "text": " sp"}
+
+data: {"type": "text", "text": "es"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "ls"}
+
+data: {"type": "text", "text": "blk"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "####"}
+
+data: {"type": "text", "text": " \ud83d\udcbe"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Memory"}
+
+data: {"type": "text", "text": " Usage"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Gun"}
+
+data: {"type": "text", "text": "akan"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " ber"}
+
+data: {"type": "text", "text": "ikut"}
+
+data: {"type": "text", "text": " untuk"}
+
+data: {"type": "text", "text": " m"}
+
+data: {"type": "text", "text": "enge"}
+
+data: {"type": "text", "text": "cek"}
+
+data: {"type": "text", "text": " peng"}
+
+data: {"type": "text", "text": "g"}
+
+data: {"type": "text", "text": "una"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " mem"}
+
+data: {"type": "text", "text": "ori"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "free"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": "h"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "A"}
+
+data: {"type": "text", "text": "tau"}
+
+data: {"type": "text", "text": " altern"}
+
+data: {"type": "text", "text": "atif"}
+
+data: {"type": "text", "text": " leb"}
+
+data: {"type": "text", "text": "ih"}
+
+data: {"type": "text", "text": " r"}
+
+data: {"type": "text", "text": "inci"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "cat"}
+
+data: {"type": "text", "text": " /"}
+
+data: {"type": "text", "text": "proc"}
+
+data: {"type": "text", "text": "/mem"}
+
+data: {"type": "text", "text": "info"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Cont"}
+
+data: {"type": "text", "text": "oh"}
+
+data: {"type": "text", "text": " k"}
+
+data: {"type": "text", "text": "elu"}
+
+data: {"type": "text", "text": "aran"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "text"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " total"}
+
+data: {"type": "text", "text": "       "}
+
+data: {"type": "text", "text": " used"}
+
+data: {"type": "text", "text": "       "}
+
+data: {"type": "text", "text": " free"}
+
+data: {"type": "text", "text": "     "}
+
+data: {"type": "text", "text": " shared"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " buff"}
+
+data: {"type": "text", "text": "/cache"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " available"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Mem"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "           "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "Gi"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "Gi"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "Gi"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "Mi"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "Gi"}
+
+data: {"type": "text", "text": "       "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "Gi"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Swap"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "         "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "Gi"}
+
+data: {"type": "text", "text": "         "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "B"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "Gi"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "J"}
+
+data: {"type": "text", "text": "ika"}
+
+data: {"type": "text", "text": " ing"}
+
+data: {"type": "text", "text": "in"}
+
+data: {"type": "text", "text": " mem"}
+
+data: {"type": "text", "text": "ant"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": " sec"}
+
+data: {"type": "text", "text": "ara"}
+
+data: {"type": "text", "text": " real"}
+
+data: {"type": "text", "text": "-time"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "htop"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "ata"}
+
+data: {"type": "text", "text": "u"}
+
+data: {"type": "text", "text": " tan"}
+
+data: {"type": "text", "text": "pa"}
+
+data: {"type": "text", "text": " GUI"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "top"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \u2699"}
+
+data: {"type": "text", "text": "\ufe0f"}
+
+data: {"type": "text", "text": " Lang"}
+
+data: {"type": "text", "text": "kah"}
+
+data: {"type": "text", "text": " Ber"}
+
+data: {"type": "text", "text": "ikut"}
+
+data: {"type": "text", "text": "nya"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " J"}
+
+data: {"type": "text", "text": "al"}
+
+data: {"type": "text", "text": "ank"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "df"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": "h"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "free"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": "h"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " lang"}
+
+data: {"type": "text", "text": "s"}
+
+data: {"type": "text", "text": "ung"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " server"}
+
+data: {"type": "text", "text": " Ubuntu"}
+
+data: {"type": "text", "text": " mel"}
+
+data: {"type": "text", "text": "al"}
+
+data: {"type": "text", "text": "ui"}
+
+data: {"type": "text", "text": " SSH"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " J"}
+
+data: {"type": "text", "text": "ika"}
+
+data: {"type": "text", "text": " bel"}
+
+data: {"type": "text", "text": "um"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "pas"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " install"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "htop"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " untuk"}
+
+data: {"type": "text", "text": " pem"}
+
+data: {"type": "text", "text": "ant"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " inter"}
+
+data: {"type": "text", "text": "akt"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " ```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " sudo"}
+
+data: {"type": "text", "text": " apt"}
+
+data: {"type": "text", "text": " update"}
+
+data: {"type": "text", "text": " &&"}
+
+data: {"type": "text", "text": " sudo"}
+
+data: {"type": "text", "text": " apt"}
+
+data: {"type": "text", "text": " install"}
+
+data: {"type": "text", "text": " h"}
+
+data: {"type": "text", "text": "top"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " ```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "f"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": "zan"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Linux"}
+
+data: {"type": "text", "text": " Debian"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \u274c"}
+
+data: {"type": "text", "text": " Status"}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Hostname"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " f"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": "zan"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "IP"}
+
+data: {"type": "text", "text": " Man"}
+
+data: {"type": "text", "text": "aj"}
+
+data: {"type": "text", "text": "emen"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Platform"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " Debian"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Transport"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " SSH"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Status"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Tid"}
+
+data: {"type": "text", "text": "ak"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": "jang"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": " dalam"}
+
+data: {"type": "text", "text": " snapshot"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "akh"}
+
+data: {"type": "text", "text": "ir"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \ud83d\uded1"}
+
+data: {"type": "text", "text": " Tem"}
+
+data: {"type": "text", "text": "uan"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": " tidak"}
+
+data: {"type": "text", "text": " mer"}
+
+data: {"type": "text", "text": "es"}
+
+data: {"type": "text", "text": "pons"}
+
+data: {"type": "text", "text": " probe"}
+
+data: {"type": "text", "text": " kes"}
+
+data: {"type": "text", "text": "eh"}
+
+data: {"type": "text", "text": "atan"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Sem"}
+
+data: {"type": "text", "text": "ua"}
+
+data: {"type": "text", "text": " data"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "ait"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "interfaces"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " routes"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": " d"}
+
+data: {"type": "text", "text": "ile"}
+
+data: {"type": "text", "text": "w"}
+
+data: {"type": "text", "text": "ati"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \ud83d\udd27"}
+
+data: {"type": "text", "text": " Lang"}
+
+data: {"type": "text", "text": "kah"}
+
+data: {"type": "text", "text": " Ber"}
+
+data: {"type": "text", "text": "ikut"}
+
+data: {"type": "text", "text": "nya"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Past"}
+
+data: {"type": "text", "text": "ikan"}
+
+data: {"type": "text", "text": " host"}
+
+data: {"type": "text", "text": " ini"}
+
+data: {"type": "text", "text": " hid"}
+
+data: {"type": "text", "text": "up"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "hub"}
+
+data: {"type": "text", "text": "ung"}
+
+data: {"type": "text", "text": " j"}
+
+data: {"type": "text", "text": "aring"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Lak"}
+
+data: {"type": "text", "text": "ukan"}
+
+data: {"type": "text", "text": " ping"}
+
+data: {"type": "text", "text": " ke"}
+
+data: {"type": "text", "text": " al"}
+
+data: {"type": "text", "text": "amat"}
+
+data: {"type": "text", "text": " man"}
+
+data: {"type": "text", "text": "aj"}
+
+data: {"type": "text", "text": "emen"}
+
+data: {"type": "text", "text": "nya"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " ```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " ping"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " ```"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " C"}
+
+data: {"type": "text", "text": "oba"}
+
+data: {"type": "text", "text": " SSH"}
+
+data: {"type": "text", "text": " k"}
+
+data: {"type": "text", "text": "emb"}
+
+data: {"type": "text", "text": "ali"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " ```"}
+
+data: {"type": "text", "text": "bash"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " ssh"}
+
+data: {"type": "text", "text": " user"}
+
+data: {"type": "text", "text": "@"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " ```"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " J"}
+
+data: {"type": "text", "text": "ika"}
+
+data: {"type": "text", "text": " tet"}
+
+data: {"type": "text", "text": "ap"}
+
+data: {"type": "text", "text": " tidak"}
+
+data: {"type": "text", "text": " respons"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " c"}
+
+data: {"type": "text", "text": "ek"}
+
+data: {"type": "text", "text": " VM"}
+
+data: {"type": "text", "text": "/n"}
+
+data: {"type": "text", "text": "od"}
+
+data: {"type": "text", "text": "en"}
+
+data: {"type": "text", "text": "ya"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " G"}
+
+data: {"type": "text", "text": "NS"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": " atau"}
+
+data: {"type": "text", "text": " hypervisor"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "CS"}
+
+data: {"type": "text", "text": "MS"}
+
+data: {"type": "text", "text": "-S"}
+
+data: {"type": "text", "text": "ING"}
+
+data: {"type": "text", "text": "K"}
+
+data: {"type": "text", "text": "AW"}
+
+data: {"type": "text", "text": "ANG"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Linux"}
+
+data: {"type": "text", "text": " Embedded"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \u274c"}
+
+data: {"type": "text", "text": " Status"}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Hostname"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " CS"}
+
+data: {"type": "text", "text": "MS"}
+
+data: {"type": "text", "text": "-S"}
+
+data: {"type": "text", "text": "ING"}
+
+data: {"type": "text", "text": "K"}
+
+data: {"type": "text", "text": "AW"}
+
+data: {"type": "text", "text": "ANG"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "IP"}
+
+data: {"type": "text", "text": " Man"}
+
+data: {"type": "text", "text": "aj"}
+
+data: {"type": "text", "text": "emen"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Platform"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " Embedded"}
+
+data: {"type": "text", "text": " Linux"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Transport"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " SSH"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Status"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Tid"}
+
+data: {"type": "text", "text": "ak"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": "jang"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": " dalam"}
+
+data: {"type": "text", "text": " snapshot"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "akh"}
+
+data: {"type": "text", "text": "ir"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \ud83d\uded1"}
+
+data: {"type": "text", "text": " Tem"}
+
+data: {"type": "text", "text": "uan"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": " tidak"}
+
+data: {"type": "text", "text": " mer"}
+
+data: {"type": "text", "text": "es"}
+
+data: {"type": "text", "text": "pons"}
+
+data: {"type": "text", "text": " probe"}
+
+data: {"type": "text", "text": " kes"}
+
+data: {"type": "text", "text": "eh"}
+
+data: {"type": "text", "text": "atan"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Sem"}
+
+data: {"type": "text", "text": "ua"}
+
+data: {"type": "text", "text": " data"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "p"}
+
+data: {"type": "text", "text": "aut"}
+
+data: {"type": "text", "text": " d"}
+
+data: {"type": "text", "text": "ile"}
+
+data: {"type": "text", "text": "w"}
+
+data: {"type": "text", "text": "ati"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " \ud83d\udd27"}
+
+data: {"type": "text", "text": " Lang"}
+
+data: {"type": "text", "text": "kah"}
+
+data: {"type": "text", "text": " Ber"}
+
+data: {"type": "text", "text": "ikut"}
+
+data: {"type": "text", "text": "nya"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Ver"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " k"}
+
+data: {"type": "text", "text": "eters"}
+
+data: {"type": "text", "text": "edia"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " fis"}
+
+data: {"type": "text", "text": "ik"}
+
+data: {"type": "text", "text": " atau"}
+
+data: {"type": "text", "text": " VM"}
+
+data: {"type": "text", "text": " ini"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Lak"}
+
+data: {"type": "text", "text": "ukan"}
+
+data: {"type": "text", "text": " ping"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " SSH"}
+
+data: {"type": "text", "text": " ser"}
+
+data: {"type": "text", "text": "upa"}
+
+data: {"type": "text", "text": " se"}
+
+data: {"type": "text", "text": "pert"}
+
+data: {"type": "text", "text": "i"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": " Debian"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Ring"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "asan"}
+
+data: {"type": "text", "text": " Ak"}
+
+data: {"type": "text", "text": "hir"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " No"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Hostname"}
+
+data: {"type": "text", "text": "       "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": "             "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Status"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Re"}
+
+data: {"type": "text", "text": "kom"}
+
+data: {"type": "text", "text": "end"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": "----"}
+
+data: {"type": "text", "text": "|------------------"}
+
+data: {"type": "text", "text": "|------------------|"}
+
+data: {"type": "text", "text": "------------"}
+
+data: {"type": "text", "text": "|--------------------------------"}
+
+data: {"type": "text", "text": "----------|"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " ubuntu"}
+
+data: {"type": "text", "text": "         "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Online"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Gun"}
+
+data: {"type": "text", "text": "akan"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "df"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": "h"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "free"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": "h"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": "           "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " f"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": "zan"}
+
+data: {"type": "text", "text": "         "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Offline"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "iks"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": " k"}
+
+data: {"type": "text", "text": "one"}
+
+data: {"type": "text", "text": "kt"}
+
+data: {"type": "text", "text": "iv"}
+
+data: {"type": "text", "text": "itas"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " lay"}
+
+data: {"type": "text", "text": "anan"}
+
+data: {"type": "text", "text": " SSH"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " CS"}
+
+data: {"type": "text", "text": "MS"}
+
+data: {"type": "text", "text": "-S"}
+
+data: {"type": "text", "text": "ING"}
+
+data: {"type": "text", "text": "K"}
+
+data: {"type": "text", "text": "AW"}
+
+data: {"type": "text", "text": "ANG"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Offline"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Ver"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " host"}
+
+data: {"type": "text", "text": "/n"}
+
+data: {"type": "text", "text": "oda"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " G"}
+
+data: {"type": "text", "text": "NS"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": "  "}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "J"}
+
+data: {"type": "text", "text": "ika"}
+
+data: {"type": "text", "text": " Anda"}
+
+data: {"type": "text", "text": " ing"}
+
+data: {"type": "text", "text": "in"}
+
+data: {"type": "text", "text": " say"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": " m"}
+
+data: {"type": "text", "text": "enge"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "sek"}
+
+data: {"type": "text", "text": "usi"}
+
+data: {"type": "text", "text": " lang"}
+
+data: {"type": "text", "text": "s"}
+
+data: {"type": "text", "text": "ung"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " at"}
+
+data: {"type": "text", "text": "as"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " sal"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " sat"}
+
+data: {"type": "text", "text": "u"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": " yang"}
+
+data: {"type": "text", "text": " online"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " ber"}
+
+data: {"type": "text", "text": "i"}
+
+data: {"type": "text", "text": " t"}
+
+data: {"type": "text", "text": "ahu"}
+
+data: {"type": "text", "text": " say"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "verification", "id": "verify-9e5409d6c4", "taskId": "plan-1787795918", "devices": ["linux-embedded", "linux-debian", "linux-ubuntu", "static-routing-pc1", "static-routing-pc2", "static-routing-pc3"], "status": "passed", "message": "Device state reviewed and response grounded against collected context.", "checks": ["device_state", "routing", "interfaces", "follow-up continuity"], "createdAt": "2026-08-27T09:59:20.778611"}
+
+data: {"type": "workflow_state", "id": "workflow-929491ef17", "taskId": "plan-1787795918", "state": "completed", "label": "Completed", "detail": "Workflow selesai dan hasil sudah diverifikasi.", "activeIndex": 5, "eventsCount": 5, "devices": ["linux-embedded", "linux-debian", "linux-ubuntu", "static-routing-pc1", "static-routing-pc2", "static-routing-pc3"], "createdAt": "2026-08-27T09:59:20.778815"}
+
+data: {"type": "done", "id": "evt-done-1787795961", "session_id": null}
+

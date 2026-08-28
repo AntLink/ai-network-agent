@@ -1,0 +1,268 @@
+{
+  "data": {
+    "id": "gns3-a6967457-f60e-4752-be8f-6b66e925245c",
+    "name": "ai-netagent Topology",
+    "nodes": [
+      {
+        "id": "3601a488-07e9-4ce8-80b6-0fa17238970d",
+        "hostname": "MK1",
+        "vendor": "mikrotik",
+        "kind": "host",
+        "nodeType": "qemu",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "18bd9697-da5c-41f2-8dd5-483315a7c99d",
+        "hostname": "SW1",
+        "vendor": "cisco",
+        "kind": "switch",
+        "nodeType": "qemu",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "12adbd8f-7400-4d36-816c-c2b1f0e428b3",
+        "hostname": "SW2",
+        "vendor": "cisco",
+        "kind": "switch",
+        "nodeType": "qemu",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "e49bc1fc-27ad-4a70-859b-707d60a63501",
+        "hostname": "R1",
+        "vendor": "cisco",
+        "kind": "host",
+        "nodeType": "qemu",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "fb9b15d4-f82c-4082-be9e-9a5117d7abe7",
+        "hostname": "R2",
+        "vendor": "cisco",
+        "kind": "host",
+        "nodeType": "qemu",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "5d51b775-967d-46a7-816f-1fb525ba6f96",
+        "hostname": "PC-A1",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "4dddd6c2-abe9-479f-ab60-9e96b0a4cd9b",
+        "hostname": "PC-A2",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "367ea0b3-1745-4810-9346-e01309fed9be",
+        "hostname": "PC-B1",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "1382fe60-9a7f-4e51-8302-cd238e91779b",
+        "hostname": "PC-B2",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "a49a1b97-ac72-4a2e-93e2-461b6457d7aa",
+        "hostname": "PC-M",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "f7cc9954-b8c3-4a7b-8d81-6436fec9e887",
+        "hostname": "Cloud1",
+        "vendor": "other",
+        "kind": "cloud",
+        "nodeType": "cloud",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "01ae6c30-41a5-4e68-9aa9-23c174bc5209",
+        "hostname": "Cloud2",
+        "vendor": "other",
+        "kind": "cloud",
+        "nodeType": "cloud",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "6db1921e-2487-450c-9d2b-6672c66cd735",
+        "hostname": "Cloud3",
+        "vendor": "other",
+        "kind": "cloud",
+        "nodeType": "cloud",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "e4187280-d51d-4127-914e-956ee261e131",
+        "hostname": "Cloud5",
+        "vendor": "other",
+        "kind": "cloud",
+        "nodeType": "cloud",
+        "status": "offline",
+        "ip": "-"
+      },
+      {
+        "id": "c2446653-8389-4f18-a6d6-281fae413633",
+        "hostname": "Cloud4",
+        "vendor": "other",
+        "kind": "cloud",
+        "nodeType": "cloud",
+        "status": "offline",
+        "ip": "-"
+      }
+    ],
+    "links": [
+      {
+        "id": "8ecad986-b1be-49e1-ac07-30843fd5e9f4",
+        "source": "e49bc1fc-27ad-4a70-859b-707d60a63501",
+        "target": "3601a488-07e9-4ce8-80b6-0fa17238970d",
+        "sourceInterface": "eth2",
+        "targetInterface": "eth1",
+        "status": "up"
+      },
+      {
+        "id": "1ba3a8f1-2bbb-44c6-a9f3-efe7e51c3530",
+        "source": "fb9b15d4-f82c-4082-be9e-9a5117d7abe7",
+        "target": "3601a488-07e9-4ce8-80b6-0fa17238970d",
+        "sourceInterface": "eth2",
+        "targetInterface": "eth2",
+        "status": "up"
+      },
+      {
+        "id": "9ffc9e21-f069-4362-8cca-f5022ed00370",
+        "source": "e49bc1fc-27ad-4a70-859b-707d60a63501",
+        "target": "fb9b15d4-f82c-4082-be9e-9a5117d7abe7",
+        "sourceInterface": "eth3",
+        "targetInterface": "eth3",
+        "status": "up"
+      },
+      {
+        "id": "18744519-8b5d-436a-bdd5-5cf68dd5d392",
+        "source": "e49bc1fc-27ad-4a70-859b-707d60a63501",
+        "target": "18bd9697-da5c-41f2-8dd5-483315a7c99d",
+        "sourceInterface": "eth1",
+        "targetInterface": "eth0",
+        "status": "up"
+      },
+      {
+        "id": "ec27a1fa-d64b-44d4-9d8b-55e17f48c770",
+        "source": "fb9b15d4-f82c-4082-be9e-9a5117d7abe7",
+        "target": "12adbd8f-7400-4d36-816c-c2b1f0e428b3",
+        "sourceInterface": "eth1",
+        "targetInterface": "eth0",
+        "status": "up"
+      },
+      {
+        "id": "5aadd170-2b51-432f-bb22-dc21bfce83a8",
+        "source": "5d51b775-967d-46a7-816f-1fb525ba6f96",
+        "target": "18bd9697-da5c-41f2-8dd5-483315a7c99d",
+        "sourceInterface": "eth0",
+        "targetInterface": "eth1",
+        "status": "up"
+      },
+      {
+        "id": "492fd86a-5978-424e-93e0-69352e0b2e91",
+        "source": "4dddd6c2-abe9-479f-ab60-9e96b0a4cd9b",
+        "target": "18bd9697-da5c-41f2-8dd5-483315a7c99d",
+        "sourceInterface": "eth0",
+        "targetInterface": "eth2",
+        "status": "up"
+      },
+      {
+        "id": "bb641fbe-c6b5-4e8e-b374-241d3e94d267",
+        "source": "367ea0b3-1745-4810-9346-e01309fed9be",
+        "target": "12adbd8f-7400-4d36-816c-c2b1f0e428b3",
+        "sourceInterface": "eth0",
+        "targetInterface": "eth1",
+        "status": "up"
+      },
+      {
+        "id": "939e11ad-310c-448a-91d5-184e61accbfa",
+        "source": "1382fe60-9a7f-4e51-8302-cd238e91779b",
+        "target": "12adbd8f-7400-4d36-816c-c2b1f0e428b3",
+        "sourceInterface": "eth0",
+        "targetInterface": "eth2",
+        "status": "up"
+      },
+      {
+        "id": "90e15acd-43b4-4520-b3b2-03506387befd",
+        "source": "3601a488-07e9-4ce8-80b6-0fa17238970d",
+        "target": "a49a1b97-ac72-4a2e-93e2-461b6457d7aa",
+        "sourceInterface": "eth3",
+        "targetInterface": "eth0",
+        "status": "up"
+      },
+      {
+        "id": "6beb1e01-5d08-4764-821f-410839308d8f",
+        "source": "01ae6c30-41a5-4e68-9aa9-23c174bc5209",
+        "target": "e49bc1fc-27ad-4a70-859b-707d60a63501",
+        "sourceInterface": "eth0",
+        "targetInterface": "eth0",
+        "status": "up"
+      },
+      {
+        "id": "e7e4d6f0-cc8d-4238-8484-e2ab35e81685",
+        "source": "f7cc9954-b8c3-4a7b-8d81-6436fec9e887",
+        "target": "3601a488-07e9-4ce8-80b6-0fa17238970d",
+        "sourceInterface": "eth0",
+        "targetInterface": "eth0",
+        "status": "up"
+      },
+      {
+        "id": "614c84c2-20d3-4b6e-adfa-d7c79d234a8b",
+        "source": "6db1921e-2487-450c-9d2b-6672c66cd735",
+        "target": "fb9b15d4-f82c-4082-be9e-9a5117d7abe7",
+        "sourceInterface": "eth0",
+        "targetInterface": "eth0",
+        "status": "up"
+      },
+      {
+        "id": "6c8610c7-b84c-4adc-a02f-f0e38b3bdb22",
+        "source": "12adbd8f-7400-4d36-816c-c2b1f0e428b3",
+        "target": "e4187280-d51d-4127-914e-956ee261e131",
+        "sourceInterface": "eth3",
+        "targetInterface": "eth0",
+        "status": "up"
+      },
+      {
+        "id": "1c1d2812-9cf8-4f9c-bb9e-a359359482af",
+        "source": "18bd9697-da5c-41f2-8dd5-483315a7c99d",
+        "target": "c2446653-8389-4f18-a6d6-281fae413633",
+        "sourceInterface": "eth3",
+        "targetInterface": "eth0",
+        "status": "up"
+      }
+    ],
+    "project_id": "a6967457-f60e-4752-be8f-6b66e925245c"
+  },
+  "saved_at": "2026-08-26T15:35:57.542963+00:00",
+  "source": "saved"
+}

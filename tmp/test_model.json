@@ -1,0 +1,10 @@
+﻿{
+    "messages":  [
+                     {
+                         "content":  "say hi",
+                         "role":  "user"
+                     }
+                 ],
+    "model":  "opencode-cheap",
+    "max_tokens":  10
+}

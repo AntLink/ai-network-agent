@@ -106,8 +106,9 @@ class DeviceService:
         # generic TCP reachability probe for drivers without health()
         import socket as _socket
         host = (device.get("management_address") or "").split("/")[0]
+        port = int(device.get("management_port") or 22)
         try:
-            fut = _asyncio.open_connection(host, 22)
+            fut = _asyncio.open_connection(host, port)
             reader, writer = await _asyncio.wait_for(fut, timeout=5.0)
             banner = await _asyncio.wait_for(reader.readline(), timeout=3.0)
             writer.close()
@@ -130,6 +131,7 @@ class DeviceService:
 
         async def _probe(device):
             host = (device.get("management_address") or "").split("/")[0]
+            port = int(device.get("management_port") or 22)
             result = {
                 "device_id": device["id"],
                 "status": "offline",
@@ -140,7 +142,7 @@ class DeviceService:
             try:
                 t0 = _time.perf_counter()
                 reader, writer = await _asyncio.wait_for(
-                    _asyncio.open_connection(host, 22), timeout=3.0
+                    _asyncio.open_connection(host, port), timeout=3.0
                 )
                 await asyncio.wait_for(reader.readline(), timeout=3.0)
                 writer.close()

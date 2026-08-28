@@ -24,6 +24,46 @@
         }
       }
     },
+    "/api/v1/devices/{device_id}": {
+      "get": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Get Device",
+        "operationId": "get_device_api_v1_devices__device_id__get",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Device Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/devices/{device_id}/health": {
       "get": {
         "tags": [
@@ -554,6 +594,65 @@
         }
       }
     },
+    "/api/v1/config/plans": {
+      "get": {
+        "tags": [
+          "config"
+        ],
+        "summary": "List Plans",
+        "operationId": "list_plans_api_v1_config_plans_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/config/plans/{plan_id}": {
+      "get": {
+        "tags": [
+          "config"
+        ],
+        "summary": "Get Plan",
+        "operationId": "get_plan_api_v1_config_plans__plan_id__get",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/config/apply": {
       "post": {
         "tags": [
@@ -633,11 +732,51 @@
       }
     },
     "/api/v1/monitoring/{device_id}": {
+      "post": {
+        "tags": [
+          "monitoring"
+        ],
+        "summary": "Monitoring",
+        "description": "Get monitoring data (CPU, memory, disk, etc) for a device.\n\nReturns structured JSON with:\n- device_info: Device identification\n- cpu: CPU utilization statistics\n- memory: Memory usage statistics  \n- interfaces: Interface status\n- health: Device health check",
+        "operationId": "monitoring_api_v1_monitoring__device_id__post",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Device Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": [
           "monitoring"
         ],
         "summary": "Monitoring",
+        "description": "Get monitoring data (CPU, memory, disk, etc) for a device.\n\nReturns structured JSON with:\n- device_info: Device identification\n- cpu: CPU utilization statistics\n- memory: Memory usage statistics  \n- interfaces: Interface status\n- health: Device health check",
         "operationId": "monitoring_api_v1_monitoring__device_id__get",
         "parameters": [
           {
@@ -704,6 +843,86 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mikrotik/{device_id}/resources/interfaces": {
+      "get": {
+        "tags": [
+          "mikrotik"
+        ],
+        "summary": "Get Interfaces",
+        "operationId": "get_interfaces_api_v1_mikrotik__device_id__resources_interfaces_get",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Device Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mikrotik/{device_id}/interface": {
+      "get": {
+        "tags": [
+          "mikrotik"
+        ],
+        "summary": "Get Interfaces Legacy",
+        "operationId": "get_interfaces_legacy_api_v1_mikrotik__device_id__interface_get",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Device Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -1477,6 +1696,47 @@
         ],
         "summary": "Get System Logging",
         "operationId": "get_system_logging_api_v1_mikrotik__device_id__resources_logging_get",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Device Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mikrotik/{device_id}/resources/log/messages": {
+      "get": {
+        "tags": [
+          "mikrotik"
+        ],
+        "summary": "Get Log Messages",
+        "description": "Riwayat log messages (/log print) — waktu, topik, isi pesan.",
+        "operationId": "get_log_messages_api_v1_mikrotik__device_id__resources_log_messages_get",
         "parameters": [
           {
             "name": "device_id",
@@ -7147,6 +7407,27 @@
         }
       }
     },
+    "/api/v1/gns3/local-config": {
+      "get": {
+        "tags": [
+          "gns3",
+          "gns3"
+        ],
+        "summary": "Get Local Config",
+        "description": "Expose local GNS3 connection metadata without leaking the password.",
+        "operationId": "get_local_config_api_v1_gns3_local_config_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/gns3/test-connection": {
       "post": {
         "tags": [
@@ -7240,11 +7521,113 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_create_project_api_v1_gns3_projects_create_post"
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Payload"
               }
             }
           },
           "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gns3/projects/{project_id}": {
+      "post": {
+        "tags": [
+          "gns3",
+          "gns3"
+        ],
+        "summary": "Get Project",
+        "operationId": "get_project_api_v1_gns3_projects__project_id__post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GNS3Config"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "gns3",
+          "gns3"
+        ],
+        "summary": "Delete Project",
+        "operationId": "delete_project_api_v1_gns3_projects__project_id__delete",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GNS3Config"
+              }
+            }
+          }
         },
         "responses": {
           "200": {
@@ -7370,57 +7753,6 @@
         }
       }
     },
-    "/api/v1/gns3/projects/{project_id}": {
-      "delete": {
-        "tags": [
-          "gns3",
-          "gns3"
-        ],
-        "summary": "Delete Project",
-        "operationId": "delete_project_api_v1_gns3_projects__project_id__delete",
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Project Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GNS3Config"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/gns3/projects/{project_id}/nodes": {
       "post": {
         "tags": [
@@ -7496,7 +7828,9 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_create_node_api_v1_gns3_projects__project_id__nodes_create_post"
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
               }
             }
           }
@@ -7736,7 +8070,9 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_update_node_properties_api_v1_gns3_projects__project_id__nodes__node_id__properties_post"
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
               }
             }
           }
@@ -7796,7 +8132,9 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_set_disk_interface_api_v1_gns3_projects__project_id__nodes__node_id__disk_interface_post"
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
               }
             }
           }
@@ -7857,7 +8195,9 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_rebuild_node_api_v1_gns3_projects__project_id__nodes__node_id__rebuild_post"
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
               }
             }
           }
@@ -7912,16 +8252,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GNS3Config"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -8079,7 +8409,9 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_create_link_api_v1_gns3_projects__project_id__links_create_post"
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
               }
             }
           }
@@ -8174,32 +8506,12 @@
         ],
         "summary": "List Templates",
         "operationId": "list_templates_api_v1_gns3_templates_get",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GNS3Config"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
               }
             }
           }
@@ -8230,7 +8542,9 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_update_template_api_v1_gns3_templates__template_id__put"
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
               }
             }
           }
@@ -8332,7 +8646,9 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Body_create_snapshot_api_v1_gns3_projects__project_id__snapshots_create_post"
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
               }
             }
           }
@@ -8396,6 +8712,46 @@
               }
             }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/policy/check": {
+      "post": {
+        "tags": [
+          "policy"
+        ],
+        "summary": "Policy Check",
+        "description": "Minimal executable policy gate for development/lab use.\n\nThis makes the OpenCode policy_check tool real. It is intentionally\nconservative: anything MEDIUM or higher needs an approval identity.",
+        "operationId": "policy_check_api_v1_policy_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyCheckRequest"
+              }
+            }
+          },
+          "required": true
         },
         "responses": {
           "200": {
@@ -8583,134 +8939,6 @@
           "text"
         ],
         "title": "BannerSet"
-      },
-      "Body_create_link_api_v1_gns3_projects__project_id__links_create_post": {
-        "properties": {
-          "payload": {
-            "$ref": "#/components/schemas/LinkCreate"
-          },
-          "config": {
-            "$ref": "#/components/schemas/GNS3Config"
-          }
-        },
-        "type": "object",
-        "required": [
-          "payload",
-          "config"
-        ],
-        "title": "Body_create_link_api_v1_gns3_projects__project_id__links_create_post"
-      },
-      "Body_create_node_api_v1_gns3_projects__project_id__nodes_create_post": {
-        "properties": {
-          "payload": {
-            "$ref": "#/components/schemas/NodeCreate"
-          },
-          "config": {
-            "$ref": "#/components/schemas/GNS3Config"
-          }
-        },
-        "type": "object",
-        "required": [
-          "payload",
-          "config"
-        ],
-        "title": "Body_create_node_api_v1_gns3_projects__project_id__nodes_create_post"
-      },
-      "Body_create_project_api_v1_gns3_projects_create_post": {
-        "properties": {
-          "payload": {
-            "$ref": "#/components/schemas/ProjectCreate"
-          },
-          "config": {
-            "$ref": "#/components/schemas/GNS3Config"
-          }
-        },
-        "type": "object",
-        "required": [
-          "payload",
-          "config"
-        ],
-        "title": "Body_create_project_api_v1_gns3_projects_create_post"
-      },
-      "Body_create_snapshot_api_v1_gns3_projects__project_id__snapshots_create_post": {
-        "properties": {
-          "payload": {
-            "$ref": "#/components/schemas/ProjectSnapshot"
-          },
-          "config": {
-            "$ref": "#/components/schemas/GNS3Config"
-          }
-        },
-        "type": "object",
-        "required": [
-          "payload",
-          "config"
-        ],
-        "title": "Body_create_snapshot_api_v1_gns3_projects__project_id__snapshots_create_post"
-      },
-      "Body_rebuild_node_api_v1_gns3_projects__project_id__nodes__node_id__rebuild_post": {
-        "properties": {
-          "payload": {
-            "$ref": "#/components/schemas/NodeRebuild"
-          },
-          "config": {
-            "$ref": "#/components/schemas/GNS3Config"
-          }
-        },
-        "type": "object",
-        "required": [
-          "payload",
-          "config"
-        ],
-        "title": "Body_rebuild_node_api_v1_gns3_projects__project_id__nodes__node_id__rebuild_post"
-      },
-      "Body_set_disk_interface_api_v1_gns3_projects__project_id__nodes__node_id__disk_interface_post": {
-        "properties": {
-          "payload": {
-            "$ref": "#/components/schemas/NodeDiskInterface"
-          },
-          "config": {
-            "$ref": "#/components/schemas/GNS3Config"
-          }
-        },
-        "type": "object",
-        "required": [
-          "payload",
-          "config"
-        ],
-        "title": "Body_set_disk_interface_api_v1_gns3_projects__project_id__nodes__node_id__disk_interface_post"
-      },
-      "Body_update_node_properties_api_v1_gns3_projects__project_id__nodes__node_id__properties_post": {
-        "properties": {
-          "payload": {
-            "$ref": "#/components/schemas/NodePropertiesUpdate"
-          },
-          "config": {
-            "$ref": "#/components/schemas/GNS3Config"
-          }
-        },
-        "type": "object",
-        "required": [
-          "payload",
-          "config"
-        ],
-        "title": "Body_update_node_properties_api_v1_gns3_projects__project_id__nodes__node_id__properties_post"
-      },
-      "Body_update_template_api_v1_gns3_templates__template_id__put": {
-        "properties": {
-          "payload": {
-            "$ref": "#/components/schemas/TemplateUpdate"
-          },
-          "config": {
-            "$ref": "#/components/schemas/GNS3Config"
-          }
-        },
-        "type": "object",
-        "required": [
-          "payload",
-          "config"
-        ],
-        "title": "Body_update_template_api_v1_gns3_templates__template_id__put"
       },
       "BridgeCreate": {
         "properties": {
@@ -9793,28 +10021,6 @@
         ],
         "title": "IpPoolDelete"
       },
-      "LinkCreate": {
-        "properties": {
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
-          "nodes": {
-            "items": {
-              "additionalProperties": true,
-              "type": "object"
-            },
-            "type": "array",
-            "title": "Nodes"
-          }
-        },
-        "type": "object",
-        "required": [
-          "project_id",
-          "nodes"
-        ],
-        "title": "LinkCreate"
-      },
       "LocalUserCreate": {
         "properties": {
           "username": {
@@ -9891,95 +10097,6 @@
           "commands"
         ],
         "title": "NetmikoConfigPush"
-      },
-      "NodeCreate": {
-        "properties": {
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
-          "node_def": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Node Def"
-          }
-        },
-        "type": "object",
-        "required": [
-          "project_id",
-          "node_def"
-        ],
-        "title": "NodeCreate"
-      },
-      "NodeDiskInterface": {
-        "properties": {
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
-          "node_id": {
-            "type": "string",
-            "title": "Node Id"
-          },
-          "interface": {
-            "type": "string",
-            "title": "Interface",
-            "default": "ide"
-          }
-        },
-        "type": "object",
-        "required": [
-          "project_id",
-          "node_id"
-        ],
-        "title": "NodeDiskInterface"
-      },
-      "NodePropertiesUpdate": {
-        "properties": {
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
-          "node_id": {
-            "type": "string",
-            "title": "Node Id"
-          },
-          "properties": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Properties"
-          }
-        },
-        "type": "object",
-        "required": [
-          "project_id",
-          "node_id",
-          "properties"
-        ],
-        "title": "NodePropertiesUpdate"
-      },
-      "NodeRebuild": {
-        "properties": {
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
-          "node_id": {
-            "type": "string",
-            "title": "Node Id"
-          },
-          "disk_interface": {
-            "type": "string",
-            "title": "Disk Interface",
-            "default": "ide"
-          }
-        },
-        "type": "object",
-        "required": [
-          "project_id",
-          "node_id"
-        ],
-        "title": "NodeRebuild"
       },
       "NtpClientSet": {
         "properties": {
@@ -10264,6 +10381,51 @@
         ],
         "title": "OspfNetworkDelete"
       },
+      "PolicyCheckRequest": {
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "operation": {
+            "type": "string",
+            "title": "Operation"
+          },
+          "risk_level": {
+            "type": "string",
+            "title": "Risk Level",
+            "default": "MEDIUM"
+          },
+          "plan_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Id"
+          },
+          "approved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "device_id",
+          "operation"
+        ],
+        "title": "PolicyCheckRequest"
+      },
       "PppKickRequest": {
         "properties": {
           "user": {
@@ -10499,48 +10661,6 @@
         ],
         "title": "PppoeServerDelete"
       },
-      "ProjectCreate": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Path"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "title": "ProjectCreate"
-      },
-      "ProjectSnapshot": {
-        "properties": {
-          "project_id": {
-            "type": "string",
-            "title": "Project Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          }
-        },
-        "type": "object",
-        "required": [
-          "project_id",
-          "name"
-        ],
-        "title": "ProjectSnapshot"
-      },
       "SubinterfaceCreate": {
         "properties": {
           "parent_interface": {
@@ -10646,25 +10766,6 @@
           "password"
         ],
         "title": "SystemUserCreate"
-      },
-      "TemplateUpdate": {
-        "properties": {
-          "template_id": {
-            "type": "string",
-            "title": "Template Id"
-          },
-          "properties": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Properties"
-          }
-        },
-        "type": "object",
-        "required": [
-          "template_id",
-          "properties"
-        ],
-        "title": "TemplateUpdate"
       },
       "TrunkPortSet": {
         "properties": {

@@ -174,13 +174,16 @@ class GNS3Driver:
         return await self._put(f"projects/{project_id}/nodes/{node_id}", json=payload)
 
     async def get_node_console(self, project_id: str, node_id: str) -> Dict:
-        """Get console connection info (host, port, type)."""
+        """Get console connection info (host, port, type).
+
+        GNS3 v2 menyimpan console sebagai field terpisah di node:
+        `console` (int port), `console_host`, `console_type`.
+        """
         node = await self.get_node(project_id, node_id)
-        console = node.get("console", {})
         return {
-            "host": console.get("host"),
-            "port": console.get("port"),
-            "type": console.get("type", "telnet"),
+            "host": node.get("console_host"),
+            "port": node.get("console"),
+            "type": node.get("console_type", "telnet"),
         }
 
     # ------------------------------------------------------------------

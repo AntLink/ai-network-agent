@@ -73,6 +73,18 @@ The response area should be able to present:
 - validation
 - execution progress
 
+The `/agent` page must also surface the agent state machine clearly:
+
+- `Thinking`
+- `Planning`
+- `Waiting approval`
+- `Running`
+- `Verifying`
+- `Completed`
+- `Failed`
+
+Use these states as visible chips, timeline steps, or progress cards. Do not keep the state hidden inside logs or raw JSON.
+
 Do not expose hidden model chain-of-thought; show concise plan/explanation produced for the user.
 
 ## Execution Plan

@@ -1,0 +1,158 @@
+{
+  "data": {
+    "id": "gns3-5845909f-e540-4011-a7f7-86112c1a539d",
+    "name": "static-routing-lab Topology",
+    "nodes": [
+      {
+        "id": "3f3e226d-9b02-4021-96e7-55a4ea771169",
+        "hostname": "R1",
+        "vendor": "cisco",
+        "kind": "host",
+        "nodeType": "qemu",
+        "status": "online",
+        "ip": "-"
+      },
+      {
+        "id": "a19c52ce-f5a5-4bcb-afd0-8f7be162dd65",
+        "hostname": "R2",
+        "vendor": "cisco",
+        "kind": "host",
+        "nodeType": "qemu",
+        "status": "online",
+        "ip": "-"
+      },
+      {
+        "id": "8db4343a-5ecb-4115-b1f2-86f5edcd0f65",
+        "hostname": "PC1",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "online",
+        "ip": "-"
+      },
+      {
+        "id": "15ea2ec0-af91-4c73-9d36-d6f08aa9aa39",
+        "hostname": "PC2",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "online",
+        "ip": "-"
+      },
+      {
+        "id": "280fd764-4672-4d29-87cb-62c3a2e2e680",
+        "hostname": "NAT",
+        "vendor": "other",
+        "kind": "cloud",
+        "nodeType": "other",
+        "status": "online",
+        "ip": "-"
+      },
+      {
+        "id": "4fa2ca7c-533a-464b-bd12-d64d6dfe1649",
+        "hostname": "NAT1",
+        "vendor": "other",
+        "kind": "other",
+        "nodeType": "other",
+        "status": "online",
+        "ip": "-"
+      },
+      {
+        "id": "09a788bc-9d73-4a5a-8712-8cc3d0742a60",
+        "hostname": "MT2",
+        "vendor": "mikrotik",
+        "kind": "host",
+        "nodeType": "qemu",
+        "status": "online",
+        "ip": "-"
+      },
+      {
+        "id": "89d7cec4-1c2d-4b00-93b9-c07e109fe712",
+        "hostname": "PC3",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "online",
+        "ip": "-"
+      },
+      {
+        "id": "7625aa10-2fd7-430a-934b-838387b2d379",
+        "hostname": "NAT2",
+        "vendor": "other",
+        "kind": "other",
+        "nodeType": "other",
+        "status": "online",
+        "ip": "-"
+      }
+    ],
+    "links": [
+      {
+        "id": "91545245-aba6-424a-9a93-300994a3a579",
+        "source": "8db4343a-5ecb-4115-b1f2-86f5edcd0f65",
+        "target": "3f3e226d-9b02-4021-96e7-55a4ea771169",
+        "sourceInterface": "Ethernet0",
+        "targetInterface": "Ethernet0",
+        "status": "up"
+      },
+      {
+        "id": "0198a55e-c6c7-463e-81f9-8c20bb59416d",
+        "source": "3f3e226d-9b02-4021-96e7-55a4ea771169",
+        "target": "a19c52ce-f5a5-4bcb-afd0-8f7be162dd65",
+        "sourceInterface": "Ethernet1",
+        "targetInterface": "Ethernet1",
+        "status": "up"
+      },
+      {
+        "id": "25e45fad-f8e4-4083-8042-a2a5035a260c",
+        "source": "a19c52ce-f5a5-4bcb-afd0-8f7be162dd65",
+        "target": "15ea2ec0-af91-4c73-9d36-d6f08aa9aa39",
+        "sourceInterface": "Ethernet0",
+        "targetInterface": "Ethernet0",
+        "status": "up"
+      },
+      {
+        "id": "a05d7617-b399-45b4-a6e8-75863eaac022",
+        "source": "280fd764-4672-4d29-87cb-62c3a2e2e680",
+        "target": "3f3e226d-9b02-4021-96e7-55a4ea771169",
+        "sourceInterface": "nat0",
+        "targetInterface": "Ethernet2",
+        "status": "up"
+      },
+      {
+        "id": "aaee557d-bf5f-430b-a9b8-93b69d1fbe12",
+        "source": "4fa2ca7c-533a-464b-bd12-d64d6dfe1649",
+        "target": "a19c52ce-f5a5-4bcb-afd0-8f7be162dd65",
+        "sourceInterface": "nat0",
+        "targetInterface": "Ethernet2",
+        "status": "up"
+      },
+      {
+        "id": "ef0af073-f8aa-4beb-b4e4-dec138643ec2",
+        "source": "3f3e226d-9b02-4021-96e7-55a4ea771169",
+        "target": "09a788bc-9d73-4a5a-8712-8cc3d0742a60",
+        "sourceInterface": "Ethernet3",
+        "targetInterface": "Ethernet0",
+        "status": "up"
+      },
+      {
+        "id": "03f1ccea-9045-4077-8963-7dd3883c8d46",
+        "source": "09a788bc-9d73-4a5a-8712-8cc3d0742a60",
+        "target": "89d7cec4-1c2d-4b00-93b9-c07e109fe712",
+        "sourceInterface": "Ethernet1",
+        "targetInterface": "Ethernet0",
+        "status": "up"
+      },
+      {
+        "id": "a1ed52e4-711c-4d50-b095-bc05ce5b3c2c",
+        "source": "7625aa10-2fd7-430a-934b-838387b2d379",
+        "target": "09a788bc-9d73-4a5a-8712-8cc3d0742a60",
+        "sourceInterface": "nat0",
+        "targetInterface": "Ethernet3",
+        "status": "up"
+      }
+    ],
+    "project_id": "5845909f-e540-4011-a7f7-86112c1a539d"
+  },
+  "saved_at": "2026-08-27T14:59:18.748376+00:00",
+  "source": "saved"
+}

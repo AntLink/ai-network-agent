@@ -1,7 +1,7 @@
 ---
 description: Plan network changes and configurations without executing them. Read-only access.
 mode: subagent
-model: claude-3.7-sonnet
+model: 9router/opencode-reasoning
 permission:
   device_get_*: allow
   config_plan: allow

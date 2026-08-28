@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from typing import Any
 
 from app.schemas.gns3 import (
@@ -291,6 +292,60 @@ async def get_node_console(project_id: str, node_id: str):
         await drv.close()
 
 
+class NodeConsoleExecRequest(BaseModel):
+    command: str
+    username: str | None = None
+    password: str | None = None
+    enable: bool = False
+    allow_empty_password: bool = False
+    bootstrap_password: str | None = None
+    login_timeout: float = 45.0
+
+
+@router.post("/projects/{project_id}/nodes/{node_id}/console-exec")
+async def node_console_exec(project_id: str, node_id: str, payload: NodeConsoleExecRequest):
+    """Eksekusi perintah via console telnet node GNS3 (first-boot friendly).
+
+    Resolve host/port console LANGSUNG dari GNS3 (tidak bergantung inventory),
+    lalu jalankan ConsoleTransport dengan param kredensial/initialize opsional.
+    """
+    drv = get_driver(GNS3Config())
+    try:
+        node = await drv.get_node(project_id, node_id)
+        console_host = node.get("console_host")
+        console_port = node.get("console")
+        if not console_host or not console_port:
+            raise HTTPException(400, "Node tidak memiliki console (mis. Cloud/NAT)")
+        from app.transports.console import ConsoleTransport
+        ct = ConsoleTransport(
+            console_host,
+            int(console_port),
+            username=payload.username,
+            password=payload.password,
+            enable=payload.enable,
+            allow_empty_password=payload.allow_empty_password,
+            bootstrap_password=payload.bootstrap_password,
+            login_timeout=payload.login_timeout,
+            device_id=node.get("name") or node_id,
+        )
+        try:
+            out = await ct.run(payload.command)
+        except Exception as e:
+            raise HTTPException(502, f"console exec gagal untuk {node.get('name') or node_id}: {e}")
+        return {
+            "project_id": project_id,
+            "node_id": node_id,
+            "node": node.get("name"),
+            "console": {"host": console_host, "port": console_port},
+            "command": payload.command,
+            "output": out,
+        }
+    except GNS3Error as e:
+        raise HTTPException(502, str(e))
+    finally:
+        await drv.close()
+
+
 @router.delete("/projects/{project_id}/nodes/{node_id}")
 async def delete_node(project_id: str, node_id: str, config: GNS3Config):
     drv = get_driver(config)
@@ -326,7 +381,7 @@ async def create_link(project_id: str, payload: dict[str, Any]):
         nodes = payload.get("nodes")
         if not isinstance(nodes, list):
             raise HTTPException(400, "nodes is required")
-        return await drv.create_link(project_id, nodes)
+        return await drv.create_link(project_id, {"nodes": nodes})
     except GNS3Error as e:
         raise HTTPException(502, str(e))
     finally:
