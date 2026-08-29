@@ -140,6 +140,7 @@ async def net_console_exec_node(
     enable: bool = False,
     bootstrap: bool = False,
     login_timeout: float = 45.0,
+    pager_off_command: str | None = None,
 ) -> dict:
     """Jalankan perintah ANTI-GAGAL untuk first-boot di node GNS3 apa pun.
 
@@ -150,6 +151,8 @@ async def net_console_exec_node(
       diizinkan)
     - enable: True untuk Cisco IOS/ASAv (privilege exec)
     - bootstrap: True bila node masih first-boot (CHR: isi password default)
+    - pager_off_command: opsional; default terdeteksi otomatis dari node
+      (ASAv -> 'terminal pager 0', IOSv/IOS -> 'terminal length 0')
     Contoh: net_console_exec_node(proj, node, "show ver", username="admin", enable=True)
     """
     await _ensure_project_open(project_id)
@@ -166,7 +169,54 @@ async def net_console_exec_node(
         "bootstrap_password": "admin123" if bootstrap else None,
         "login_timeout": login_timeout,
     }
+    if pager_off_command:
+        body["pager_off_command"] = pager_off_command
     return _ok(await backend.post(f"/gns3/projects/{project_id}/nodes/{node_id}/console-exec", json=body))
+
+
+async def net_console_interactive(
+    project_id: str,
+    node_id: str,
+    command: str,
+    answers: list[dict[str, str]] | None = None,
+    timeout: float = 60.0,
+    username: str | None = None,
+    password: str = "",
+    enable: bool = False,
+    bootstrap: bool = False,
+    login_timeout: float = 45.0,
+) -> dict:
+    """Jalankan perintah console + jawab prompt interaktif otomatis.
+
+    answers = daftar rule {"pattern": regex, "send": jawaban} yang dicocokkan
+    ke output saat command berjalan; jika cocok, "send" + Enter dikirim.
+    Contoh generate RSA key di Cisco:
+      answers=[{"pattern": "how many bits|modulus", "send": "1024"},
+               {"pattern": "overwrit|\\[confirm\\]|\\[no\\]", "send": "y"}]
+    Pager dimatikan otomatis untuk node ASAv/IOSv.
+    """
+    await _ensure_project_open(project_id)
+    try:
+        await net_gns3_start_node(project_id, node_id)  # best-effort
+    except Exception:
+        pass
+    body: dict = {
+        "command": command,
+        "answers": answers or [],
+        "timeout": timeout,
+        "username": username,
+        "password": password,
+        "enable": enable,
+        "allow_empty_password": bootstrap or not username,
+        "bootstrap_password": "admin123" if bootstrap else None,
+        "login_timeout": login_timeout,
+    }
+    return _ok(
+        await backend.post(
+            f"/gns3/projects/{project_id}/nodes/{node_id}/console-interactive",
+            json=body,
+        )
+    )
 
 
 async def net_get_device(device_id: str) -> dict:
@@ -281,6 +331,32 @@ async def net_execute_agent_tool(
     if approved_by:
         params["approved_by"] = approved_by
     return await _agent_tool(tool, **params)
+
+
+async def net_list_pending_approvals() -> dict:
+    """Daftar command yang sedang menunggu persetujuan (approval queue).
+
+    Setiap item berisi approval_id, device_id, command, risk, reason.
+    Approval alur: net_list_pending_approvals -> net_approve_command(approval_id).
+    """
+    return _ok(await backend.get("/agent/tools/pending-approvals"))
+
+
+async def net_approve_command(approval_id: str, approved_by: str | None = None) -> dict:
+    """Setujui command pending (approval_id) lalu eksekusi.
+
+    Wajib menyertakan identitas penyetuju (approved_by); eksekusi tercatat
+    di pending record (approved_by/approved_at) dan audit backend.
+    """
+    return _ok(
+        await backend.post(
+            "/agent/tools/approve",
+            json={
+                "approval_id": approval_id,
+                "approved_by": approved_by or config.DEFAULT_APPROVED_BY,
+            },
+        )
+    )
 
 
 # ---------------------------------------------------------------------------

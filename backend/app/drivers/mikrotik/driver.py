@@ -31,6 +31,30 @@ def ros_kv(key: str, value) -> str:
     return f"{key}={ros_value(value)}"
 
 
+_ROUTEROS_ERROR_RE = [
+    r"bad command name",
+    r"wrong syntax of command",
+    r"no such command",
+    r"syntax error",
+    r"expected (?:end of|command|argument|value)",
+    r"invalid value",
+    r"empty input",
+    r"failure:",
+    r"cannot .*:",
+]
+
+
+def raise_for_ros_error(output: str, command: str) -> None:
+    """Raise if RouterOS console output contains a CLI error marker."""
+    if not output:
+        return
+    import re as _re
+    lowered = output.lower()
+    for pattern in _ROUTEROS_ERROR_RE:
+        if _re.search(pattern, lowered):
+            raise ValueError(f"RouterOS command failed: {command}\n{output.strip()[:400]}")
+
+
 class MikroTikDriver(BaseDriver):
     def _prefer_console(self) -> bool:
         return str(self.device.get("transport") or "").lower() in ("console", "telnet")
@@ -285,7 +309,9 @@ class MikroTikDriver(BaseDriver):
         outputs = []
         for command in commands:
             log_event(self.device["id"], "apply", command)
-            outputs.append(await t.run(command))
+            out = await t.run(command)
+            raise_for_ros_error(out, command)
+            outputs.append(out)
         return {"success": True, "outputs": outputs}
 
     # Configuration Methods (for plan/apply workflow)
@@ -423,7 +449,9 @@ class MikroTikDriver(BaseDriver):
     async def set_system_identity(self, name: str):
         cmd = f'/system identity set {ros_kv("name", name)}'
         log_event(self.device["id"], "set_system_identity", cmd)
-        return await self._transport().run(cmd)
+        out = await self._transport().run(cmd)
+        raise_for_ros_error(out, cmd)
+        return out
 
     async def add_system_user(self, name: str, password: str, group: str = "full"):
         cmd = f'/user add {ros_kv("name", name)} {ros_kv("password", password)} {ros_kv("group", group)}'

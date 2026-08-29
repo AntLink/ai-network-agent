@@ -3,6 +3,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parents[3]  # project root (…/ai-network-agent)
 
+# Inject .env ke os.environ sehingga semua helper kredensial (os.getenv)
+# dan Settings memakai nilai yang sama. pydantic-settings tidak otomatis
+# mengisi os.environ, dan driver memakai os.getenv per-nama-device.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(ROOT / ".env")
+except Exception:
+    pass
+
 class Settings(BaseSettings):
     APP_NAME: str = "AI Network Agent API"
     APP_VERSION: str = "0.1.0"

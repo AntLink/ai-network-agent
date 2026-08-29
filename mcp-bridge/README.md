@@ -68,6 +68,16 @@ Tanpa mengubah apa pun, default sudah mengarah ke `http://127.0.0.1:8000`
 | `net_backup_config` | Backup running-config → simpan file + `download_url` (`/api/v1/backups/download/{id}`) |
 | `net_execute_agent_tool` | Eksekusi tool internal Network Copilot |
 | `net_agent_tools` | Daftar tool internal backend |
+| `net_list_pending_approvals` | Daftar command yang menunggu persetujuan (approval queue) |
+| `net_approve_command` | Setujui command pending (`approval_id` + `approved_by`) lalu eksekusi (teraudit) |
+
+**Console & first-boot (GNS3):**
+| Tool | Fungsi |
+|------|--------|
+| `net_console_exec` | Jalankan command via console/telnet device (rekoveri SSH rusak) |
+| `net_console_exec_node` | Jalankan command anti-gagal ke node GNS3 (port console di-resolve otomatis) |
+| `net_console_interactive` | Jalankan command + jawab prompt interaktif otomatis (`answers=[{pattern,send}]`) — mis. `crypto key generate rsa` |
+| `net_gns3_get_node_console` | Info host/port console sebuah node |
 
 **Workflow konfigurasi:**
 | Tool | Fungsi |
@@ -178,5 +188,10 @@ Alur generate topologi yang dilakukan agen dari perintah terakhir:
 
 1. Perintah tulis dipisahkan dari perintah baca; backend mengklasifikasi risiko.
 2. `config_apply` **wajib** menyertakan `approved_by` — perubahan tidak jalan tanpa persetujuan.
-3. `net_run_command` untuk perintah berisiko menengah/tinggi akan dikembalikan backend sebagai `approval_required` (jangan set `approved=True` tanpa yakin).
+3. `net_run_command` untuk perintah berisiko menengah/tinggi akan dikembalikan backend sebagai `approval_required` + `approval_id`. Alur eksplisit:
+   `net_list_pending_approvals` → `net_approve_command(approval_id, approved_by)`
+   (jangan set `approved=True` tanpa yakin).
 4. Bridge hanya HTTP → semua kredensial SSH tetap di backend.
+5. Console node GNS3 otomatis mematikan pager (`terminal length 0` utk IOSv,
+   `terminal pager 0` utk ASAv) sehingga output tidak terpotong oleh
+   `--More--` / `<--- More --->`.

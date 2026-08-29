@@ -246,21 +246,19 @@
       "management_address": "172.22.134.144",
       "vendor": "linux",
       "platform": "ubuntu",
-      "transport": "telnet",
+      "transport": "ssh",
       "status": "active",
       "device_type": "virtual",
       "tags": [
         "linux"
-      ],
-      "console_host": "172.22.134.144",
-      "console_port": 5007
+      ]
     },
     {
       "id": "fw-asav",
       "hostname": "FW-ASAv",
       "management_address": "172.22.134.144",
       "vendor": "cisco",
-      "platform": "ios",
+      "platform": "asa",
       "transport": "telnet",
       "status": "active",
       "device_type": "virtual",
@@ -268,7 +266,7 @@
         "cisco"
       ],
       "console_host": "172.22.134.144",
-      "console_port": 5001
+      "console_port": 5004
     },
     {
       "id": "r-cisco",
@@ -306,14 +304,88 @@
       "management_address": "172.22.134.144",
       "vendor": "linux",
       "platform": "debian",
-      "transport": "telnet",
+      "transport": "ssh",
       "status": "active",
       "device_type": "virtual",
       "tags": [
         "linux"
+      ]
+    },
+    {
+      "id": "cisco-sw1",
+      "hostname": "Cisco-SW1",
+      "management_address": "172.22.134.144",
+      "vendor": "cisco",
+      "platform": "ios-l2",
+      "transport": "console",
+      "status": "active",
+      "device_type": "virtual",
+      "console_host": "172.22.134.144",
+      "console_port": 5006
+    },
+    {
+      "id": "cisco-router",
+      "hostname": "Cisco-Router",
+      "management_address": "172.22.138.112",
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "ssh",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "cisco"
       ],
       "console_host": "172.22.134.144",
-      "console_port": 5007
+      "console_port": 5001,
+      "management_port": 22
+    },
+    {
+      "id": "asa-fw",
+      "hostname": "Firwall-ASA",
+      "management_address": "172.22.134.50",
+      "vendor": "cisco",
+      "platform": "asa",
+      "transport": "ssh",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "cisco"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5004,
+      "management_port": 22
+    },
+    {
+      "id": "cisco-switch",
+      "hostname": "Cisco-Switch",
+      "management_address": "172.22.134.49",
+      "vendor": "cisco",
+      "platform": "ios",
+      "transport": "ssh",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "cisco"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5007,
+      "management_port": 22
+    },
+    {
+      "id": "mikrotik-chr",
+      "hostname": "Mikrotik-CHR",
+      "management_address": "172.22.143.61",
+      "vendor": "mikrotik",
+      "platform": "routeros",
+      "transport": "ssh",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "mikrotik"
+      ],
+      "console_host": "172.22.134.144",
+      "console_port": 5010,
+      "management_port": 22
     }
   ]
 }

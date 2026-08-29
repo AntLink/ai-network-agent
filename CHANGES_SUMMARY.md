@@ -144,3 +144,24 @@ All modules have been verified to import correctly:
 2. Add more specific parsers for additional commands as needed
 3. Update frontend to use the structured `data` field instead of `raw`
 4. Add validation for parsed data structures
+
+## 2026-08-30 — Console & SSH Stabilization + Approval Flow
+
+### Konsol telnet GNS3
+- Lock per (host, port) agar dua sesi tidak menabrakkan karakter di console yang sama.
+- Pager dimatikan otomatis sebelum command (`terminal length 0` utk IOSv, `terminal pager 0` utk ASAv, terdeteksi dari metadata node GNS3); cleanup marker `--More--`/`<--- More --->`/`---- More ----` di mana pun.
+- Login robust: fallback kredensial (`admin123`/empty), anti-loop, tahan redraw prompt RouterOS, `enable` sekali, keluar dari config-mode terwarisi (Ctrl-Z).
+- `run_scripted()` + tool MCP `net_console_interactive` untuk prompt interaktif (keygen crypto, copy, dsb).
+
+### Alur approval eksplisit
+- Backend: `list_pending_approvals()` & `approve_command(approval_id, approved_by)`; endpoint `GET /tools/pending-approvals`, `POST /tools/approve`.
+- MCP: `net_list_pending_approvals`, `net_approve_command`.
+
+### SSH transport
+- `apply()` Cisco kini memakai `configure terminal` (sebelumnya EXEC batch → command config gagal di SSH).
+- `AsaDriver.exec_logged()` agar `show` read via exec.
+- `load_dotenv(.env)` → kredensial per-device terbaca driver.
+
+### Lab & inventory
+- SSH + key RSA aktif di router/switch/ASAv; DHCP/statik IP di subnet cloud; eksplorasi via SSH transport terverifikasi (facts/interfaces/routes/config).
+- Perbaiki collision port console: `pc-vm-1`/`pc-attacker` (5007→switch) & `fw-asav` (5001→router) tidak lagi menunjuk console perangkat lain.

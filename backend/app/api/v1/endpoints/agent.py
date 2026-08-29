@@ -3914,6 +3914,24 @@ async def execute_agent_tool(payload: dict[str, Any]):
     return result
 
 
+@router.get("/tools/pending-approvals")
+async def list_pending_approvals():
+    """Daftar command yang sedang menunggu persetujuan (untuk flow approval)."""
+    from app.agent.tools import list_pending_approvals as _list
+    return {"pending": _list()}
+
+
+@router.post("/tools/approve")
+async def post_approve_command(payload: dict[str, Any]):
+    """Setujui command pending (approval_id) lalu eksekusi; audit via pending."""
+    from app.agent.tools import approve_command as _approve
+    approval_id = str(payload.get("approval_id") or "").strip()
+    if not approval_id:
+        raise HTTPException(400, "approval_id is required")
+    approved_by = str(payload.get("approved_by") or "system").strip()
+    return await _approve(approval_id, approved_by=approved_by)
+
+
 async def _broadcast_event(event: dict[str, Any]):
     for queue in _event_subscribers:
         try:

@@ -1,5 +1,6 @@
 from app.drivers.mikrotik.driver import MikroTikDriver
 from app.drivers.cisco.driver import CiscoDriver
+from app.drivers.cisco.asa import AsaDriver
 from app.drivers.linux.debian import DebianDriver
 from app.drivers.linux.embedded import EmbeddedLinuxDriver
 from app.drivers.linux.rhel import RHELDriver
@@ -28,6 +29,9 @@ def get_driver(device: dict):
     if vendor == "mikrotik":
         return MikroTikDriver(device)
     if vendor == "cisco":
+        platform = (device.get("platform") or "").lower()
+        if "asa" in platform or "asav" in platform:
+            return AsaDriver(device)
         return CiscoDriver(device)
     if vendor == "linux":
         return _detect_linux_distro(device)

@@ -370,6 +370,31 @@ async def _execute_vendor_command(
     }
 
 
+def list_pending_approvals() -> list[dict[str, Any]]:
+    """Return all command approvals currently waiting (in-memory queue)."""
+    entries: list[dict[str, Any]] = []
+    for approval_id, entry in _PENDING_COMMAND_APPROVALS.items():
+        item = dict(entry)
+        item["approval_id"] = approval_id
+        entries.append(item)
+    return entries
+
+
+async def approve_command(approval_id: str, approved_by: str = "system") -> dict[str, Any]:
+    """Approve a pending command and execute it (audited via pending record)."""
+    pending = _PENDING_COMMAND_APPROVALS.get(approval_id)
+    if not pending:
+        return {"error": f"Approval '{approval_id}' not found"}
+    return await _execute_vendor_command(
+        pending["device_id"],
+        pending["command"],
+        mode=pending.get("mode", "auto"),
+        approved=True,
+        approval_id=approval_id,
+        approved_by=approved_by or "system",
+    )
+
+
 async def run_device_command(
     device_id: str,
     command: str,

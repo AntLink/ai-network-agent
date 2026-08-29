@@ -85,6 +85,7 @@ class CiscoDriver(BaseDriver):
             username=None,
             enable=True,
             device_id=self.device["id"],
+            pager_off_command="terminal length 0",
         )
 
     @property
@@ -410,11 +411,15 @@ class CiscoDriver(BaseDriver):
     # ------------------------------------------------------------------
 
     async def apply(self, commands: list[str]):
-        outputs = await self._logged(
-            "EXEC", f"batch[{len(commands)}]: {'; '.join(commands)}",
-            lambda: run_batch(self._transport(), commands),
-        )
-        return {"success": True, "outputs": outputs}
+        """Apply configuration commands in `configure terminal` (SSH/console).
+
+        Agent write path (net_run_command approved / approve_command) sends
+        config-mode commands, so EXEC batch (run_batch) is wrong for them.
+        _configure() already selects console or SSH with console fallback.
+        """
+        detail = f"batch[{len(commands)}]: {'; '.join(commands)}"
+        out = await self._logged("APPLY", detail, lambda: self._configure(commands))
+        return {"success": True, "outputs": [out]}
 
     async def save_config(self):
         """Save running-config to startup AND PROVE it persisted.

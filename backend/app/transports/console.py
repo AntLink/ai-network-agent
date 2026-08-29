@@ -31,7 +31,7 @@ PASSWORD_ANYWHERE_RE = re.compile(r"(?:Password|password)\s*:")
 YESNO_ANYWHERE_RE = re.compile(r"\[yes/no\]")
 # Generic confirmation prompts: "Destination filename [x]? ", "[confirm] ", etc.
 CONFIRM_ANYWHERE_RE = re.compile(r"(\[confirm\]|[\[\(][^\]\)]*[\]\)]\s*\?)\s*$")
-MORE_RE = re.compile(r"--\s?More\s?--\s*$")
+MORE_RE = re.compile(r"(?:--\s?More\s?--|--\s*\[Q quit\|D dump\|down\])\s*$")
 RETURN_RE = re.compile(r"Press RETURN to get started")
 # RouterOS CHR first-boot, antes:
 #   "Do you want to see the software license? [y/n]:"  -> jawab n (skip)
@@ -48,6 +48,24 @@ LICENSE_YN_RE = re.compile(r"\blicense\b[^\n]*\[[yYnN]\s*/\s*[yYnN]\]\s*[:>]\s*$
 #   "Confirm new password:" -> kirim ulang bootstrap password
 NEWPASSWORD_RE = re.compile(
     r"(?:new password|repeat new password|confirm(?: new)? password)[^\n]{0,16}$", re.I)
+
+
+_CONSOLE_LOCKS: dict[tuple[int, str, int], asyncio.Lock] = {}
+
+
+def _console_lock(host: str, port: int) -> asyncio.Lock:
+    """Serialize console sessions per (host, port) inside one event loop.
+
+    A telnet console is a single-writer resource: two concurrent sessions
+    interleave their keystrokes on the same port, mangling commands and
+    leaving the device stuck mid-dialog (seen live: ASAv/switch corrupted).
+    """
+    key = (id(asyncio.get_running_loop()), host, port)
+    lock = _CONSOLE_LOCKS.get(key)
+    if lock is None:
+        lock = asyncio.Lock()
+        _CONSOLE_LOCKS[key] = lock
+    return lock
 
 
 class ConsoleTransportError(Exception):
@@ -120,6 +138,7 @@ class ConsoleTransport:
         login_timeout: float = 30.0,
         char_delay: float = 0.04,
         device_id: str = "",
+        pager_off_command: str | None = None,
     ):
         self.host = host
         self.port = port
@@ -132,6 +151,7 @@ class ConsoleTransport:
         self.login_timeout = login_timeout
         self.char_delay = char_delay
         self.device_id = device_id
+        self.pager_off_command = pager_off_command
         self.reader: asyncio.StreamReader | None = None
         self.writer: asyncio.StreamWriter | None = None
         self.buf = ""
@@ -144,6 +164,10 @@ class ConsoleTransport:
         self._telnet_replies_sent: set[tuple[int, int]] = set()
         self._bootstrap_index = 0
         self._pending_bootstrap_password: str | None = None
+        self._enable_attempted = False
+        self._auth_attempts = 0
+        self._password_sent = False
+        self._lock: asyncio.Lock | None = None
 
     # ------------------------------------------------------------------
     # low-level I/O
@@ -153,6 +177,48 @@ class ConsoleTransport:
     def clean(raw: str) -> str:
         raw = ConsoleTransport.ANSI_RE.sub("", raw)
         return ConsoleTransport.CTRL_RE.sub("", raw)
+
+    @staticmethod
+    def clean_command_output(raw: str, command: str | None = None) -> str:
+        """Return only command body, without stale prompts or command echoes."""
+        text = clean_cli_output(raw, command)
+        if command:
+            idx = text.rfind(command.strip())
+            if idx >= 0:
+                text = text[idx + len(command.strip()):]
+        text = text.replace("\r", "")
+        text = re.sub(r"(?m)^\s*\[[^\]\r\n]+]\s*>\s*", "", text)
+        text = re.sub(r"(?m)^\s*[A-Za-z0-9().-]+[#>]\s*", "", text)
+        # remove leftover pager markers that answering --More-- leaves behind.
+        # IOSv: "<--- More --->", MikroTik: "-- More --", ASA: "---- More ----".
+        text = re.sub(r"(?i)(?:<---\s*More\s*--->|----\s*More\s*----|--\s*More\s*-+)", "", text)
+        text = re.sub(r"(?im)^\s*(--\s?More\s?--|----\sMore\s----|\s*--\s*$)", "", text)
+        # IOSv console pager redraw leaves an 8-9 space column indent on the
+        # line that was under the "<--- More --->" prompt when we sent space.
+        text = re.sub(r"(?m)^ {8,}", "", text)
+        lines = text.splitlines()
+        while lines and not lines[0].strip():
+            lines.pop(0)
+        while lines and (
+            not lines[-1].strip()
+            or ROUTEROS_PROMPT_RE.search(lines[-1].strip())
+            or PROMPT_RE.search(lines[-1].strip())
+            or MORE_RE.search(lines[-1].strip())
+        ):
+            lines.pop()
+        return "\n".join(lines).strip()
+
+    @staticmethod
+    def command_without_paging(command: str) -> str:
+        """Disable RouterOS pager for print commands while keeping other CLIs unchanged."""
+        stripped = command.strip()
+        if (
+            stripped.startswith("/")
+            and re.search(r"(^|\s)print(\s|$)", stripped)
+            and not re.search(r"(^|\s)without-paging(\s|$)", stripped)
+        ):
+            return f"{stripped} without-paging"
+        return command
 
     async def _type_slow(self, text: str, delay: float = 0.06, newline: bytes = b"\r"):
         """Ketik pelan per-karakter + Enter.
@@ -297,6 +363,29 @@ class ConsoleTransport:
         self._raw_send("\r")
         await asyncio.sleep(self.char_delay * 4)
 
+    async def _send_password(self, password: str):
+        """Type a password slowly with pauses, so console chars don't collide.
+
+        Lab lesson: typing a password too fast at the prompt causes the console
+        to merge/tangle characters with the echo. Pause before typing, between
+        characters, and before hitting Enter.
+        """
+        await self._settle(0.4)
+        for ch in password:
+            self._raw_send(ch)
+            try:
+                await self.writer.drain()
+            except Exception:
+                pass
+            await asyncio.sleep(0.1)
+        await self._settle(0.3)
+        self._raw_send("\r")
+        try:
+            await self.writer.drain()
+        except Exception:
+            pass
+        await self._settle(0.4)
+
     # ------------------------------------------------------------------
     # dialog engine
     # ------------------------------------------------------------------
@@ -349,18 +438,31 @@ class ConsoleTransport:
     async def open(self):
         if self.writer:
             return
+        lock = _console_lock(self.host, self.port)
+        try:
+            await asyncio.wait_for(lock.acquire(), timeout=self.login_timeout)
+        except asyncio.TimeoutError:
+            raise ConsoleTimeoutError(
+                f"console {self.host}:{self.port} busy (another console session active)"
+            )
+        self._lock = lock
         try:
             self.reader, self.writer = await asyncio.wait_for(
                 asyncio.open_connection(self.host, self.port),
                 timeout=self.login_timeout,
             )
         except Exception as e:
+            self._release_console_lock()
             raise ConsoleTransportError(
                 f"cannot connect to console {self.host}:{self.port}: {e}"
             ) from e
         self.buf = ""
         self._pos = 0
-        await self._provoked_login()
+        try:
+            await self._provoked_login()
+        except Exception:
+            await self.close()
+            raise
 
     async def _has_known_state(self) -> bool:
         window = self.buf[self._pos:]
@@ -376,19 +478,20 @@ class ConsoleTransport:
         """Wake up a silent console first, then run the dialog.
 
         Idle telnet consoles print nothing until a key arrives (the prompt
-        is already sitting there unrendered). One provoking ENTER solves it -
-        but NEVER when the screen already sits at a credential prompt.
+        is already sitting there unrendered). A provoking ENTER solves it -
+        but never when the screen already sits at a credential prompt. Retry
+        a few times because the first connection to a sleeping GNS3 node can
+        be slow to render output.
         """
-        await self._recv_chunk(timeout=3.0)
+        await self._recv_chunk(timeout=5.0)
         if RETURN_RE.search(self.buf):
             self._raw_send("\r")          # 'Press RETURN to get started'
-        elif not await self._has_known_state():
-            self._raw_send("\r")          # provoke hidden prompt
             await self._recv_chunk(timeout=2.0)
-            if not await self._has_known_state():
-                # beberapa console (VPCS) butuh ENTER ganda untuk render prompt
-                self._raw_send("\r")
-                await self._recv_chunk(timeout=2.0)
+        attempts = 0
+        while not await self._has_known_state() and attempts < 4:
+            attempts += 1
+            self._raw_send("\r")          # provoke hidden prompt
+            await self._recv_chunk(timeout=2.5)
         await self._login()
         # everything before this point is login noise, not command output
         self._session_start = self._pos
@@ -430,6 +533,15 @@ class ConsoleTransport:
         finally:
             self.writer = None
             self.reader = None
+            self._release_console_lock()
+
+    def _release_console_lock(self):
+        lock, self._lock = self._lock, None
+        if lock is not None and lock.locked():
+            try:
+                lock.release()
+            except RuntimeError:
+                pass
 
     async def _login(self):
         """Walk the boot/login dialog until we own an exec prompt.
@@ -439,6 +551,7 @@ class ConsoleTransport:
         Initial recv/provocation already done by _provoked_login().
         """
         deadline = time.perf_counter() + self.login_timeout
+        self._auth_attempts = 0
         while time.perf_counter() < deadline:
             try:
                 event = await self.expect(timeout=5.0)
@@ -448,7 +561,25 @@ class ConsoleTransport:
 
             if event == "prompt":
                 tail = self.buf[self._pos - 40:].replace("\r", "")
-                if tail.rstrip().endswith(">") and self.enable and self.enable_password:
+                if "config" in tail and ")" in tail:
+                    # console baru yang mewarisi layar tertinggal di config-mode:
+                    # keluar dulu ke EXEC (Ctrl-Z aman di kedua mode).
+                    self._raw_send("\x1a")
+                    try:
+                        await self.writer.drain()
+                    except Exception:
+                        pass
+                    self._pos = len(self.buf)
+                    continue
+                if (
+                    tail.rstrip().endswith(">")
+                    and self.enable
+                    and not self._enable_attempted
+                    and (self.enable_password or self.allow_empty_password)
+                ):
+                    # sekali saja: bila enable ditolak (Bad passwords) loop harus
+                    # berhenti dan kembali ke user mode, bukan mengulang terus.
+                    self._enable_attempted = True
                     await self._enter_enable()
                     continue
                 log_event(self.device_id or "-", "CONSOLE-LOGIN", "OK", status="OK")
@@ -460,23 +591,37 @@ class ConsoleTransport:
                 continue
             if event == "login":
                 await self._settle()
+                if self._user_sent and not self._password_sent:
+                    # RouterOS merender ulang "MikroTik Login:" saat kita
+                    # membalas query telnet/DSR; ini bukan dialog baru.
+                    # Jangan kirim ulang username hingga password dikirim.
+                    continue
+                # login diminta ulang setelah kredensial salah => percobaan baru
+                self._auth_attempts += 1
+                if self._auth_attempts > 3:
+                    raise ConsoleAuthError(
+                        "authentication failed (check username/password)"
+                    )
                 if not self.username:
                     raise ConsoleAuthError("login prompt but no username configured")
+                self._user_sent = True
+                self._password_sent = False
                 await self._send_username()
                 continue
             if event == "password":
                 await self._settle()
-                cred = self.password or ""
-                if cred:
-                    await self._type_slow(cred)
-                elif self.allow_empty_password:
+                cred = self._next_login_password()
+                if cred is None:
+                    raise ConsoleAuthError("password prompt but no password configured")
+                if cred == "":
                     self.writer.write(b"\r")  # password kosong (admin CHR)
                     try:
                         await self.writer.drain()
                     except Exception:
                         pass
                 else:
-                    raise ConsoleAuthError("password prompt but no password configured")
+                    await self._send_password(cred)
+                self._password_sent = True
                 continue
             if event == "license_yn":
                 await self._settle()
@@ -497,10 +642,40 @@ class ConsoleTransport:
                 self._raw_send("\r")  # accept default (press Enter)
                 continue
             if event == "more":
-                self._raw_send(" ")
+                tail = self.buf[self._pos - 80:self._pos].lower()
+                self._raw_send("D" if "q quit" in tail and "d dump" in tail else " ")
+                try:
+                    await self.writer.drain()
+                except Exception:
+                    pass
                 continue
 
         raise ConsoleTimeoutError("login dialog did not reach a CLI prompt")
+
+    def _next_login_password(self) -> str | None:
+        """Candidate password order for a (re)login dialog.
+
+        Order: configured password -> bootstrap password -> Enter (empty,
+        per ASA first-login: no password yet) -> admin123 (MikroTik default).
+        Returns None when all candidates are exhausted (caller raises a clean
+        auth error instead of looping forever).
+        """
+        candidates: list[str] = []
+        pw = self.password or ""
+        if pw:
+            candidates.append(pw)
+        if self.bootstrap_password and self.bootstrap_password not in candidates:
+            candidates.append(self.bootstrap_password)
+        if self.allow_empty_password:
+            candidates.append("")
+        if "admin123" not in candidates:
+            candidates.append("admin123")
+        # _auth_attempts sudah +1 saat prompt "login" muncul, jadi prompt
+        # password pertama pakai idx 0.
+        idx = max(0, self._auth_attempts - 1)
+        if idx >= len(candidates):
+            return None
+        return candidates[idx]
 
     def _next_credential(self, stage: str) -> str | None:
         """Answer order: username/password prompts then enable secret.
@@ -519,11 +694,19 @@ class ConsoleTransport:
 
     async def _enter_enable(self):
         self._raw_send("enable\r")
+        await self._recv_chunk(timeout=1.0)
         event = await self.expect(timeout=8.0)
         if event == "password":
-            if not self.enable_password:
+            if self.enable_password:
+                await self._send_password(self.enable_password)
+            elif self.allow_empty_password:
+                self.writer.write(b"\r")  # secret kosong (mis. ASAv lab)
+                try:
+                    await self.writer.drain()
+                except Exception:
+                    pass
+            else:
                 raise ConsoleAuthError("enable asks password but none configured")
-            await self.send_line(self.enable_password)
         elif event != "prompt":
             raise ConsoleAuthError("enable flow stuck")
 
@@ -548,8 +731,15 @@ class ConsoleTransport:
             # biarkan console tenang sebelum kirim perintah (anti hilang-karakter)
             await self._recv_chunk(timeout=1.0)
             await asyncio.sleep(0.2)
-            await self.send_line(command)
-            await self.expect(timeout=20.0)
+            # matikan pager dulu (IOS: terminal length 0, ASA: terminal pager 0)
+            # supaya output panjang tidak memicu --More-- / "<--- More --->".
+            if self.pager_off_command:
+                await self.send_line(self.pager_off_command)
+                await self._drain_to_prompt(deadline=time.perf_counter() + 20.0)
+                await asyncio.sleep(0.1)
+            send_command = self.command_without_paging(command)
+            await self.send_line(send_command)
+            await self._drain_to_prompt(deadline=time.perf_counter() + 60.0)
         except Exception as e:
             log_event(
                 self.device_id or "-", "CONSOLE-EXEC", command,
@@ -559,13 +749,108 @@ class ConsoleTransport:
             await self.close()
             raise
         # output starts after the login dialog noise
-        out = clean_cli_output(self.buf[self._session_start:], command)
+        out = self.clean_command_output(self.buf[self._session_start:], send_command)
         await self.close()
         log_event(
             self.device_id or "-", "CONSOLE-EXEC", command, status="OK",
             duration_ms=round((time.perf_counter() - t0) * 1000),
         )
         return out
+
+    async def run_scripted(
+        self,
+        command: str,
+        answers: list[dict[str, str]] | None = None,
+        timeout: float = 60.0,
+    ) -> str:
+        """Run one command and answer interactive prompts via rule list.
+
+        answers: list of {"pattern": <regex>, "send": <text>}. While the
+        device is mid-command, each read chunk is scanned (in order) against
+        the patterns; on a match the matching reply text + CR is sent.
+        Completion = a CLI prompt appears. Raises on timeout/connection error.
+        Typical use: 'crypto key generate rsa' (answer modulus + confirm).
+        """
+        t0 = time.perf_counter()
+        watches: list[tuple[re.Pattern, str]] = []
+        for rule in answers or []:
+            pattern = str(rule.get("pattern") or "")
+            if not pattern:
+                continue
+            watches.append((re.compile(pattern, re.I), str(rule.get("send") or "\r")))
+        try:
+            await self.open()
+            await self._recv_chunk(timeout=1.0)
+            await asyncio.sleep(0.2)
+            if self.pager_off_command:
+                await self.send_line(self.pager_off_command)
+                await self._drain_to_prompt(deadline=time.perf_counter() + 20.0)
+                await asyncio.sleep(0.1)
+            self._session_start = len(self.buf)
+            send_command = self.command_without_paging(command)
+            await self.send_line(send_command)
+            deadline = time.perf_counter() + timeout
+            while time.perf_counter() < deadline:
+                await self._recv_chunk(timeout=0.5)
+                window = self.buf[self._pos:]
+                for rx, send in watches:
+                    if rx.search(window):
+                        self._pos = len(self.buf)
+                        if send == "\r":
+                            self.writer.write(b"\r")
+                        else:
+                            await self._type_slow(send)
+                        try:
+                            await self.writer.drain()
+                        except Exception:
+                            pass
+                        break
+                else:
+                    if PROMPT_RE.search(window) or ROUTEROS_PROMPT_RE.search(window):
+                        break
+        except Exception as e:
+            log_event(
+                self.device_id or "-", "CONSOLE-SCRIPT", command,
+                status="FAIL", error=str(e),
+                duration_ms=round((time.perf_counter() - t0) * 1000),
+            )
+            await self.close()
+            raise
+        out = self.clean_command_output(self.buf[self._session_start:], send_command)
+        await self.close()
+        log_event(
+            self.device_id or "-", "CONSOLE-SCRIPT", command, status="OK",
+            duration_ms=round((time.perf_counter() - t0) * 1000),
+        )
+        return out
+
+    async def _drain_to_prompt(self, deadline: float) -> None:
+        """Keep reading, answering `--More--` / confirmations, until a final prompt."""
+        while time.perf_counter() < deadline:
+            try:
+                event = await self.expect(timeout=15.0)
+            except ConsoleTimeoutError:
+                # best-effort: stop draining and let the caller clean/raise on
+                # whatever was captured (e.g. `% Invalid input` in the buffer).
+                return
+            if event == "more":
+                self._answer_more()
+                continue
+            if event == "prompt":
+                return
+            if event == "confirm":
+                self._raw_send("\r")
+                continue
+            # other dialog states should not appear during command output
+            return
+
+    def _answer_more(self) -> None:
+        tail = self.buf[self._pos - 80 : self._pos].lower()
+        self._raw_send("D" if "q quit" in tail and "d dump" in tail else " ")
+        try:
+            asyncio.get_event_loop().create_task(self.writer.drain())
+        except Exception:
+            pass
 
     async def run_config(self, lines: list[str]) -> str:
         """Run multiple configuration commands in one session (conf t ... end)."""
@@ -576,13 +861,13 @@ class ConsoleTransport:
             await self.open()
             # enter config mode
             await self.send_line("configure terminal")
-            await self.expect(timeout=10.0)
+            await self._drain_to_prompt(deadline=time.perf_counter() + 20.0)
             for line in lines:
                 await self.send_line(line)
-                await self.expect(timeout=10.0)
+                await self._drain_to_prompt(deadline=time.perf_counter() + 20.0)
             # exit config mode
             await self.send_line("end")
-            await self.expect(timeout=10.0)
+            await self._drain_to_prompt(deadline=time.perf_counter() + 20.0)
         except Exception as e:
             log_event(
                 self.device_id or "-", "CONSOLE-CONFIG", "; ".join(lines),
