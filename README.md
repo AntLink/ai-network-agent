@@ -1,6 +1,6 @@
 # AI Network Agent — AI-Powered Network Operations Center
 
-AI-driven network management platform for Cisco, MikroTik, Aruba, GNS3, Containerlab, and vrnetlab environments.
+AI-driven network management platform for Cisco, MikroTik, Aruba, Ruijie, FortiGate, Juniper (vJunos), GNS3, Containerlab, and vrnetlab environments.
 
 ## Features
 
@@ -9,7 +9,7 @@ AI-driven network management platform for Cisco, MikroTik, Aruba, GNS3, Containe
 | Page | Description |
 |------|-------------|
 | Dashboard | Network health, device status, AI operations |
-| Devices | Device list, detail, interfaces, routes, config |
+| Devices | Device list (paginasi + filter jumlah/halaman), detail, interfaces, routes, config |
 | Terminal | Interactive SSH sessions with autocomplete |
 | Configurations | Config plan, dry-run, apply, rollback |
 | GNS3 | Project lifecycle, nodes, links, snapshots |
@@ -26,14 +26,29 @@ AI-driven network management platform for Cisco, MikroTik, Aruba, GNS3, Containe
 
 ### Backend (FastAPI + Python)
 
-**19 endpoint modules:**
+**23 endpoint modules:**
 
 ```
 /devices    /config     /monitoring   /topology   /audit
-/mikrotik   /cisco      /gns3         /policy     /terminal
-/tasks      /alerts     /backups      /agent      /credentials
-/settings   /discovery  /containerlab /ninerouter
+/mikrotik   /cisco      /aruba        /asa        /ruijie
+/fortigate  /gns3       /policy       /terminal    /tasks
+/alerts     /backups    /agent        /credentials /settings
+/discovery  /containerlab /ninerouter
 ```
+
+### Vendor Drivers
+
+Driver perangkat (SSH dan/atau telnet-console GNS3), semua baca rutin mengembalikan `{ data: parsed, raw }`:
+
+| Vendor | Driver | Transport | Status |
+|--------|--------|-----------|--------|
+| Cisco IOS/IOS-XE | `cisco/` | SSH + console | ✅ |
+| Cisco ASA (ASAv) | `cisco/asa.py` | console | ✅ |
+| MikroTik RouterOS | `mikrotik/` | SSH + console | ✅ |
+| Aruba AOS-CX | `aruba/` | SSH + console | ✅ |
+| Ruijie RGOS | `ruijie/` | console | ✅ |
+| Fortinet FortiOS | `fortinet/` | console | ✅ |
+| Linux (Debian/RHEL/Embedded) | `linux/` | SSH | ✅ |
 
 ### AI Providers
 
@@ -140,12 +155,12 @@ ai-network-agent/
 │   ├── app/
 │   │   ├── agent/          # AI provider abstraction, tools
 │   │   ├── api/v1/         # FastAPI endpoints
-│   │   ├── drivers/        # Cisco, MikroTik, GNS3 drivers
+│   │   ├── drivers/        # Cisco, MikroTik, GNS3, Aruba, ASA, Ruijie, FortiGate, Linux
 │   │   ├── core/           # Audit, policy
 │   │   ├── models/         # Data models
 │   │   ├── parsers/        # CLI output parsers
 │   │   ├── services/       # Terminal service
-│   │   └── transports/     # SSH transport
+│   │   └── transports/     # SSH + telnet-console transport
 │   └── tests/
 ├── src/
 │   ├── api/network/        # API client, hooks, backend adapter
@@ -172,6 +187,7 @@ ai-network-agent/
 
 - `docs/FRONTEND_BACKEND_INTEGRATION.md` — Endpoint sync guide
 - `docs/AI_NETWORK_COPILOT_ARCHITECTURE.md` — AI agent architecture
+- `CHANGES_SUMMARY.md` — Catatan perubahan per sesi
 - `ARCHITECTURE.md` — System architecture
 - `logs/` — Session logs and history
 
