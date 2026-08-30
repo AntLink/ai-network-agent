@@ -165,3 +165,32 @@ All modules have been verified to import correctly:
 ### Lab & inventory
 - SSH + key RSA aktif di router/switch/ASAv; DHCP/statik IP di subnet cloud; eksplorasi via SSH transport terverifikasi (facts/interfaces/routes/config).
 - Perbaiki collision port console: `pc-vm-1`/`pc-attacker` (5007→switch) & `fw-asav` (5001→router) tidak lagi menunjuk console perangkat lain.
+
+## 2026-08-30/31 — Vendor drivers (Aruba/ASA/Ruijie/FortiGate), endpoint parity, lab lintas-vendor, pagination Devices
+
+### Driver & endpoint vendor baru
+- **Aruba AOS-CX** `backend/app/drivers/aruba/` (SSH + console GNS3, parser version/system/interfaces/vlan/route/arp/config) + endpoint `/aruba` (resources, interface, l2 vlan/access/trunk, static-route, tools, config/save).
+- **ASA (ASAv)** — endpoint `/asa` (resources, interface/address, acl, nat, static-route, config/save) untuk `AsaDriver` yang sudah ada.
+- **Ruijie RGOS** `backend/app/drivers/ruijie/` (console, RG-NSE Router/switch V1.06) + endpoint `/ruijie` + integrasi agent (normalize/label/noc-profile/topic-command).
+- **Fortinet FortiOS** `backend/app/drivers/fortinet/` (console; login admin, parser structured interface/route/static-route; retry anti-flaky; config satu-sesi tanpa `configure terminal`) + endpoint `/fortigate` (resources, commands/run, interface/address ±DELETE, hostname, static-route POST/GET/DELETE).
+- Factory: registrasi vendor `aruba`, `ruijie`, `fortinet`.
+- `main.py`: exception handler console transport (502/504/503) + `ArubaCLIError` → 422 untuk error device yang utuh.
+
+### Perbaikan shared (transport console)
+- `PROMPT_RE` kini mengakui hostname ber-hiphen dan spasi sebelum `#` (kasus `FortiFirewall-VM64-KVM # `) agar login console tak timeout.
+- Prompt konfirmasi `(y/n)` dijawab `n` (tidak macet di dialog AOS-CX/ASAv).
+- RouterOS: `print ... where ...` tanpa suffix `without-paging` (output jadi kosong kalau kepaksa).
+- `mcp-bridge`: hapus truncation `detail[:400]` pada error backend.
+
+### GNS3 / lab lintas-vendor
+- Template vJunos-Router & Switch 26.2R1.7 (digambar upload); FortiGate (FortiOS 7.6.7 resmi, admin/FortiLab123! first-login policy); HPE VSR1001 dicek setara resmi.
+- Instal `ovmf` di VM GNS3 untuk UEFI; diagnosis vJunos-Evolved (tidak stabil di nested KVM → template dihapus).
+- Wiring & ping: Aruba↔CHR↔ASAv 0% loss; **Ruijie→MikroTik 5/5** (SVI vlan1); **Aruba↔FortiGate 5/5** dua arah via SW1 1/1/7↔FG port1.
+- Console FG output utuh (pager `--More--` otomatis dijawab transport; `show full-configuration` ±365 KB).
+
+### Frontend
+- Halaman Devices: **pagination server-side** (`/devices?page=&limit=`), Select ukuran halaman, Prev/Next — sejajar pola Audit; paging di dalam `CardContent`.
+- `useDevicesPage`/`loadBackendDevicesPage` (join batch-status) + `DeviceStatusTable.footer` untuk kontrol paging.
+
+### Testing & status
+- Unit test parser Aruba (`tests/test_aruba_parser.py`) lulus; endpoint read/write/delete vendor terverifikasi live.
