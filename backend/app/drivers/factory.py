@@ -1,6 +1,9 @@
 from app.drivers.mikrotik.driver import MikroTikDriver
 from app.drivers.cisco.driver import CiscoDriver
 from app.drivers.cisco.asa import AsaDriver
+from app.drivers.aruba.driver import ArubaDriver
+from app.drivers.ruijie.driver import RuijieDriver
+from app.drivers.fortinet.driver import FortiOSDriver
 from app.drivers.linux.debian import DebianDriver
 from app.drivers.linux.embedded import EmbeddedLinuxDriver
 from app.drivers.linux.rhel import RHELDriver
@@ -33,6 +36,12 @@ def get_driver(device: dict):
         if "asa" in platform or "asav" in platform:
             return AsaDriver(device)
         return CiscoDriver(device)
+    if vendor == "aruba":
+        return ArubaDriver(device)
+    if vendor == "ruijie":
+        return RuijieDriver(device)
+    if vendor in ("fortinet", "fortigate"):
+        return FortiOSDriver(device)
     if vendor == "linux":
         return _detect_linux_distro(device)
     

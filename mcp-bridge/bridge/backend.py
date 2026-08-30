@@ -13,7 +13,7 @@ class BackendError(RuntimeError):
         self.status = status
         self.method = method
         self.path = path
-        super().__init__(f"{method} {path} -> HTTP {status}: {detail[:400]}")
+        super().__init__(f"{method} {path} -> HTTP {status}: {detail}")
 
 
 class Backend:

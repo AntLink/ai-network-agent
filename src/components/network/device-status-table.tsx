@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { MoreHorizontal, PencilLine, Play, RotateCcw, Search, ServerCog, ShieldCheck, Terminal, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -19,11 +19,12 @@ type DeviceStatusTableProps = {
   onAddDevice?: () => void
   onEditDevice?: (device: Device) => void
   onDeleteDevice?: (device: Device) => void
+  footer?: ReactNode
 }
 
 const allValue = 'all'
 
-export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEditDevice, onDeleteDevice }: DeviceStatusTableProps) {
+export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEditDevice, onDeleteDevice, footer }: DeviceStatusTableProps) {
   const [query, setQuery] = useState('')
   const [vendor, setVendor] = useState(allValue)
   const [status, setStatus] = useState(allValue)
@@ -105,7 +106,8 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
         {filteredDevices.length === 0 ? (
           <EmptyState title="No devices match the current filters." />
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border">
+          <>
+            <div className="overflow-x-auto rounded-lg border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -175,6 +177,10 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
               </TableBody>
             </Table>
           </div>
+          {footer && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">{footer}</div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

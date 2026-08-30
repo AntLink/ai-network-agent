@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import devices, config, monitoring, topology, audit, mikrotik, cisco, gns3, policy, terminal, tasks, alerts, backups, agent, credentials, settings, discovery, containerlab, ninerouter, agent_sessions
+from app.api.v1.endpoints import devices, config, monitoring, topology, audit, mikrotik, cisco, aruba, asa, ruijie, fortigate, gns3, policy, terminal, tasks, alerts, backups, agent, credentials, settings, discovery, containerlab, ninerouter, agent_sessions
 
 api_router = APIRouter()
 api_router.include_router(devices.router, prefix="/devices", tags=["devices"])
@@ -9,6 +9,10 @@ api_router.include_router(topology.router, prefix="/topology", tags=["topology"]
 api_router.include_router(audit.router, prefix="/audit", tags=["audit"])
 api_router.include_router(mikrotik.router, prefix="/mikrotik", tags=["mikrotik"])
 api_router.include_router(cisco.router, prefix="/cisco", tags=["cisco"])
+api_router.include_router(aruba.router, prefix="/aruba", tags=["aruba"])
+api_router.include_router(asa.router, prefix="/asa", tags=["asa"])
+api_router.include_router(ruijie.router, prefix="/ruijie", tags=["ruijie"])
+api_router.include_router(fortigate.router, prefix="/fortigate", tags=["fortigate"])
 api_router.include_router(gns3.router, prefix="/gns3", tags=["gns3"])
 api_router.include_router(policy.router, prefix="/policy", tags=["policy"])
 api_router.include_router(terminal.router, prefix="/terminal", tags=["terminal"])

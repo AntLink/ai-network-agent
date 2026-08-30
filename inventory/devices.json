@@ -386,6 +386,127 @@
       "console_host": "172.22.134.144",
       "console_port": 5010,
       "management_port": 22
+    },
+    {
+      "id": "aruba-sw1",
+      "hostname": "SW1-ARUBA",
+      "management_address": "172.30.56.191",
+      "vendor": "aruba",
+      "platform": "aos-cx",
+      "transport": "console",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "aruba",
+        "aos-cx"
+      ],
+      "console_host": "172.30.56.191",
+      "console_port": 5002,
+      "management_port": 22,
+      "model": "ArubaOS-CX OVA",
+      "lab": "CISCO-ARUBA-LAB",
+      "os_version": "Virtual.10.10.1181"
+    },
+    {
+      "id": "mikrotik-chr-test",
+      "hostname": "CHR-TEST",
+      "management_address": "172.30.56.191",
+      "vendor": "mikrotik",
+      "platform": "routeros",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "mikrotik"
+      ],
+      "console_host": "172.30.56.191",
+      "console_port": 5008,
+      "lab": "CISCO-ARUBA-LAB"
+    },
+    {
+      "id": "asa-test",
+      "hostname": "ASAV-TEST",
+      "management_address": "172.30.56.191",
+      "vendor": "cisco",
+      "platform": "asa",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "cisco",
+        "asa"
+      ],
+      "console_host": "172.30.56.191",
+      "console_port": 5016,
+      "lab": "CISCO-ARUBA-LAB"
+    },
+    {
+      "id": "ruijie-r1",
+      "hostname": "RUIGIE-R1",
+      "management_address": "172.30.56.191",
+      "vendor": "ruijie",
+      "platform": "rgos",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "ruijie",
+        "router"
+      ],
+      "console_host": "172.30.56.191",
+      "console_port": 5013,
+      "lab": "MIXED-VENDOR-TEST"
+    },
+    {
+      "id": "ruijie-sw1",
+      "hostname": "RUIGIE-SW1",
+      "management_address": "172.30.56.191",
+      "vendor": "ruijie",
+      "platform": "rgos",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "ruijie",
+        "switch"
+      ],
+      "console_host": "172.30.56.191",
+      "console_port": 5019,
+      "lab": "MIXED-VENDOR-TEST"
+    },
+    {
+      "id": "ruijie-lab",
+      "hostname": "RUIGIE-LAB",
+      "management_address": "172.30.56.191",
+      "vendor": "ruijie",
+      "platform": "rgos",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "ruijie",
+        "router"
+      ],
+      "console_host": "172.30.56.191",
+      "console_port": 5023,
+      "lab": "CISCO-ARUBA-LAB"
+    },
+    {
+      "id": "fortigate-fg1",
+      "hostname": "FG1-FORTI",
+      "management_address": "172.30.56.191",
+      "vendor": "fortinet",
+      "platform": "fortios",
+      "transport": "telnet",
+      "status": "active",
+      "device_type": "virtual",
+      "tags": [
+        "fortinet",
+        "firewall"
+      ],
+      "console_host": "172.30.56.191",
+      "console_port": 5012,
+      "lab": "CISCO-ARUBA-LAB"
     }
   ]
 }

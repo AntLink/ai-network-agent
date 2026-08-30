@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import Field
 from pydantic import BaseModel
 from typing import Any
+import math
 from app.services.device_service import device_service
 from app.repositories.inventory import inventory_repository
 
@@ -55,8 +56,23 @@ class DeviceUpdateRequest(BaseModel):
 
 
 @router.get("")
-async def list_devices():
-    return await device_service.list_devices()
+async def list_devices(
+    page: int | None = Query(default=None, ge=1),
+    limit: int | None = Query(default=None, ge=1, le=500),
+):
+    devices = await device_service.list_devices()
+    if page is None:
+        return devices
+    page = max(1, int(page))
+    limit = max(1, min(int(limit or 25), 500))
+    start = (page - 1) * limit
+    return {
+        "devices": devices[start:start + limit],
+        "total": len(devices),
+        "page": page,
+        "limit": limit,
+        "pages": max(1, math.ceil(len(devices) / limit)),
+    }
 
 
 @router.post("")

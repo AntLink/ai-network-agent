@@ -160,6 +160,53 @@ export async function loadBackendDevices(): Promise<Device[]> {
   })
 }
 
+export interface DevicePage {
+  devices: Device[]
+  total: number
+  page: number
+  limit: number
+  pages: number
+}
+
+export async function loadBackendDevicesPage(query: { page?: number; limit?: number }): Promise<DevicePage> {
+  const params = new URLSearchParams()
+  if (query.page) params.set('page', String(query.page))
+  if (query.limit) params.set('limit', String(query.limit))
+  const qs = params.toString()
+
+  const [payload, statuses] = await Promise.all([
+    apiRequest<unknown>(`/api/v1/devices${qs ? '?' + qs : ''}`),
+    loadBackendDeviceStatuses(),
+  ])
+  const statusMap = new Map(statuses.map((s) => [s.device_id, s]))
+
+  const record = asRecord(payload)
+  const rawList = Array.isArray(payload) ? payload : extractArray(record.devices)
+
+  const devices = rawList.map((item) => {
+    const device = normalizeDevice(item)
+    const m = statusMap.get(device.id)
+    if (m) {
+      device.status = m.status
+      device.cpu = m.cpu
+      device.memory = m.memory
+      device.latencyMs = m.latency_ms
+    }
+    return device
+  })
+
+  if (Array.isArray(payload)) {
+    return { devices, total: devices.length, page: query.page ?? 1, limit: query.limit ?? (devices.length || 25), pages: 1 }
+  }
+  return {
+    devices,
+    total: Number(record.total ?? devices.length),
+    page: Number(record.page ?? query.page ?? 1),
+    limit: Number(record.limit ?? query.limit ?? 25),
+    pages: Number(record.pages ?? 1),
+  }
+}
+
 export async function createBackendDevice(input: {
   id: string
   hostname: string

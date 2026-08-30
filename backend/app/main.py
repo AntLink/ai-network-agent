@@ -10,6 +10,12 @@ from app.transports.ssh import (
     PromptTimeoutError,
 )
 from app.drivers.cisco.cli import CiscoCLIError
+from app.drivers.aruba.driver import ArubaCLIError
+from app.transports.console import (
+    ConsoleTransportError,
+    ConsoleTimeoutError,
+    ConsoleAuthError,
+)
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -51,6 +57,26 @@ async def ssh_transport_error_handler(request: Request, exc: SSHTransportError):
 @app.exception_handler(CiscoCLIError)
 async def cisco_cli_error_handler(request: Request, exc: CiscoCLIError):
     return JSONResponse(status_code=422, content={"detail": str(exc)})
+
+
+@app.exception_handler(ArubaCLIError)
+async def aruba_cli_error_handler(request: Request, exc: ArubaCLIError):
+    return JSONResponse(status_code=422, content={"detail": str(exc)})
+
+
+@app.exception_handler(ConsoleTransportError)
+async def console_connect_error_handler(request: Request, exc: ConsoleTransportError):
+    return JSONResponse(status_code=502, content={"detail": f"console connection failed: {exc}"})
+
+
+@app.exception_handler(ConsoleTimeoutError)
+async def console_timeout_error_handler(request: Request, exc: ConsoleTimeoutError):
+    return JSONResponse(status_code=504, content={"detail": f"console timeout: {exc}"})
+
+
+@app.exception_handler(ConsoleAuthError)
+async def console_auth_error_handler(request: Request, exc: ConsoleAuthError):
+    return JSONResponse(status_code=503, content={"detail": f"console auth failed: {exc}"})
 
 
 @app.exception_handler(RuntimeError)

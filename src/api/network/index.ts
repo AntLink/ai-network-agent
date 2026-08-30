@@ -32,6 +32,7 @@ import {
   loadBackendLabs,
   loadBackendDeviceDetail,
   loadBackendDevices,
+  loadBackendDevicesPage,
   loadBackendDiscoveryResults,
   loadBackendHealthSeries,
   loadBackendSettings,
@@ -112,6 +113,16 @@ export function useNetworkHealth(range: string) {
 export function useDevices() {
   return useSWR<ApiResponse<Device[]>>('devices', () =>
     backendOrMock(loadBackendDevices, '/api/network/devices')
+  )
+}
+
+export function useDevicesPage(query: { page?: number; limit?: number } = {}) {
+  const page = query.page ?? 1
+  const limit = query.limit ?? 25
+  const key = `devices?p=${page}&l=${limit}`
+  return useSWR<ApiResponse<import('src/api/network/backend-client').DevicePage>>(
+    key,
+    () => backendOrMock(() => loadBackendDevicesPage({ page, limit }), '/api/network/devices')
   )
 }
 

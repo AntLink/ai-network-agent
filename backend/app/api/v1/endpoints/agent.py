@@ -409,6 +409,8 @@ def _normalize_vendor(vendor: str, platform: str = "") -> str:
         return "cisco"
     if "aruba" in value or "aos-cx" in value or "arubacx" in value:
         return "aruba"
+    if "ruijie" in value or "rgos" in value or "rg-nse" in value:
+        return "ruijie"
     if "linux" in value or value in {"debian", "ubuntu", "centos", "rocky", "alma", "fedora"}:
         return "linux"
     return "other"
@@ -419,6 +421,7 @@ def _vendor_label(vendor: str) -> str:
         "cisco": "Cisco",
         "mikrotik": "MikroTik",
         "aruba": "Aruba",
+        "ruijie": "Ruijie",
         "linux": "Linux",
         "other": "Other",
     }
@@ -453,6 +456,12 @@ def _vendor_noc_profile(vendor: str) -> str:
             "Linux profile: gunakan gaya host/network operations yang fokus ke ip addr, ip route, "
             "ss, journalctl, systemctl, service health, dan interface state. "
             "Jika relevan, kaitkan dengan routing, service, dan konektivitas OS-level."
+        )
+    if vendor == "ruijie":
+        return (
+            "Ruijie profile: gunakan gaya RGOS/IOS yang ringkas dan tegas. "
+            "Utamakan hostname, interface admin/oper status, IP address, routing table, "
+            "VLAN, MAC table, dan evidence dari output CLI (show running-config)."
         )
     return (
         "Other profile: gunakan gaya NOC netral, faktual, dan tidak mencampur sintaks vendor. "
@@ -626,7 +635,7 @@ def _inspection_topic(message: str) -> str:
         return "ip_address"
     if "interface" in normalized:
         return "interface"
-    if "route" in normalized or "routing" in normalized:
+    if ("route" in normalized or "routing" in normalized) and "versi" not in normalized:
         return "routing"
     if "status" in normalized or "health" in normalized or "kondisi" in normalized:
         return "status"
@@ -2196,14 +2205,15 @@ def _detect_export(message: str) -> tuple[bool, str, str]:
         kind = "config"
     elif "interface" in normalized:
         kind = "interfaces"
-    elif "route" in normalized or "routing" in normalized:
+    elif ("route" in normalized or "routing" in normalized) and "versi" not in normalized:
         kind = "routes"
     return True, fmt, kind
 
 
-def _topic_readonly_command(vendor: str, text: str) -> str:
+def _topic_readonly_command(vendor: str, text: str, platform: str = "") -> str:
     """Map an inspection topic to a vendor read-only command."""
     normalized = " ".join((text or "").lower().split())
+    is_asa = "asa" in str(platform).lower()
     if vendor == "mikrotik":
         if "dhcp-client" in normalized or ("dhcp" in normalized and "client" in normalized):
             return "/ip dhcp-client print detail"
@@ -2217,7 +2227,48 @@ def _topic_readonly_command(vendor: str, text: str) -> str:
             return "/ip firewall filter print"
         if "bridge" in normalized:
             return "/interface bridge port print"
+        if "arp" in normalized:
+            return "/ip arp print detail"
+        if ("route" in normalized or "routing" in normalized) and "versi" not in normalized:
+            return "/ip route print detail"
+        if "interface" in normalized or "port" in normalized:
+            return "/interface print detail"
+        if "ospf" in normalized:
+            return "/routing ospf instance print"
+        if "bgp" in normalized:
+            return "/routing bgp instance print"
+        if "user" in normalized:
+            return "/user print detail"
+        if "cpu" in normalized or "health" in normalized or "suhu" in normalized:
+            return "/system resource print"
+        if "log" in normalized:
+            return "/log print"
     if vendor == "cisco":
+        if is_asa:
+            if "interface" in normalized or "port" in normalized:
+                return "show interface ip brief"
+            if ("route" in normalized or "routing" in normalized) and "versi" not in normalized:
+                return "show route"
+            if "arp" in normalized:
+                return "show arp"
+            if "acl" in normalized or "access-list" in normalized or "access list" in normalized:
+                return "show access-list"
+            if "nat" in normalized or "xlate" in normalized:
+                return "show xlate"
+            if "nameif" in normalized:
+                return "show nameif"
+            if "version" in normalized or normalized in ("os", "operating system") or "versi" in normalized:
+                return "show version"
+            if "cpu" in normalized or "memory" in normalized or "ram" in normalized:
+                return "show resource usage"
+            if "dhcp" in normalized:
+                return "show dhcpd binding"
+            if "logging" in normalized or "log" in normalized:
+                return "show logging"
+            if "config" in normalized:
+                return "show running-config"
+            if "vlan" in normalized:
+                return "show running-config interface"
         if "dhcp" in normalized:
             return "show ip dhcp binding"
         if "arp" in normalized:
@@ -2226,6 +2277,65 @@ def _topic_readonly_command(vendor: str, text: str) -> str:
             return "show mac address-table"
         if "vlan" in normalized:
             return "show vlan brief"
+        if "interface" in normalized or "port" in normalized or "status port" in normalized:
+            return "show ip interface brief"
+        if ("route" in normalized or "routing" in normalized) and "versi" not in normalized:
+            return "show ip route"
+        if "ospf" in normalized:
+            return "show ip ospf neighbor"
+        if "version" in normalized or normalized in ("os", "operating system") or "versi" in normalized:
+            return "show version"
+        if "cpu" in normalized:
+            return "show processes cpu"
+        if "memory" in normalized or "ram" in normalized:
+            return "show memory summary"
+        if "ospf" in normalized:
+            return "show ip ospf neighbor"
+        if "bgp" in normalized:
+            return "show ip bgp summary"
+        if "cdp" in normalized or "neighbor" in normalized:
+            return "show cdp neighbors detail"
+        if "lldp" in normalized:
+            return "show lldp neighbors detail"
+        if "acl" in normalized or "access-list" in normalized or "access list" in normalized:
+            return "show access-lists"
+        if "nat" in normalized:
+            return "show ip nat translation"
+        if "trunk" in normalized:
+            return "show interfaces trunk"
+        if "logging" in normalized or "log" in normalized:
+            return "show logging"
+        if "ntp" in normalized:
+            return "show ntp status"
+    if vendor == "aruba":
+        if "ip interface" in normalized or "ip address" in normalized:
+            return "show ip interface"
+        if "vlan" in normalized:
+            return "show vlan"
+        if ("route" in normalized or "routing" in normalized) and "versi" not in normalized:
+            return "show ip route"
+        if "arp" in normalized:
+            return "show arp"
+        if "mac" in normalized:
+            return "show mac-address-table"
+        if "interface" in normalized or "port" in normalized or "link" in normalized:
+            return "show interface brief"
+        if "version" in normalized or "os" in normalized or "versi" in normalized:
+            return "show version"
+        if "system" in normalized or "health" in normalized or "cpu" in normalized:
+            return "show system"
+        if "ospf" in normalized:
+            return "show ip ospf neighbor"
+        if "bgp" in normalized:
+            return "show bgp summary"
+        if "lldp" in normalized:
+            return "show lldp neighbor-info"
+        if "spanning" in normalized or "stp" in normalized:
+            return "show spanning-tree"
+        if "logging" in normalized or "log" in normalized:
+            return "show logging -r"
+        if "config" in normalized:
+            return "show running-config"
     if vendor == "linux":
         if "dhcp" in normalized or "lease" in normalized:
             return "cat /var/lib/dhcp/dhclient.leases 2>/dev/null || journalctl -u NetworkManager --no-pager | tail -40"
@@ -2233,6 +2343,29 @@ def _topic_readonly_command(vendor: str, text: str) -> str:
             return "ss -tulpen"
         if "process" in normalized or "proses" in normalized:
             return "ps aux --sort=-%cpu | head -30"
+    if vendor == "ruijie":
+        if "dhcp" in normalized:
+            return "show ip dhcp binding"
+        if "arp" in normalized:
+            return "show arp"
+        if "mac" in normalized:
+            return "show mac-address-table"
+        if "vlan" in normalized:
+            return "show vlan"
+        if "interface" in normalized or "port" in normalized or "status port" in normalized:
+            return "show ip interface brief"
+        if ("route" in normalized or "routing" in normalized) and "versi" not in normalized:
+            return "show ip route"
+        if "version" in normalized or "versi" in normalized or "os" == normalized or "os " in normalized:
+            return "show version"
+        if "ospf" in normalized:
+            return "show ip ospf neighbor"
+        if "bgp" in normalized:
+            return "show bgp summary"
+        if "logging" in normalized or "log" in normalized:
+            return "show logging"
+        if "config" in normalized:
+            return "show running-config"
     return ""
 
 
@@ -2261,7 +2394,7 @@ async def _dispatch_readonly_tools(
         device = _device_inventory_lookup().get(str(device_id).strip(), {})
         hostname = str(device.get("hostname") or device_id).strip() or str(device_id)
         vendor = _normalize_vendor(str(device.get("vendor", "")), str(device.get("platform", "")))
-        topic_command = _topic_readonly_command(vendor, message)
+        topic_command = _topic_readonly_command(vendor, message, str(device.get("platform", "")))
 
         dispatched = 0
         for tool_name in suggested:
@@ -2276,8 +2409,8 @@ async def _dispatch_readonly_tools(
                 params = {"device_id": device_id, "command": explicit_command or topic_command}
             elif tool_name == "mikrotik.exec_readonly" and vendor == "mikrotik" and (explicit_command or topic_command):
                 params = {"device_id": device_id, "command": explicit_command or topic_command}
-            elif tool_name == "aruba.exec_readonly" and vendor == "aruba" and explicit_command:
-                params = {"device_id": device_id, "command": explicit_command}
+            elif tool_name == "aruba.exec_readonly" and vendor == "aruba" and (explicit_command or topic_command):
+                params = {"device_id": device_id, "command": explicit_command or topic_command}
             else:
                 continue
 

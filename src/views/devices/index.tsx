@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react'
-import { createDevice, deleteDevice, updateDevice, useDevices } from 'src/api/network'
+import { useEffect, useState, type ReactNode } from 'react'
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { createDevice, deleteDevice, updateDevice, useDevicesPage } from 'src/api/network'
 import { DeviceStatusTable } from 'src/components/network/device-status-table'
 import { ErrorState, LoadingState } from 'src/components/network/page-state'
 import { toast } from 'sonner'
@@ -9,6 +10,8 @@ import { Input } from 'src/components/ui/input'
 import { Label } from 'src/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'src/components/ui/select'
 import type { Device } from 'src/types/network'
+
+const PAGE_SIZES = [10, 25, 50, 100]
 
 type DeviceFormState = {
   id: string
@@ -61,7 +64,9 @@ function slugifyDeviceName(value: string) {
 }
 
 const DevicesPage = () => {
-  const { data, error, isLoading, mutate } = useDevices()
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(25)
+  const { data, error, isLoading, isValidating, mutate } = useDevicesPage({ page, limit })
   const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -72,36 +77,90 @@ const DevicesPage = () => {
   const [deletingDevice, setDeletingDevice] = useState<Device | null>(null)
   const [form, setForm] = useState<DeviceFormState>(() => createEmptyDeviceForm())
 
-  if (isLoading) {
+  useEffect(() => {
+    if (limit > 0) setPage((current) => current)
+  }, [limit])
+
+  if (isLoading && !data) {
     return <LoadingState rows={6} />
   }
 
-  if (error) {
+  if (error && !data) {
     return <ErrorState message="Failed to load device inventory." />
+  }
+
+  const rawData = data?.data as unknown
+  const isArray = Array.isArray(rawData)
+  const pageData = isArray ? null : (rawData as { devices?: Device[]; total?: number; page?: number; pages?: number } | null)
+  const devices = isArray ? (rawData as Device[]) : (pageData?.devices ?? [])
+  const total = isArray ? (rawData as Device[]).length : (pageData?.total ?? devices.length)
+  const pages = isArray ? 1 : (pageData?.pages ?? 1)
+  const tableLoading = isValidating && !!data
+
+  const handleLimitChange = (value: string | null) => {
+    if (value) { setLimit(Number(value)); setPage(1) }
   }
 
   return (
     <div className="grid gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-normal">Devices</h1>
-        <p className="text-sm text-muted-foreground">Inventory, SSH reachability, vendor platform, and lab context.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-normal">Devices</h1>
+          <p className="text-sm text-muted-foreground">Inventory, SSH reachability, vendor platform, and lab context.</p>
+        </div>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          {tableLoading && <Loader2 className="size-3.5 animate-spin" />}
+          <span>{total} devices</span>
+        </div>
       </div>
-      <DeviceStatusTable
-        devices={data?.data ?? []}
-        onAddDevice={() => {
-          setForm(createEmptyDeviceForm())
-          setCreateOpen(true)
-        }}
-        onEditDevice={(device) => {
-          setEditingDevice(device)
-          setForm(deviceToForm(device))
-          setEditOpen(true)
-        }}
-        onDeleteDevice={(device) => {
-          setDeletingDevice(device)
-          setDeleteOpen(true)
-        }}
-      />
+
+      {devices.length ? (
+        <>
+          <DeviceStatusTable
+            devices={devices}
+            footer={
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Page {page} of {pages}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Select value={String(limit)} onValueChange={handleLimitChange}>
+                    <SelectTrigger className="h-8 w-[100px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_SIZES.map((size) => (
+                        <SelectItem key={size} value={String(size)}>{size} / page</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
+                    <ChevronLeft className="size-4" /> Prev
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(pages, p + 1))} disabled={page >= pages}>
+                    Next <ChevronRight className="size-4" />
+                  </Button>
+                </div>
+              </>
+            }
+            onAddDevice={() => {
+              setForm(createEmptyDeviceForm())
+              setCreateOpen(true)
+            }}
+            onEditDevice={(device) => {
+              setEditingDevice(device)
+              setForm(deviceToForm(device))
+              setEditOpen(true)
+            }}
+            onDeleteDevice={(device) => {
+              setDeletingDevice(device)
+              setDeleteOpen(true)
+            }}
+          />
+        </>
+      ) : (
+        <EmptyState title="No devices found." />
+      )}
 
       <Dialog
         open={createOpen}

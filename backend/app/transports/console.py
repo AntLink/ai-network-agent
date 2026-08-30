@@ -20,7 +20,11 @@ from app.core.audit import log_event
 from app.drivers.cisco.cli import clean_cli_output
 
 # IOS-style exec/config prompt: hostname(config-if)# etc.
-PROMPT_RE = re.compile(r"[A-Za-z0-9().>-]+[#>]\s*$")
+# Robustness: '-' in the name char class must be escaped (>>> '-'), otherwise
+# it is read as the range char of an empty/`>-` class; and FortiOS-style
+# prompts carry a SPACE before the marker ("FortiFirewall-VM64-KVM # "), so an
+# optional whitespace run is allowed before the closing [#>].
+PROMPT_RE = re.compile(r"[A-Za-z0-9().$\-#]+(?:\s+)?[#>]\s*$")
 # RouterOS prompt: [admin@MikroTik] >  (atau dengan menu, mis. [admin@MikroTik] /ip >)
 ROUTEROS_PROMPT_RE = re.compile(r"\]\s*>\s*$")
 # Tail-anchored variants (match only at END of received stream):
@@ -29,6 +33,9 @@ PASSWORD_TAIL_RE = re.compile(r"(?:Password|password|Username|username|login)\s*
 LOGIN_ANYWHERE_RE = re.compile(r"(?:[Ll]ogin|[Uu]sername)\s*:")
 PASSWORD_ANYWHERE_RE = re.compile(r"(?:Password|password)\s*:")
 YESNO_ANYWHERE_RE = re.compile(r"\[yes/no\]")
+# AOS-CX style confirmation: "Do you want to continue (y/n)?" etc.
+# Answered with 'n' (decline) so we never commit destructive actions silently.
+YN_ANYWHERE_RE = re.compile(r"[\(\[]\s*[yYnN]\s*/\s*[yYnN]\s*[\)\]]")
 # Generic confirmation prompts: "Destination filename [x]? ", "[confirm] ", etc.
 CONFIRM_ANYWHERE_RE = re.compile(r"(\[confirm\]|[\[\(][^\]\)]*[\]\)]\s*\?)\s*$")
 MORE_RE = re.compile(r"(?:--\s?More\s?--|--\s*\[Q quit\|D dump\|down\])\s*$")
@@ -210,12 +217,18 @@ class ConsoleTransport:
 
     @staticmethod
     def command_without_paging(command: str) -> str:
-        """Disable RouterOS pager for print commands while keeping other CLIs unchanged."""
+        """Disable RouterOS pager for print commands while keeping other CLIs unchanged.
+
+        RouterOS 7.x quirk: on filtered prints (`/file print where ...`) the
+        appended `without-paging` makes the output come back EMPTY, so commands
+        that already carry a `where` clause are left untouched.
+        """
         stripped = command.strip()
         if (
             stripped.startswith("/")
             and re.search(r"(^|\s)print(\s|$)", stripped)
             and not re.search(r"(^|\s)without-paging(\s|$)", stripped)
+            and not re.search(r"\bwhere\b", stripped)
         ):
             return f"{stripped} without-paging"
         return command
@@ -407,6 +420,7 @@ class ConsoleTransport:
             ("license_yn", LICENSE_YN_RE),
             ("license_accept", LICENSE_ACCEPT_RE),
             ("license_see", LICENSE_SEE_RE),
+            ("yesno", YN_ANYWHERE_RE),
             ("yesno", YESNO_ANYWHERE_RE),
             ("confirm", CONFIRM_ANYWHERE_RE),
             ("more", MORE_RE),
@@ -838,6 +852,13 @@ class ConsoleTransport:
                 continue
             if event == "prompt":
                 return
+            if event == "yesno":
+                self._raw_send("n")  # decline (y/n) confirmations
+                try:
+                    asyncio.get_event_loop().create_task(self.writer.drain())
+                except Exception:
+                    pass
+                continue
             if event == "confirm":
                 self._raw_send("\r")
                 continue
