@@ -235,7 +235,7 @@ class NineRouterProvider(AIProvider):
 
     async def web_search(self, query: str, max_results: int = 5, search_type: str = "web", **kwargs) -> dict[str, Any]:
         """Search the web via 9Router /v1/search."""
-        model = os.getenv("NINEROUTER_SEARCH_MODEL", "searxng")
+        model = os.getenv("NINEROUTER_SEARCH_MODEL", "tavily")
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(
                 f"{self.base_url}/v1/search",

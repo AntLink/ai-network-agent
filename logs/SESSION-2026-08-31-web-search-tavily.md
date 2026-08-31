@@ -108,4 +108,28 @@ instance SearXNG self-hosted yang dipakai 9Router.
 | `POST /api/v1/ninerouter/fetch` (Wikipedia) | provider **tavily** (extract) |
 
 - SearXNG: HTTP 200, `usage.search_cost_usd=0`. Tavily: `0.008`/query.
-- Kombinasi optimal: **search gratis unlimited (SearXNG) + extract by Tavily**.
+- Kombinasi optimal sempat **search gratis unlimited (SearXNG) + extract by Tavily**.
+
+---
+
+# PERTIMBANGAN AKHIR 2026-08-31 — SearXNG DIHAPUS, default kembali ke Tavily
+
+Setelah pemakaian lebih lama, **SearXNG self-host ternyata kurang andal** untuk
+provider web search default:
+
+- **Timeout 502/504**: 9Router memakai `timeoutMs:1e4` (10s) untuk searxng, sementara
+  agregasi SearXNG multi-engine sering melebihi 10s (terutama cold-start) → request gagal.
+- **Hasil kosong (0)**: banyak engine publik memblokir instance self-host IP rumah
+  (google cse Suspended, brave Suspended, startpage CAPTCHA, duckduckgo connection
+  error). Diskonfigurasi engine bermasalah (startpage/brave) mengurangi error, tapi
+  hasil tetap fluktuatif dan kadang 0.
+- Tool MCP `net_web_search`/`net_web_fetch` terbukti berfungsi — masalahnya murni di
+  sisi provider default.
+
+**Tindakan:**
+- Hapus total SearXNG: container & network (`docker compose down -v`), image
+  (`docker rmi searxng/searxng`), folder `searxng/`, dan referensi di docs.
+- **`.env`**: `NINEROUTER_SEARCH_MODEL=tavily`, `NINEROUTER_FETCH_MODEL=tavily` (kembali).
+- **`providers.py`**: default web_search kembali `tavily`.
+- **Keputusan:** default search = **Tavily** (andal, 2 key failover aktif di 9Router:
+  `Free-azlan` & `Free-moh.fauzan.azim@gmail.com`).

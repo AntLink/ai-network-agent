@@ -225,7 +225,7 @@ Detail: `logs/SESSION-2026-08-31-web-search-tavily.md`
   (Q2 FY27 $96,2 M, Jetson Orin Nano 2, Groq 3 LPX) + sumber URL.
 - `oc/big-pickle` vs `cx/gpt-5.6-sol`/Tavily: yang pertama halusinasi, sisanya live.
 
-## 2026-08-31 — Self-host SearXNG (free tier unlimited) sebagai search provider
+## 2026-08-31 — Self-host SearXNG (free tier unlimited) — DICIPTA lalu DIHAPUS
 
 Detail: `logs/SESSION-2026-08-31-web-search-tavily.md`
 
@@ -233,18 +233,19 @@ Detail: `logs/SESSION-2026-08-31-web-search-tavily.md`
 - 9Router punya provider `searxng` (freeTier, noAuth, cost 0, quota 999.999/bln),
   tetapi butuh instance SearXNG yang berjalan (`SEARXNG_URL || localhost:8888/search`).
 
-### Perubahan
-- **Install Docker Desktop** (silent, WSL2 backend) karena sebelumnya tidak ada.
-- **`searxng/docker-compose.yml`** — image `searxng/searxng`, port `8888:8080`.
-- **`searxng/config/settings.yml`** — enable `search.formats:[html,json]` (wajib utk 9Router).
-- **`searxng/.env`** — `SEARXNG_SECRET`.
-- Dashboard 9Router: aktifkan provider SearXNG.
-- **`.env`**: `NINEROUTER_SEARCH_MODEL=searxng`, `NINEROUTER_FETCH_MODEL=tavily`.
-- **`providers.py:238`**: default web_search → `searxng` (fetch tetap `tavily`,
-  karena SearXNG tanpa webFetch).
+### Perubahan (dibuat, lalu dihapus)
+- Install Docker Desktop (silent, WSL2 backend) — tetap terpasang.
+- `searxng/docker-compose.yml`, `config/settings.yml`, `.env` — dibuat & di-commit,
+  lalu **dihapus** beserta container/image (`docker compose down -v` + `rmi`).
+- Dashboard 9Router: provider SearXNG diaktifkan (sementara).
+- `.env`: sempat `NINEROUTER_SEARCH_MODEL=searxng`, lalu **dikembalikan ke `tavily`**.
 
-### Validasi
-- `POST /api/v1/ninerouter/search` → provider **searxng**, cost **$0**, hasil live.
-- `POST /api/v1/agent/chat` ("cari di web AI") → jawaban live + URL (detik/CNN/SINDO).
-- `POST /api/v1/ninerouter/fetch` → provider **tavily** (extract).
-- Kombinasi: search gratis unlimited (SearXNG) + extract by Tavily.
+### Validasi & keputusan
+- SearXNG sempat berfungsi (direct 20 hasil, lewat 9Router 5 hasil), tapi **kurang andal**:
+  sering **timeout 502/504** (9Router `timeoutMs:10s` vs agregasi SearXNG multi-engine)
+  dan kadang **0 results** (engine publik memblokir IP self-host → Suspend/CAPTCHA).
+- Diskonfigurasi engine bermasalah (startpage/brave) mengurangi error tapi hasil tetap
+  fluktuatif.
+- **Keputusan akhir:** default search **kembali ke Tavily** (lebih andal, 2 key failover).
+  SearXNG dihapus total (container, image, folder `searxng/`, referensi docs).
+- `POST /api/v1/ninerouter/search` → provider **tavily**, stabil.
