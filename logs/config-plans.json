@@ -21,6 +21,30 @@
         }
       ]
     },
+    "0e291d58": {
+      "commands": [
+        "/interface vlan add name=vtest vlan-id=99 interface=ether1"
+      ],
+      "created_at": "2026-08-30T11:14:45.886069+00:00",
+      "description": "test chr vlan",
+      "device_id": "mikrotik-chr-test",
+      "report": {
+        "description": "test chr vlan",
+        "reason": "export backup failed; no changes applied",
+        "status": "failed_preapply",
+        "steps": []
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "failed_preapply",
+      "updated_at": "2026-08-30T11:14:51.720800+00:00",
+      "verify": [
+        {
+          "command": "/interface vlan print detail",
+          "expect": "vtest"
+        }
+      ]
+    },
     "1059a24c": {
       "commands": [
         "interface GigabitEthernet0/1",
@@ -37,6 +61,83 @@
         {
           "command": "show ip interface brief",
           "expect": null
+        }
+      ]
+    },
+    "17700e80": {
+      "commands": [
+        "/interface vlan add name=vtest vlan-id=99 interface=ether1"
+      ],
+      "created_at": "2026-08-30T11:19:34.728239+00:00",
+      "description": "chr vlan test 2",
+      "device_id": "mikrotik-chr-test",
+      "report": {
+        "description": "chr vlan test 2",
+        "rollback": {
+          "output": "Script Error: failure: client with such name already exists (/ip/dhcp-client/add; line 15)",
+          "status": "?"
+        },
+        "status": "rolled_back",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          }
+        ],
+        "verify_failures": [
+          {
+            "command": "/interface vlan print detail",
+            "reason": "'vtest' not found"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T11:19:50.992039+00:00",
+      "verify": [
+        {
+          "command": "/interface vlan print detail",
+          "expect": "vtest"
+        }
+      ]
+    },
+    "1e15fefa": {
+      "commands": [
+        "vlan 4300",
+        "name LV-TEST"
+      ],
+      "created_at": "2026-08-30T09:28:53.479321+00:00",
+      "description": "driver aruba test vlan",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "driver aruba test vlan",
+        "rollback": {
+          "output": "replayed 11 config lines",
+          "status": "OK"
+        },
+        "status": "rolled_back",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          }
+        ],
+        "verify_failures": [
+          {
+            "command": "show vlan",
+            "reason": "'4300' not found"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T09:29:18.808200+00:00",
+      "verify": [
+        {
+          "command": "show vlan",
+          "expect": "4300"
         }
       ]
     },
@@ -63,6 +164,41 @@
       "updated_at": "2026-08-27T18:45:47.358210+00:00",
       "verify": []
     },
+    "21b87b7e": {
+      "commands": [
+        "interface 1/1/3",
+        "no shutdown",
+        "ip address 192.168.122.200/24"
+      ],
+      "created_at": "2026-08-30T09:54:34.815641+00:00",
+      "description": "mgmt nat ip",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "mgmt nat ip",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 1,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T09:54:42.325590+00:00",
+      "verify": [
+        {
+          "command": "show ip interface",
+          "expect": "192.168.122.200"
+        }
+      ]
+    },
     "21ca7a0d": {
       "commands": [
         "show version"
@@ -76,6 +212,59 @@
       "updated_at": "2026-08-25T09:41:08.232803+00:00",
       "verify": []
     },
+    "2dcf9523": {
+      "commands": [
+        "vlan 100",
+        "name LV-TEST"
+      ],
+      "created_at": "2026-08-30T09:30:25.738438+00:00",
+      "description": "driver aruba test vlan 100",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "driver aruba test vlan 100",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 1,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T09:30:31.180449+00:00",
+      "verify": [
+        {
+          "command": "show vlan",
+          "expect": "100"
+        }
+      ]
+    },
+    "2f17d53c": {
+      "commands": [
+        "/interface vlan remove [find name=vtest]"
+      ],
+      "created_at": "2026-08-30T11:14:51.730661+00:00",
+      "description": "cleanup vtest",
+      "device_id": "mikrotik-chr-test",
+      "report": {
+        "description": "cleanup vtest",
+        "reason": "export backup failed; no changes applied",
+        "status": "failed_preapply",
+        "steps": []
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "failed_preapply",
+      "updated_at": "2026-08-30T11:14:57.542159+00:00",
+      "verify": []
+    },
     "2f4d8e0d": {
       "commands": [
         "show version"
@@ -87,6 +276,173 @@
       "save_on_success": false,
       "status": "planned",
       "updated_at": "2026-08-25T10:26:46.305390+00:00",
+      "verify": []
+    },
+    "34b1a130": {
+      "commands": [
+        "ip route add default dev ppp0 proto static metric 50"
+      ],
+      "created_at": "2026-08-30T18:28:17.830758+00:00",
+      "description": "Alihkan default route (egress internet) melalui tunnel L2TP ppp0",
+      "device_id": "linux-ubuntu",
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "planned",
+      "updated_at": "2026-08-30T18:28:17.830758+00:00",
+      "verify": []
+    },
+    "414027db": {
+      "commands": [
+        "interface 1/1/3",
+        "no ip address",
+        "shutdown",
+        "no ip route 0.0.0.0/0 192.168.42.1",
+        "no ssh server vrf default"
+      ],
+      "created_at": "2026-08-30T10:04:39.220616+00:00",
+      "description": "revert ssh test config",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "revert ssh test config",
+        "rollback": {
+          "output": "login dialog did not reach a CLI prompt",
+          "status": "FAIL"
+        },
+        "status": "rolled_back",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          }
+        ],
+        "verify_failures": [
+          {
+            "command": "show interface brief",
+            "reason": "login dialog did not reach a CLI prompt"
+          }
+        ]
+      },
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T10:06:27.003677+00:00",
+      "verify": [
+        {
+          "command": "show interface brief",
+          "expect": "Administratively down"
+        }
+      ]
+    },
+    "4b2001a9": {
+      "commands": [
+        "no vlan 100"
+      ],
+      "created_at": "2026-08-30T09:45:29.647824+00:00",
+      "description": "final cleanup",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "final cleanup",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 0,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T09:45:33.153025+00:00",
+      "verify": []
+    },
+    "4e83d446": {
+      "commands": [
+        "no vlan 100"
+      ],
+      "created_at": "2026-08-30T12:25:08.900176+00:00",
+      "description": "ruijie vlan cleanup",
+      "device_id": "ruijie-sw1",
+      "report": {
+        "description": "ruijie vlan cleanup",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 0,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T12:25:12.985972+00:00",
+      "verify": []
+    },
+    "4fc7b2ab": {
+      "commands": [
+        "no ssh server vrf default"
+      ],
+      "created_at": "2026-08-30T10:14:50.848522+00:00",
+      "description": "ytn regression",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "ytn regression",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 1,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T10:15:28.325685+00:00",
+      "verify": [
+        {
+          "command": "show running-config",
+          "expect": "ssh server vrf mgmt"
+        }
+      ]
+    },
+    "603bf682": {
+      "commands": [
+        "vlan 5000"
+      ],
+      "created_at": "2026-08-30T09:43:51.358055+00:00",
+      "description": "uji rollback",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "uji rollback",
+        "reason": "apply failed: AOS-CX command failed: vlan 5000\nswitch# \nswitch# configure terminal\nswitch(config)# vlan 5000\nInvalid input: 5000\nswitch(config)# end",
+        "rollback": {
+          "output": "replayed 10 config lines",
+          "status": "OK"
+        },
+        "status": "rolled_back",
+        "steps": []
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T09:44:14.611404+00:00",
       "verify": []
     },
     "64204bd7": {
@@ -149,6 +505,74 @@
         }
       ]
     },
+    "77fe9696": {
+      "commands": [
+        "/interface vlan remove [find name=vtest2]"
+      ],
+      "created_at": "2026-08-30T11:26:13.507624+00:00",
+      "description": "chr cleanup",
+      "device_id": "mikrotik-chr-test",
+      "report": {
+        "description": "chr cleanup",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 0,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T11:26:24.324258+00:00",
+      "verify": []
+    },
+    "78ab1703": {
+      "commands": [
+        "interface 1/1/3",
+        "ip address 192.168.42.200/24",
+        "ip route 0.0.0.0/0 192.168.42.1",
+        "ssh server vrf default"
+      ],
+      "created_at": "2026-08-30T09:57:04.812562+00:00",
+      "description": "mgmt via virbr0 + ssh default vrf",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "mgmt via virbr0 + ssh default vrf",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 2,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T09:57:16.911150+00:00",
+      "verify": [
+        {
+          "command": "show ip interface",
+          "expect": "192.168.42.200"
+        },
+        {
+          "command": "show ssh server",
+          "expect": "vrf"
+        }
+      ]
+    },
     "7dc427c1": {
       "commands": [
         "interface GigabitEthernet0/1",
@@ -192,6 +616,74 @@
       "updated_at": "2026-08-27T18:34:47.701662+00:00",
       "verify": []
     },
+    "8b6286ce": {
+      "commands": [
+        "interface 1/1/3",
+        "no shutdown",
+        "ip address 10.99.1.1/24",
+        "interface 1/1/4",
+        "no shutdown",
+        "ip address 10.99.2.1/24",
+        "interface 1/1/5",
+        "no shutdown",
+        "ip address dhcp"
+      ],
+      "created_at": "2026-08-30T11:35:55.666746+00:00",
+      "description": "lab cross-vendor ips v2",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "lab cross-vendor ips v2",
+        "reason": "apply failed: AOS-CX command failed: interface 1/1/3; no shutdown; ip address 10.99.1.1/24; interface 1/1/4; no shutdown; ip address 10.99.2.1/24; interface 1/1/5; no shutdown; ip address dhcp\nconfigure terminal\nswitch(config)# interface 1/1/3\nswitch(config-if)# no shutdown\nswitch(config-if)# ip address 10.99.1.1/24\nswitch(config-if)# interface 1/1/4\nswitch(config-if)# no shutdown\nswitch(config-if)# ip address 10.99.2.1/24\nswitch(config-if)# interface 1/1/5\nswitch(config-if)# no shutdown\nswitch(config-if)# ip address dhcp\nInvalid input: dhcp\nswitch(config-if)# end",
+        "rollback": {
+          "output": "replayed 17 config lines",
+          "status": "OK"
+        },
+        "status": "rolled_back",
+        "steps": []
+      },
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T11:36:29.781815+00:00",
+      "verify": [
+        {
+          "command": "show ip interface",
+          "expect": "10.99.1.1"
+        },
+        {
+          "command": "show ip interface",
+          "expect": "10.99.2.1"
+        }
+      ]
+    },
+    "8cdc0d53": {
+      "commands": [
+        "vlan 5000"
+      ],
+      "created_at": "2026-08-30T09:38:36.757488+00:00",
+      "description": "uji error utuh",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "uji error utuh",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 0,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T09:38:40.316501+00:00",
+      "verify": []
+    },
     "8ddbc634": {
       "commands": [
         "/ip address add address=192.168.80.1/24 interface=ether3"
@@ -218,6 +710,30 @@
       "save_on_success": false,
       "status": "committed",
       "updated_at": "2026-08-27T18:46:37.517777+00:00",
+      "verify": []
+    },
+    "99160864": {
+      "commands": [
+        "vlan 5000",
+        "name X"
+      ],
+      "created_at": "2026-08-30T09:39:12.194465+00:00",
+      "description": "uji error utuh 2",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "uji error utuh 2",
+        "reason": "apply failed: AOS-CX command failed: vlan 5000; name X\nswitch# \nswitch# \nswitch# configure terminal\nswitch(config)# vlan 5000\nInvalid input: 5000\nswitch(config)# name X\nInvalid input: name\nswitch(config)# end",
+        "rollback": {
+          "output": "AOS-CX command failed: Current configuration:; user admin group administrators password ciphertext AQBapRCT6T4PyS2lfy1nbe2TR9pZW0PUzM2gr9COUDIVkC6UYgAAACInu3E81LTIGz3eQKVnIsL4qCYq1AZlS34HfMcjBdDzZO3gEjiXFQ8LnGJzyrPyPR8cs0bk+4ciRbs3nNAngzRmxRcP0cNmmE3Kzge33bC1dGk+KwkoaVmBkE5AUNgDbl0M; led locator on; ntp server pool.ntp.org minpoll 4 maxpoll 4 iburst; ntp enable; ssh server vrf mgmt; vlan 1; interface mgmt; no shutdown; ip dhcp; https-server vrf mgmt\nconfigure terminal\nswitch(config)# Current configuration:\nInvalid input: Current\nswitch(config)# user admin group administrators password ciphertext AQBapRCT6T4P yS2lfy1nbe2TR9pZW0PUzM2gr9COUDIVkC6UYgAAACInu3E81LTIGz3eQKVnIsL4qCYq1AZlS34HfMcj BdDzZO3gEjiXFQ8LnGJzyrPyPR8cs0bk+4ciRbs3nNAngzRmxRcP0cNmmE3Kzge33bC1dGk+KwkoaVmB kE5AUNgDbl0M\nswitch(config)# led locator on\nswitch(config)# ntp server pool.ntp.org minpoll 4 maxpoll 4 iburst\nswitch(config)# ntp enable\nswitch(config)# ssh server vrf mgmt\nswitch(config)# vlan 1\nswitch(config-vlan-1)# interface mgmt\nswitch(config-if-mgmt)# no shutdown\nswitch(config-if-mgmt)# ip dhcp\nswitch(config-if-mgmt)# https-server vrf mgmt\nswitch(config)# end",
+          "status": "FAIL"
+        },
+        "status": "rolled_back",
+        "steps": []
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T09:39:35.881545+00:00",
       "verify": []
     },
     "9d3c398d": {
@@ -258,6 +774,51 @@
       "updated_at": "2026-08-27T18:28:30.528841+00:00",
       "verify": []
     },
+    "ac4e1d11": {
+      "commands": [
+        "interface GigabitEthernet 0/0",
+        "no shutdown",
+        "ip address 10.99.3.10 255.255.255.0",
+        "ip route 0.0.0.0 0.0.0.0 10.99.3.1"
+      ],
+      "created_at": "2026-08-30T13:10:19.022433+00:00",
+      "description": "ruijie lab gi0/0 + default route",
+      "device_id": "ruijie-lab",
+      "report": {
+        "description": "ruijie lab gi0/0 + default route",
+        "rollback": {
+          "output": "RGOS command failed: version RG-NSE-Route(V1.06); no cwmp; install 0 X86; sysmac 0c05.9ef3.0001; webmaster level 0 username admin password 7 073f07221c1c; no service password-encryption; redundancy; vpdn limit_rate 15; vlan 1; interface GigabitEthernet 0/0; interface GigabitEthernet 0/1; ip address ",
+          "status": "FAIL"
+        },
+        "status": "rolled_back",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          }
+        ],
+        "verify_failures": [
+          {
+            "command": "show ip route",
+            "reason": "'10.99.3.1' not found"
+          }
+        ]
+      },
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T13:11:03.558507+00:00",
+      "verify": [
+        {
+          "command": "show ip route",
+          "expect": "10.99.3.1"
+        },
+        {
+          "command": "show ip interface brief",
+          "expect": "10.99.3.10"
+        }
+      ]
+    },
     "bae596b2": {
       "commands": [
         "/ip address add address=192.168.80.1/128 interface=ether3"
@@ -277,6 +838,59 @@
       "updated_at": "2026-08-27T18:23:46.638171+00:00",
       "verify": []
     },
+    "c21dbdf6": {
+      "commands": [
+        "interface GigabitEthernet0/0",
+        "nameif lab",
+        "security-level 100",
+        "icmp permit 10.99.0.0 255.255.0.0 lab",
+        "route lab 10.99.1.0 255.255.255.0 10.99.2.1"
+      ],
+      "created_at": "2026-08-30T11:46:22.316786+00:00",
+      "description": "asav lab nameif+route",
+      "device_id": "asa-test",
+      "report": {
+        "backup": ": Saved\n\n: \n: Serial Number: 9AHBM8X080H\n: Hardware:   ASAv, 1024 MB RAM, CPU Unknown Model 2400 MHz\n:\nASA Version 9.5(2)204 \n!\nhostname ciscoasa\nenable password 8Ry2YjIyt7RRXU24 encrypted\nxlate per-session deny tcp any4 any4\nxlate per-session deny tcp any4 any6\nxlate per-session deny tcp any6 any4\nxlate per-session deny tcp any6 any6\nxlate per-session deny udp any4 any4 eq domain\nxlate per-session deny udp any4 any6 eq domain\nxlate per-session deny udp any6 any4 eq domain\nxlate per-session deny udp any6 any6 eq domain\nnames\n!\ninterface GigabitEthernet0/0\n no nameif\n no security-level\n ip address 10.99.2.20 255.255.255.0 \n!\ninterface GigabitEthernet0/1\n shutdown\n no nameif\n no security-level\n no ip address\n!\ninterface GigabitEthernet0/2\n shutdown\n no nameif\n no security-level\n no ip address\n!\ninterface GigabitEthernet0/3\n shutdown\n no nameif\n no security-level\n no ip address\n!\ninterface Management0/0\n shutdown\n no nameif\n no security-level\n no ip address\n!\nftp mode passive\npager lines 23\nno failover\nicmp unreachable rate-limit 1 burst-size 1\nno asdm history enable\narp timeout 14400\nno arp permit-nonconnected\ntimeout xlate 3:00:00\ntimeout pat-xlate 0:00:30\ntimeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 sctp 0:02:00 icmp 0:00:02\ntimeout sunrpc 0:10:00 h323 0:05:00 h225 1:00:00 mgcp 0:05:00 mgcp-pat 0:05:00\ntimeout sip 0:30:00 sip_media 0:02:00 sip-invite 0:03:00 sip-disconnect 0:02:00\ntimeout sip-provisional-media 0:02:00 uauth 0:05:00 absolute\ntimeout tcp-proxy-reassembly 0:01:00\ntimeout floating-conn 0:00:00\nuser-identity default-domain LOCAL\nno snmp-server location\nno snmp-server contact\ncrypto ipsec security-association pmtu-aging infinite\ncrypto ca trustpoint _SmartCallHome_ServerCA\n no validation-usage\n crl configure\ncrypto ca trustpool policy\n auto-import\ntelnet timeout 5\nssh stricthostkeycheck\nssh timeout 5\nssh key-exchange group dh-group1-sha1\nconsole timeout 0\nthreat-detection basic-threat\nthreat-detection statistics access-list\nno threat-detection statistics tcp-intercept\ndynamic-access-policy-record DfltAccessPolicy\n!\nclass-map inspection_default\n match default-inspection-traffic\n!\n!\npolicy-map type inspect dns migrated_dns_map_1\n parameters\n  message-length maximum client auto\n  message-length maximum 512\npolicy-map global_policy\n class inspection_default\n  inspect dns migrated_dns_map_1 \n  inspect ftp \n  inspect h323 h225 \n  inspect h323 ras \n  inspect ip-options \n  inspect netbios \n  inspect rsh \n  inspect rtsp \n  inspect skinny  \n  inspect esmtp \n  inspect sqlnet \n  inspect sunrpc \n  inspect tftp \n  inspect sip  \n  inspect xdmcp \n!\nservice-policy global_policy global\nprompt hostname context \ncall-home\n profile CiscoTAC-1\n  no active\n  destination address http https://tools.cisco.com/its/service/oddce/services/DDCEService\n  destination address email callhome@cisco.com\n  destination transport-method http\n  subscribe-to-alert-group diagnostic\n  subscribe-to-alert-group environment\n  subscribe-to-alert-group inventory periodic monthly\n  subscribe-to-alert-group configuration periodic monthly\n  subscribe-to-alert-group telemetry periodic daily\nCryptochecksum:ee663d7856910f09a1a0a8e66804db1c\n: end",
+        "description": "asav lab nameif+route",
+        "status": "rolled_back",
+        "steps": [
+          {
+            "phase": "backup",
+            "status": "OK"
+          },
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "failures": [
+              {
+                "command": "show route",
+                "reason": "'10.99.1.0' not found"
+              }
+            ],
+            "phase": "verify",
+            "status": "FAILED"
+          }
+        ],
+        "verify_failures": [
+          {
+            "command": "show route",
+            "reason": "'10.99.1.0' not found"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T11:46:35.887599+00:00",
+      "verify": [
+        {
+          "command": "show route",
+          "expect": "10.99.1.0"
+        }
+      ]
+    },
     "c6133287": {
       "commands": [
         "interface GigabitEthernet0/1",
@@ -294,6 +908,240 @@
         {
           "command": "show ip interface brief",
           "expect": null
+        }
+      ]
+    },
+    "c8ba5fb0": {
+      "commands": [
+        "/ip address add address=10.99.1.10/24 interface=ether1",
+        "/ip route add dst-address=0.0.0.0/0 gateway=10.99.1.1"
+      ],
+      "created_at": "2026-08-30T11:45:14.374460+00:00",
+      "description": "chr lab ip",
+      "device_id": "mikrotik-chr-test",
+      "report": {
+        "description": "chr lab ip",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 1,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T11:45:27.230985+00:00",
+      "verify": [
+        {
+          "command": "/ip address print detail",
+          "expect": "10.99.1.10"
+        }
+      ]
+    },
+    "ca197038": {
+      "commands": [
+        "vlan 100"
+      ],
+      "created_at": "2026-08-30T09:45:23.864367+00:00",
+      "description": "final ok",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "final ok",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 1,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T09:45:29.637153+00:00",
+      "verify": [
+        {
+          "command": "show vlan",
+          "expect": "100"
+        }
+      ]
+    },
+    "d3b5bdbd": {
+      "commands": [
+        "/interface vlan add name=vtest2 vlan-id=101 interface=ether1"
+      ],
+      "created_at": "2026-08-30T11:25:58.717752+00:00",
+      "description": "chr clean verify",
+      "device_id": "mikrotik-chr-test",
+      "report": {
+        "description": "chr clean verify",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 1,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T11:26:13.483714+00:00",
+      "verify": [
+        {
+          "command": "/interface vlan print detail",
+          "expect": "vtest2"
+        }
+      ]
+    },
+    "e1db38b8": {
+      "commands": [
+        "interface GigabitEthernet0/0",
+        "no nameif",
+        "no ip address",
+        "interface Management0/0",
+        "no shutdown",
+        "nameif lab",
+        "security-level 100",
+        "ip address 10.99.2.20 255.255.255.0"
+      ],
+      "created_at": "2026-08-30T11:48:37.260814+00:00",
+      "description": "asav to mgmt0/0",
+      "device_id": "asa-test",
+      "report": {
+        "backup": ": Saved\n\n: \n: Serial Number: 9AHBM8X080H\n: Hardware:   ASAv, 1024 MB RAM, CPU Unknown Model 2400 MHz\n:\nASA Version 9.5(2)204 \n!\nhostname ciscoasa\nenable password 8Ry2YjIyt7RRXU24 encrypted\nxlate per-session deny tcp any4 any4\nxlate per-session deny tcp any4 any6\nxlate per-session deny tcp any6 any4\nxlate per-session deny tcp any6 any6\nxlate per-session deny udp any4 any4 eq domain\nxlate per-session deny udp any4 any6 eq domain\nxlate per-session deny udp any6 any4 eq domain\nxlate per-session deny udp any6 any6 eq domain\nnames\n!\ninterface GigabitEthernet0/0\n nameif lab\n security-level 100\n ip address 10.99.2.20 255.255.255.0 \n!\ninterface GigabitEthernet0/1\n shutdown\n no nameif\n no security-level\n no ip address\n!\ninterface GigabitEthernet0/2\n shutdown\n no nameif\n no security-level\n no ip address\n!\ninterface GigabitEthernet0/3\n shutdown\n no nameif\n no security-level\n no ip address\n!\ninterface Management0/0\n shutdown\n no nameif\n no security-level\n no ip address\n!\nftp mode passive\npager lines 23\nmtu lab 1500\nno failover\nicmp unreachable rate-limit 1 burst-size 1\nicmp permit 10.99.0.0 255.255.0.0 lab\nno asdm history enable\narp timeout 14400\nno arp permit-nonconnected\nroute lab 10.99.1.0 255.255.255.0 10.99.2.1 1\ntimeout xlate 3:00:00\ntimeout pat-xlate 0:00:30\ntimeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 sctp 0:02:00 icmp 0:00:02\ntimeout sunrpc 0:10:00 h323 0:05:00 h225 1:00:00 mgcp 0:05:00 mgcp-pat 0:05:00\ntimeout sip 0:30:00 sip_media 0:02:00 sip-invite 0:03:00 sip-disconnect 0:02:00\ntimeout sip-provisional-media 0:02:00 uauth 0:05:00 absolute\ntimeout tcp-proxy-reassembly 0:01:00\ntimeout floating-conn 0:00:00\nuser-identity default-domain LOCAL\nno snmp-server location\nno snmp-server contact\ncrypto ipsec security-association pmtu-aging infinite\ncrypto ca trustpoint _SmartCallHome_ServerCA\n no validation-usage\n crl configure\ncrypto ca trustpool policy\n auto-import\ntelnet timeout 5\nssh stricthostkeycheck\nssh timeout 5\nssh key-exchange group dh-group1-sha1\nconsole timeout 0\nthreat-detection basic-threat\nthreat-detection statistics access-list\nno threat-detection statistics tcp-intercept\ndynamic-access-policy-record DfltAccessPolicy\n!\nclass-map inspection_default\n match default-inspection-traffic\n!\n!\npolicy-map type inspect dns migrated_dns_map_1\n parameters\n  message-length maximum client auto\n  message-length maximum 512\npolicy-map global_policy\n class inspection_default\n  inspect dns migrated_dns_map_1 \n  inspect ftp \n  inspect h323 h225 \n  inspect h323 ras \n  inspect ip-options \n  inspect netbios \n  inspect rsh \n  inspect rtsp \n  inspect skinny  \n  inspect esmtp \n  inspect sqlnet \n  inspect sunrpc \n  inspect tftp \n  inspect sip  \n  inspect xdmcp \n!\nservice-policy global_policy global\nprompt hostname context \ncall-home\n profile CiscoTAC-1\n  no active\n  destination address http https://tools.cisco.com/its/service/oddce/services/DDCEService\n  destination address email callhome@cisco.com\n  destination transport-method http\n  subscribe-to-alert-group diagnostic\n  subscribe-to-alert-group environment\n  subscribe-to-alert-group inventory periodic monthly\n  subscribe-to-alert-group configuration periodic monthly\n  subscribe-to-alert-group telemetry periodic daily\nCryptochecksum:ebbe3ffb44f222aa0a7cc4c13d0c678a\n: end",
+        "description": "asav to mgmt0/0",
+        "status": "rolled_back",
+        "steps": [
+          {
+            "phase": "backup",
+            "status": "OK"
+          },
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "failures": [
+              {
+                "command": "show route",
+                "reason": "'10.99.1.0' not found"
+              }
+            ],
+            "phase": "verify",
+            "status": "FAILED"
+          }
+        ],
+        "verify_failures": [
+          {
+            "command": "show route",
+            "reason": "'10.99.1.0' not found"
+          }
+        ]
+      },
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T11:48:55.059920+00:00",
+      "verify": [
+        {
+          "command": "show interface ip brief",
+          "expect": "10.99.2.20"
+        },
+        {
+          "command": "show route",
+          "expect": "10.99.1.0"
+        }
+      ]
+    },
+    "e43ac54d": {
+      "commands": [
+        "vlan 100",
+        "name LV-TEST"
+      ],
+      "created_at": "2026-08-30T12:24:59.530095+00:00",
+      "description": "ruijie vlan test",
+      "device_id": "ruijie-sw1",
+      "report": {
+        "description": "ruijie vlan test",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 1,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T12:25:07.125096+00:00",
+      "verify": [
+        {
+          "command": "show vlan",
+          "expect": "LV-TEST"
+        }
+      ]
+    },
+    "f1fa53ca": {
+      "commands": [
+        "interface 1/1/3",
+        "no shutdown",
+        "ip address 10.99.0.1/24",
+        "interface 1/1/4",
+        "no shutdown",
+        "ip address 10.99.0.4/24",
+        "interface 1/1/5",
+        "no shutdown",
+        "ip dhcp"
+      ],
+      "created_at": "2026-08-30T11:34:37.213047+00:00",
+      "description": "lab cross-vendor ips",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "lab cross-vendor ips",
+        "reason": "apply failed: AOS-CX command failed: interface 1/1/3; no shutdown; ip address 10.99.0.1/24; interface 1/1/4; no shutdown; ip address 10.99.0.4/24; interface 1/1/5; no shutdown; ip dhcp\nconfigure terminal\nswitch(config)# interface 1/1/3\nswitch(config-if)# no shutdown\nswitch(config-if)# ip address 10.99.0.1/24\nswitch(config-if)# interface 1/1/4\nswitch(config-if)# no shutdown\nswitch(config-if)# ip address 10.99.0.4/24\nAn interface with the same IP address or subnet or an overlapping network 10.99.0.4/24 already exists.\nswitch(config-if)# interface 1/1/5\nswitch(config-if)# no shutdown\nswitch(config-if)# ip dhcp\nInvalid input: dhcp\nswitch(config-if)# end",
+        "rollback": {
+          "output": "replayed 10 config lines",
+          "status": "OK"
+        },
+        "status": "rolled_back",
+        "steps": []
+      },
+      "risk_level": "HIGH",
+      "save_on_success": false,
+      "status": "rolled_back",
+      "updated_at": "2026-08-30T11:35:18.167124+00:00",
+      "verify": [
+        {
+          "command": "show ip interface",
+          "expect": "10.99.0.1"
+        },
+        {
+          "command": "show ip interface",
+          "expect": "10.99.0.4"
         }
       ]
     },
@@ -317,6 +1165,34 @@
           "expect": null
         }
       ]
+    },
+    "fce944f3": {
+      "commands": [
+        "no vlan 100"
+      ],
+      "created_at": "2026-08-30T09:30:39.378848+00:00",
+      "description": "cleanup test vlan",
+      "device_id": "aruba-sw1",
+      "report": {
+        "description": "cleanup test vlan",
+        "status": "committed",
+        "steps": [
+          {
+            "phase": "apply",
+            "status": "OK"
+          },
+          {
+            "checks": 0,
+            "phase": "verify",
+            "status": "OK"
+          }
+        ]
+      },
+      "risk_level": "MEDIUM",
+      "save_on_success": false,
+      "status": "committed",
+      "updated_at": "2026-08-30T09:30:42.949737+00:00",
+      "verify": []
     }
   }
 }

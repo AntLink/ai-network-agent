@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
 from typing import Any, Optional
 
-from app.schemas.gns3 import GNS3Config
+from app.schemas.gns3 import GNS3Config, GNS3_DEFAULT_CONTROLLER
 from app.drivers.gns3.driver import GNS3Driver, GNS3Error
 
 router = APIRouter()
@@ -204,7 +204,7 @@ async def topology(
     saved = _load_saved_topology(project_id)
 
     config = GNS3Config(
-        controller_url=controller_url or "http://localhost:3080/v2",
+        controller_url=controller_url or GNS3_DEFAULT_CONTROLLER,
         username=username or "admin",
         password=password,
     )

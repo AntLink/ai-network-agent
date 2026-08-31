@@ -43,3 +43,8 @@ MCP_HOST = _env("MCP_HOST", "127.0.0.1")
 MCP_PORT = int(_env("MCP_PORT", "8911"))
 
 DEFAULT_APPROVED_BY = _env("DEFAULT_APPROVED_BY", "mcp-bridge")
+
+# GNS3 controller — overridable via .env (GNS3_CONTROLLER_URL)
+GNS3_CONTROLLER_URL = _env("GNS3_CONTROLLER_URL", "http://172.21.0.2/v2")
+GNS3_USERNAME = _env("GNS3_USERNAME", "admin")
+GNS3_PASSWORD = _env("GNS3_PASSWORD", "")

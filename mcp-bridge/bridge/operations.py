@@ -502,8 +502,8 @@ async def net_mikrotik_resources(device_id: str, resource: str) -> dict:
 # GNS3 (topologi virtual — project / node / link / template / snapshot)
 # ---------------------------------------------------------------------------
 
-DEFAULT_GNS3_CONTROLLER = "http://localhost:3080/v2"
-DEFAULT_GNS3_USERNAME = "admin"
+DEFAULT_GNS3_CONTROLLER = config.GNS3_CONTROLLER_URL
+DEFAULT_GNS3_USERNAME = config.GNS3_USERNAME
 
 
 def _gns3_body(

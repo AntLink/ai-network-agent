@@ -52,7 +52,7 @@ def load_local_gns3_config() -> dict[str, Any]:
 
     return {
         "found": False,
-        "controller_url": "http://localhost:3080/v2",
+        "controller_url": os.getenv("GNS3_CONTROLLER_URL", "http://172.21.0.2/v2"),
         "username": "admin",
         "auth_enabled": False,
         "password_available": False,
@@ -67,7 +67,7 @@ def config_from_payload(payload: dict[str, Any] | None = None) -> GNS3Config:
     """Accept the flat frontend payload as a GNS3Config subset."""
     payload = payload or {}
     return GNS3Config(
-        controller_url=payload.get("controller_url", "http://localhost:3080/v2"),
+        controller_url=payload.get("controller_url") or os.getenv("GNS3_CONTROLLER_URL", "http://172.21.0.2/v2"),
         compute_url=payload.get("compute_url"),
         username=payload.get("username", "admin"),
         password=payload.get("password"),

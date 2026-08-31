@@ -1,4 +1,0 @@
-INFO:     127.0.0.1:17548 - "GET /api/v1/devices/pc-vm-1 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:17549 - "GET /api/v1/devices/pc-attacker HTTP/1.1" 200 OK
-INFO:     127.0.0.1:47104 - "GET /api/v1/devices/cisco-switch/facts HTTP/1.1" 200 OK
-INFO:     127.0.0.1:62163 - "GET /api/v1/devices HTTP/1.1" 200 OK

@@ -36,13 +36,13 @@ class GNS3Driver:
     def __init__(self, config: Dict[str, Any]):
         """
         config keys:
-          - controller_url: "http://localhost:3080/v2" (default)
+          - controller_url: "http://172.21.0.2/v2" (default)
           - compute_url: "http://<vm-ip>/v2" (optional, for compute ops)
           - username: "admin" (default)
           - password: from gns3_server.ini or explicit
           - verify_ssl: False (default, for self-signed)
         """
-        self.controller_url = config.get("controller_url", "http://localhost:3080/v2")
+        self.controller_url = config.get("controller_url") or os.getenv("GNS3_CONTROLLER_URL", "http://172.21.0.2/v2")
         self.compute_url = config.get("compute_url")
         self.username = config.get("username", "admin")
         self.password = config.get("password") or self._load_password_from_ini()

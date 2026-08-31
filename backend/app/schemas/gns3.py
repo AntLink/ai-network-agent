@@ -1,13 +1,16 @@
 """Pydantic schemas for GNS3 API requests."""
+import os
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
+
+GNS3_DEFAULT_CONTROLLER = os.getenv("GNS3_CONTROLLER_URL", "http://172.21.0.2/v2")
 
 
 # ------------------------------------------------------------------
 # Config / Connection
 # ------------------------------------------------------------------
 class GNS3Config(BaseModel):
-    controller_url: str = "http://localhost:3080/v2"
+    controller_url: str = GNS3_DEFAULT_CONTROLLER
     compute_url: Optional[str] = None
     username: str = "admin"
     password: Optional[str] = None
