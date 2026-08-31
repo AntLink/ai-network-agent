@@ -923,6 +923,54 @@ async def net_backend_health() -> dict:
         return {"error": str(exc)}
 
 
+async def net_web_search(
+    query: str,
+    max_results: int = 5,
+    search_type: str = "web",
+) -> dict:
+    """Cari informasi di web melalui 9Router (provider: searxng/tavily).
+
+    Memanggil endpoint backend POST /api/v1/ninerouter/search. Provider search
+    aktif (default searxng self-host gratis; bisa tavily) ditentukan oleh
+    NINEROUTER_SEARCH_MODEL di .env. Digunakan untuk menjawab pertanyaan yang
+    butuh informasi aktual dari internet (berita, dokumentasi, fakta terkini).
+    """
+    return _ok(
+        await backend.post(
+            "/ninerouter/search",
+            json={
+                "query": query,
+                "max_results": int(max_results),
+                "search_type": search_type,
+            },
+        )
+    )
+
+
+async def net_web_fetch(
+    url: str,
+    format: str = "markdown",
+    max_characters: int = 12000,
+) -> dict:
+    """Ambil / ekstrak konten sebuah halaman web melalui 9Router (Tavily).
+
+    Memanggil endpoint backend POST /api/v1/ninerouter/fetch. Provider fetch
+    (default tavily, karena SearXNG tidak punya webFetch) ditentukan oleh
+    NINEROUTER_FETCH_MODEL di .env. Berguna setelah net_web_search untuk
+    membaca isi halaman sumber.
+    """
+    return _ok(
+        await backend.post(
+            "/ninerouter/fetch",
+            json={
+                "url": url,
+                "format": format,
+                "max_characters": int(max_characters),
+            },
+        )
+    )
+
+
 def tool_summary() -> str:
     """Ringkasan tool untuk logging / debugging (tanpa data sensitive)."""
     names = [
@@ -977,5 +1025,7 @@ def tool_summary() -> str:
         "net_gns3_list_snapshots",
         "net_gns3_create_snapshot",
         "net_backend_health",
+        "net_web_search",
+        "net_web_fetch",
     ]
     return json.dumps({"mcp_server": "ai-network-agent", "tools": names})

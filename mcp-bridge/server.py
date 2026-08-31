@@ -79,6 +79,8 @@ _TOOLS = [
     operations.net_gns3_list_snapshots,
     operations.net_gns3_create_snapshot,
     operations.net_backend_health,
+    operations.net_web_search,
+    operations.net_web_fetch,
 ]
 
 for _tool in _TOOLS:
