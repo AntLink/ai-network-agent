@@ -1,0 +1,35 @@
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: "AI Network Agent SearXNG"
+  privacypolicy_url: false
+
+search:
+  # 9Router memanggil SearXNG dengan format JSON; wajib diaktifkan.
+  formats:
+    - html
+    - json
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "auto"
+  ban_time_on_fail: 5
+  max_request_timeout: 10
+
+server:
+  secret_key: "changeme-change-me-change-me"
+  limiter: false
+  # 9Router memakai GET /search?format=json — jangan redirect ke / (search).
+  public_instance: false
+  image_proxy: false
+  method: "POST"
+  default_locale: "id"
+
+ui:
+  default_theme: simple
+
+outgoing:
+  request_timeout: 10
+  pool_connections: 100
+  pool_maxsize: 20
+  # mengizinkan akses dari 9Router local (tidak perlu proxy kecuali diatur)

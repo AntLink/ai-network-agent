@@ -3515,6 +3515,175 @@ async def agent_chat_stream(payload: dict[str, Any]):
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
+_WEB_INTENT_MARKERS = (
+    "cari di internet", "cari di web", "cari internet", "cari web",
+    "search web", "search internet", "search di internet",
+    "cari di google", "cari google", "google it", "googling",
+)
+
+
+def _detect_web_intent(message: str):
+    """Deteksi niat pencarian web dan ekstrak query."""
+    low = (message or "").lower()
+    if not any(m in low for m in _WEB_INTENT_MARKERS):
+        return False, ""
+    query = re.sub(
+        r"(?i)^(tolong\s+)?(cari|search)(\s+di)?\s*(internet|web|google)?\s*[:,\-]?\s*",
+        "",
+        message,
+    )
+    query = query.strip().strip(":;- ").strip()
+    return True, (query or message or "").strip()
+
+
+def _extract_web_results(payload: Any) -> list[dict[str, Any]]:
+    """Tarik daftar hasil dari payload 9Router /v1/search (toleran bentuk)."""
+    out: list[dict[str, Any]] = []
+
+    def walk(container: Any):
+        if isinstance(container, list):
+            for item in container:
+                if isinstance(item, dict) and any(k in item for k in ("title", "url", "link", "href", "snippet", "desc", "name")):
+                    out.append(item)
+                else:
+                    walk(item)
+        elif isinstance(container, dict):
+            for value in container.values():
+                walk(value)
+
+    walk(payload)
+    results: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in out:
+        link = str(item.get("url") or item.get("link") or item.get("href") or "")
+        title = str(item.get("title") or item.get("name") or link)
+        snippet = str(item.get("snippet") or item.get("description") or item.get("desc") or "")
+        key = link or title
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        results.append({"title": title[:200], "url": link, "snippet": snippet[:400]})
+    return results[:6]
+
+
+async def _run_web_llm_answer(query: str) -> str:
+    """Jawab pertanyaan berbasis web lewat model chat dengan capability search:true.
+
+    9Router pada banyak environment tidak menyediakan provider `/v1/search`
+    (`/v1/models/web` kosong). Model-model `cx/*` punya `capabilities.search ==
+    true` sehingga mampu melakukan pencarian web sendiri saat merespons.
+    """
+    import httpx
+
+    model = settings.NINEROUTER_WEB_MODEL or "cx/gpt-5.6-sol"
+    api_key = settings.NINEROUTER_KEY or os.getenv("NINEROUTER_KEY", "")
+    base_url = settings.NINEROUTER_URL or "http://127.0.0.1:20128"
+
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    system_prompt = (
+        "You are a web research assistant. Answer the user's question using "
+        "current information from the web (search as needed). Be concise, factual, "
+        "and include the source URLs you rely on. Respond in the same language as the user."
+    )
+    try:
+        async with httpx.AsyncClient(timeout=90) as client:
+            resp = await client.post(
+                f"{base_url.rstrip('/')}/v1/chat/completions",
+                headers=headers,
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": query},
+                    ],
+                    "stream": False,
+                },
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return (data["choices"][0]["message"]["content"] or "").strip()
+    except Exception:
+        return ""
+
+
+async def _run_web_search(query: str) -> dict[str, Any]:
+    """Jalankan web search (9Router) dengan fallback ke model search:true."""
+    out: dict[str, Any] = {"query": query, "results": [], "fetched": None, "answer_text": None, "error": None}
+    search_ok = False
+    try:
+        provider = get_provider("9router")
+    except Exception as e:
+        out["error"] = f"provider: {e}"
+        return out
+    if not isinstance(provider, NineRouterProvider):
+        out["error"] = "9Router provider not configured"
+        return out
+    try:
+        res = await asyncio.wait_for(provider.web_search(query=query, max_results=4), timeout=30)
+        out["results"] = _extract_web_results(res)
+        search_ok = bool(out["results"])
+    except Exception as e:
+        out["error"] = f"search failed: {e}"
+    if search_ok:
+        top = next((r for r in out["results"] if r.get("url")), None)
+        if top:
+            try:
+                fetched = await asyncio.wait_for(
+                    provider.web_fetch(url=top["url"], format="text", max_characters=1500), timeout=25
+                )
+                out["fetched"] = str(fetched)[:2000]
+            except Exception:
+                pass
+        return out
+    # Provider /v1/search tidak tersedia -> jawab lewat model search:true.
+    fallback_answer = await asyncio.wait_for(_run_web_llm_answer(query), timeout=95)
+    if fallback_answer:
+        out["answer_text"] = fallback_answer
+        if not out["error"]:
+            out["error"] = "9Router web-search provider tidak tersedia; jawaban dihasilkan model search:true"
+    return out
+
+
+async def _broadcast_web_result_event(result: dict[str, Any], query: str):
+    sources = [{"title": r.get("title"), "url": r.get("url")} for r in result.get("results", [])]
+    if not sources and result.get("answer_text"):
+        sources.append({
+            "title": "Model search:true (9Router / web)",
+            "url": "",
+            "snippet": str(result["answer_text"])[:300],
+        })
+    record = {
+        "type": "web_result",
+        "id": f"web-{len(_agent_events) % 10000:04d}",
+        "query": query,
+        "sources": sources,
+        "created_at": datetime.utcnow().isoformat(),
+        "device_id": "",
+    }
+    _agent_events.append(record)
+    await _broadcast_event(record)
+
+
+def _append_web_context(system_prompt: str, result: dict[str, Any]) -> str:
+    lines = ["\n\n## WEB SEARCH — fakta dari internet (sertakan sumber pada jawaban)"]
+    if result.get("error"):
+        lines.append(f"Catatan: {result['error']}.")
+    if result.get("answer_text"):
+        lines.append(f"\nJawaban hasil penelusuran web:\n{result['answer_text'][:2500]}")
+    for i, r in enumerate(result.get("results", []), 1):
+        lines.append(f"{i}. {r.get('title')}")
+        if r.get("url"):
+            lines.append(f"   sumber: {r.get('url')}")
+        if r.get("snippet"):
+            lines.append(f"   {r.get('snippet')}")
+    if result.get("fetched"):
+        lines.append(f"\nCuplikan halaman teratas:\n{result['fetched'][:1600]}")
+    return system_prompt + "\n" + "\n".join(lines)
+
+
 @router.post("/chat")
 async def agent_chat(payload: dict[str, Any]):
     message = payload.get("message", "")
@@ -3526,6 +3695,11 @@ async def agent_chat(payload: dict[str, Any]):
     session_id = payload.get("session_id")
     explicit_device_ids = _find_devices_from_message(message)
     inspection_device_ids = explicit_device_ids or ([device_id] if device_id else [])
+
+    web_intent, web_query = _detect_web_intent(message)
+    web_result = None
+    if web_intent and web_query:
+        web_result = await _run_web_search(web_query)
 
     resolved_device_ids, resolved_lab_id = _resolve_session_context(
         session_id=session_id,
@@ -3661,7 +3835,24 @@ async def agent_chat(payload: dict[str, Any]):
         planning_record = {"type": "workflow_state", **planning_event}
         _agent_events.append(planning_record)
         await _broadcast_event(planning_record)
-        if _is_read_only_inspection_request(message):
+        if web_intent and web_result:
+            await _broadcast_web_result_event(web_result, web_query)
+            system_prompt = _append_web_context(system_prompt, web_result)
+            running_event = _build_workflow_state_event(
+                task_id=planning_event["taskId"],
+                state="running",
+                detail="Penelusuran web selesai — menyusun jawaban berbasis sumber.",
+                device_ids=resolved_device_ids,
+                events_count=1,
+            )
+            running_record = {"type": "workflow_state", **running_event}
+            _agent_events.append(running_record)
+            await _broadcast_event(running_record)
+            if web_result.get("answer_text"):
+                response = web_result["answer_text"]
+            else:
+                response = await _llm_chat(system_prompt, user_prompt)
+        elif _is_read_only_inspection_request(message):
             response = _build_read_only_inspection_response(message, inspection_device_ids, device_context)
         else:
             running_event = _build_workflow_state_event(

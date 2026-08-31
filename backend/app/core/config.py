@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     NINEROUTER_URL: str = "http://127.0.0.1:20128"
     NINEROUTER_KEY: str = ""
     NINEROUTER_MODEL: str = "opencode-cheap"
+    # Model khusus untuk pertanyaan berbasis web (harus punya capability search:true)
+    NINEROUTER_WEB_MODEL: str = "cx/gpt-5.6-sol"
     AI_PROVIDER: str = "9router"
 
     model_config = SettingsConfigDict(

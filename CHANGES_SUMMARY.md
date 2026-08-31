@@ -194,3 +194,57 @@ All modules have been verified to import correctly:
 
 ### Testing & status
 - Unit test parser Aruba (`tests/test_aruba_parser.py`) lulus; endpoint read/write/delete vendor terverifikasi live.
+
+## 2026-08-31 — Web Search Tavily via 9Router (true provider + multi-key failover)
+
+Detail: `logs/SESSION-2026-08-31-web-search-tavily.md`
+
+### Konteks
+- Sebelumnya `/v1/search` selalu gagal (`/v1/models/web` kosong, "Unknown provider")
+  karena tidak ada provider web-search terhubung; agent jatuh ke fallback model
+  `cx/gpt-5.6-sol` (search:true).
+- `oc/big-pickle` dicek: terdaftar tapi **tidak** search-capable (halusinasi —
+  tanggal salah & URL 404). Bukan kandidat pengganti.
+
+### Perbaikan
+- **9Router dashboard:** tambah provider **Tavily** + koneksi kedua (failover),
+  total 2 akun aktif (`Free-azlan`, `Free-moh.fauzan.azim@gmail.com`).
+- **`backend/app/agent/providers.py`**: default `web_search()`/`web_fetch()`
+  `search-combo`/`fetch-combo` → **`tavily`** (baris 238, 256).
+- **Root `.env`**: `NINEROUTER_SEARCH_MODEL=tavily`, `NINEROUTER_FETCH_MODEL=tavily`.
+
+### Multi-key failover
+- Dari source 9Router `/v1/search` (0.5.55): loop pemilih akun (`c1(provider, triedSet)`)
+  otomatis pindah ke key lain saat satu key rate-limited/kuota habis (429).
+- Failover real-time antar key terjadi di sisi 9Router tanpa ubah `.env`/kode backend.
+
+### Validasi
+- `/api/v1/ninerouter/status` → `connected`.
+- `/api/v1/ninerouter/search` → provider **tavily**, hasil live Aug 2026.
+- `/api/v1/agent/chat` ("cari di web: berita terbaru Nvidia") → jawaban live
+  (Q2 FY27 $96,2 M, Jetson Orin Nano 2, Groq 3 LPX) + sumber URL.
+- `oc/big-pickle` vs `cx/gpt-5.6-sol`/Tavily: yang pertama halusinasi, sisanya live.
+
+## 2026-08-31 — Self-host SearXNG (free tier unlimited) sebagai search provider
+
+Detail: `logs/SESSION-2026-08-31-web-search-tavily.md`
+
+### Konteks
+- 9Router punya provider `searxng` (freeTier, noAuth, cost 0, quota 999.999/bln),
+  tetapi butuh instance SearXNG yang berjalan (`SEARXNG_URL || localhost:8888/search`).
+
+### Perubahan
+- **Install Docker Desktop** (silent, WSL2 backend) karena sebelumnya tidak ada.
+- **`searxng/docker-compose.yml`** — image `searxng/searxng`, port `8888:8080`.
+- **`searxng/config/settings.yml`** — enable `search.formats:[html,json]` (wajib utk 9Router).
+- **`searxng/.env`** — `SEARXNG_SECRET`.
+- Dashboard 9Router: aktifkan provider SearXNG.
+- **`.env`**: `NINEROUTER_SEARCH_MODEL=searxng`, `NINEROUTER_FETCH_MODEL=tavily`.
+- **`providers.py:238`**: default web_search → `searxng` (fetch tetap `tavily`,
+  karena SearXNG tanpa webFetch).
+
+### Validasi
+- `POST /api/v1/ninerouter/search` → provider **searxng**, cost **$0**, hasil live.
+- `POST /api/v1/agent/chat` ("cari di web AI") → jawaban live + URL (detik/CNN/SINDO).
+- `POST /api/v1/ninerouter/fetch` → provider **tavily** (extract).
+- Kombinasi: search gratis unlimited (SearXNG) + extract by Tavily.
