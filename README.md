@@ -59,6 +59,12 @@ Driver perangkat (SSH dan/atau telnet-console GNS3), semua baca rutin mengembali
 | Ollama | ✅ | ✅ | - | ✅ Local |
 | 9Router | ✅ | ✅ | ✅ | ✅ Go/Zen |
 
+> **Web Search:** 9Router memakai provider web yang terhubung di dashboard
+> (http://127.0.0.1:20128 → Media Providers → Web). `searxng` (self-host) gratis
+> unlimited — lihat `searxng/docker-compose.yml` (contoh: `docker compose up -d`
+> pada folder `searxng/`, port 8888). `tavily` berbayar (kuota free 1000/bln).
+> Detail: `logs/SESSION-2026-08-31-web-search-tavily.md`.
+
 ### Agent Tools
 
 - `get_device` — Device facts and status
@@ -127,6 +133,13 @@ AI_PROVIDER=9router     # or openai, anthropic, ollama
 NINEROUTER_URL=http://127.0.0.1:20128
 NINEROUTER_KEY=your-secret-key
 NINEROUTER_MODEL=opencode-go  # free: opencode-go, opencode-zen
+
+# 9Router Web Search/Fetch (provider harus terhubung di dashboard 9Router)
+# Search: searxng (self-host gratis unlimited, butuh instance SearXNG di localhost:8888)
+#         atau tavily/dll (perlu API key di dashboard 9Router)
+# Fetch : tavily (SearXNG tidak punya webFetch)
+NINEROUTER_SEARCH_MODEL=searxng
+NINEROUTER_FETCH_MODEL=tavily
 
 # OpenAI
 OPENAI_API_KEY=sk-...
