@@ -1313,6 +1313,9 @@ export async function loadBackendTasks(): Promise<Task[]> {
       duration: stringValue(r.duration, '-'),
       user: stringValue(r.user, 'system'),
       agent: stringValue(r.agent, 'manual'),
+      executionLocation: r.execution_location === 'EDGE' || r.execution_location === 'LAB' ? r.execution_location : r.execution_location === 'CENTRAL' ? 'CENTRAL' : undefined,
+      attemptId: typeof r.attempt_id === 'string' ? r.attempt_id : undefined,
+      output: r.output,
     }
   })
 }
@@ -1332,6 +1335,9 @@ export async function loadBackendTaskDetail(taskId: string): Promise<{ task: Tas
       duration: stringValue(taskRecord.duration, '-'),
       user: stringValue(taskRecord.user, 'system'),
       agent: stringValue(taskRecord.agent, 'manual'),
+      executionLocation: taskRecord.execution_location === 'EDGE' || taskRecord.execution_location === 'LAB' ? taskRecord.execution_location : taskRecord.execution_location === 'CENTRAL' ? 'CENTRAL' : undefined,
+      attemptId: typeof taskRecord.attempt_id === 'string' ? taskRecord.attempt_id : undefined,
+      output: taskRecord.output,
     },
     steps: extractArray(r.steps ?? taskRecord.steps).map((step, index) => {
       const s = asRecord(step)

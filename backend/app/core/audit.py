@@ -19,13 +19,19 @@ if not audit_logger.handlers:
     audit_logger.addHandler(console_handler)
 
 
-SECRET_RE = re.compile(
-    r"(?i)\b(password|secret|ipsec-secret|wpa2-pre-shared-key)=([^\s]+)"
+SECRET_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"(?i)\b(password|secret|ipsec-secret|wpa2-pre-shared-key)=([^\s]+)"), r"\1=***"),
+    (re.compile(r"(?i)\b(enable\s+secret\s+)(\S+)"), r"\1***"),
+    (re.compile(r"(?i)\b(username\s+\S+\s+.*?\bsecret\s+)(\S+)"), r"\1***"),
+    (re.compile(r"(?i)\b(username\s+\S+\s+.*?\bpassword\s+)(\S+)"), r"\1***"),
 )
 
 
 def redact_secrets(text: str) -> str:
-    return SECRET_RE.sub(r"\1=***", text)
+    redacted = text
+    for pattern, replacement in SECRET_PATTERNS:
+        redacted = pattern.sub(replacement, redacted)
+    return redacted
 
 
 def log_event(

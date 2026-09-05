@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from 'src/components/ui/card
 import { ScrollArea } from 'src/components/ui/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'src/components/ui/table'
 import { cn } from 'src/lib/utils'
-import type { TaskStep } from 'src/types/network'
+import type { Task, TaskStep } from 'src/types/network'
 
 type FeedEvent = {
   id: string
@@ -164,8 +164,17 @@ const TasksPage = () => {
                     <span className="flex items-center gap-1"><UserRound className="size-4" /> {detail.data.data.task.user}</span>
                     <span className="flex items-center gap-1"><Workflow className="size-4" /> {detail.data.data.task.agent}</span>
                     <span className="flex items-center gap-1"><Workflow className="size-4" /> {selectedSteps.length} steps</span>
+                    {detail.data.data.task.executionLocation && <Badge variant="outline">{detail.data.data.task.executionLocation}</Badge>}
+                    {detail.data.data.task.attemptId && <span className="text-xs">Attempt {detail.data.data.task.attemptId}</span>}
                   </div>
                 </div>
+
+                {detail.data.data.task.output != null && (
+                  <div className="rounded-lg border border-border bg-muted/20 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Normalized result</p>
+                    <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap text-xs leading-5">{formatTaskOutput(detail.data.data.task.output)}</pre>
+                  </div>
+                )}
 
                 <ScrollArea className="h-[24rem] pr-3">
                   <div className="grid gap-3">
@@ -206,6 +215,12 @@ const TasksPage = () => {
       </div>
     </div>
   )
+}
+
+function formatTaskOutput(output: Task['output']) {
+  if (typeof output === 'string') return output
+  try { return JSON.stringify(output, null, 2) }
+  catch { return String(output) }
 }
 
 function StepCard({ step, index }: { step: TaskStep; index: number }) {

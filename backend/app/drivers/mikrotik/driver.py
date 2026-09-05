@@ -9,7 +9,7 @@ from .parser import MikroTikParser
 
 # Load .env from project root
 env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env"
-load_dotenv(env_path)
+load_dotenv(env_path, override=True)
 
 
 def ros_value(value) -> str:

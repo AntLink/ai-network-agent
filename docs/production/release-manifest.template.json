@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "release": {
+    "version": "<CONFIGURE_APPROVED_RELEASE_VERSION>",
+    "git_commit": "<CONFIGURE_APPROVED_GIT_COMMIT>",
+    "created_at": "<CONFIGURE_UTC_TIMESTAMP>",
+    "approved_by": "<CONFIGURE_OPERATOR_OR_CHANGE_REFERENCE>",
+    "licensing_decision": "<CONFIGURE_APPROVED_LICENSING_REFERENCE>"
+  },
+  "artifacts": {
+    "central_image": "<CONFIGURE_APPROVED_IMMUTABLE_IMAGE_DIGEST>",
+    "candidate_build_definition": "backend/Dockerfile.release",
+    "edge_binary": {
+      "version": "<CONFIGURE_EDGE_VERSION>",
+      "sha256": "<CONFIGURE_SHA256>",
+      "signature_reference": "<CONFIGURE_SIGNATURE_REFERENCE>"
+    },
+    "mtls_terminator_image": "<CONFIGURE_IMMUTABLE_IMAGE_DIGEST>",
+    "overlay_controller": {
+      "version": "<CONFIGURE_EXACT_VERSION>",
+      "build_flags": "<CONFIGURE_EXACT_BUILD_FLAGS>",
+      "license_review_reference": "<CONFIGURE_LICENSE_REVIEW_REFERENCE>"
+    }
+  },
+  "sbom": {
+    "format": "<CONFIGURE_CYCLONEDX_OR_SPDX>",
+    "path": "docs/evidence/release-readiness/central-api-security-candidate-v2-sbom-20260906.json",
+    "sha256": "<CONFIGURE_SBOM_SHA256>",
+    "generated_by": "<CONFIGURE_TOOL_AND_VERSION>"
+  },
+  "verification": {
+    "unit_tests": "<REQUIRED_EVIDENCE_PATH>",
+    "integration_tests": "<REQUIRED_EVIDENCE_PATH>",
+    "production_gate_report": "<REQUIRED_EVIDENCE_PATH>",
+    "deployment_runbook_review": "<REQUIRED_EVIDENCE_PATH>"
+  },
+  "secrets_logged": false,
+  "production_ready": false
+}

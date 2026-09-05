@@ -441,7 +441,7 @@ class IOSParser:
             if 'Cisco IOS Software' in line and 'Version' in line:
                 version_match = re.search(r'Version\s+(\S+)', line)
                 if version_match:
-                    info["ios_version"] = version_match.group(1)
+                    info["ios_version"] = version_match.group(1).rstrip(",")
                 software_match = re.search(r'(\S+)\s+Software', line)
                 if software_match:
                     info["software"] = software_match.group(1)

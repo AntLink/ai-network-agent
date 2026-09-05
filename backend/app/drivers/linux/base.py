@@ -7,7 +7,7 @@ from app.transports.ssh import SSHTransport
 from app.core.audit import log_event
 
 env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env"
-load_dotenv(env_path)
+load_dotenv(env_path, override=True)
 
 
 class LinuxBaseDriver(BaseDriver):

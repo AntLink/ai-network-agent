@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,19 +18,60 @@ from app.transports.console import (
     ConsoleTimeoutError,
     ConsoleAuthError,
 )
+from app.api.v1.endpoints.tasks import task_attempt_lease_store
+from app.core.audit import log_event
+from app.services.task_attempt_recovery import TaskAttemptRecoveryWorker
+
+
+async def _audit_recovered_attempt(attempt: dict):
+    log_event(
+        device_id=str(attempt.get("task_id", "task-attempt")),
+        action="TASK_ATTEMPT_LEASE_EXPIRED",
+        command=str(attempt.get("attempt_id", "unknown")),
+        result="UNKNOWN_EXECUTION_STATE",
+        user="system",
+        status="FENCED",
+        error="LEASE_EXPIRED_UNKNOWN_EXECUTION",
+    )
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    connect = getattr(task_attempt_lease_store, "connect", None)
+    if connect is not None:
+        await connect()
+    worker = TaskAttemptRecoveryWorker(
+        task_attempt_lease_store,
+        interval_seconds=settings.TASK_ATTEMPT_RECOVERY_INTERVAL_SECONDS,
+        on_recovered=_audit_recovered_attempt,
+    )
+    worker.start()
+    try:
+        yield
+    finally:
+        await worker.stop()
+        close = getattr(task_attempt_lease_store, "close", None)
+        if close is not None:
+            await close()
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
+    lifespan=lifespan,
 )
 
-# CORS Configuration - Allow all origins for development
+cors_origins = [
+    origin.strip()
+    for origin in settings.CORS_ALLOW_ORIGINS.split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)

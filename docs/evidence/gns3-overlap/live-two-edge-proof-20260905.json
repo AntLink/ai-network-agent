@@ -1,0 +1,49 @@
+{
+  "evidence_version": 1,
+  "milestone": "m3-multisite-overlapping-subnet",
+  "captured_at": "2026-09-05",
+  "status": "PASS",
+  "project": "TEST-EDGE",
+  "topology": {
+    "edge_a": "ALPINE1 / edge-001 / LAN-A",
+    "edge_b": "ALPINE2 / edge-b / LAN-B",
+    "device_a": "IOSv1 / R1 / 192.168.1.1",
+    "device_b": "IOSv2 / R2 / 192.168.1.1",
+    "isolation": "separate switches and Edge-scoped execution routing"
+  },
+  "results": {
+    "edge_a": {
+      "edge_id": "edge-001",
+      "device_id": "r1-native-edge001",
+      "management_ip": "192.168.1.1",
+      "capability": "device.read.facts",
+      "task_id": "task-20260904152646-03e355",
+      "attempt_id": "attempt-61a807567c754b59",
+      "status": "SUCCEEDED",
+      "normalized_result": {
+        "hostname": "R1",
+        "vendor": "cisco",
+        "platform": "ios",
+        "version": "15.6(2)T"
+      }
+    },
+    "edge_b": {
+      "edge_id": "edge-b",
+      "device_id": "b-r1",
+      "management_ip": "192.168.1.1",
+      "capability": "device.read.facts",
+      "status": "SUCCEEDED",
+      "normalized_result": {
+        "hostname": "R2",
+        "vendor": "cisco",
+        "platform": "ios",
+        "version": "15.6(2)T"
+      }
+    }
+  },
+  "security": {
+    "credential_payload": "reference_only",
+    "raw_cli_output_stored": false,
+    "cross_edge_route_conflict": false
+  }
+}

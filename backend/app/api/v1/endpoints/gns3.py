@@ -3,18 +3,20 @@ import configparser
 import os
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Any
 
 from app.schemas.gns3 import (
-    GNS3Config, ProjectCreate, ProjectAction, NodeCreate, NodeAction,
+    GNS3Config, GNS3_DEFAULT_CONTROLLER, ProjectCreate, ProjectAction, NodeCreate, NodeAction,
     NodePropertiesUpdate, NodeDiskInterface, NodeRebuild,
     LinkCreate, LinkDelete, TemplateUpdate,
     ProjectSnapshot, SnapshotRestore
 )
 from app.drivers.gns3.driver import GNS3Driver, GNS3Error, GNS3AuthError, GNS3NotFound
 from .safety import direct_write_guard
+from app.core.audit import log_event
 
 router = APIRouter(tags=["gns3"], dependencies=[Depends(direct_write_guard)])
 
@@ -52,7 +54,7 @@ def load_local_gns3_config() -> dict[str, Any]:
 
     return {
         "found": False,
-        "controller_url": os.getenv("GNS3_CONTROLLER_URL", "http://172.21.0.2/v2"),
+        "controller_url": GNS3_DEFAULT_CONTROLLER,
         "username": "admin",
         "auth_enabled": False,
         "password_available": False,
@@ -67,7 +69,7 @@ def config_from_payload(payload: dict[str, Any] | None = None) -> GNS3Config:
     """Accept the flat frontend payload as a GNS3Config subset."""
     payload = payload or {}
     return GNS3Config(
-        controller_url=payload.get("controller_url") or os.getenv("GNS3_CONTROLLER_URL", "http://172.21.0.2/v2"),
+        controller_url=payload.get("controller_url") or GNS3_DEFAULT_CONTROLLER,
         compute_url=payload.get("compute_url"),
         username=payload.get("username", "admin"),
         password=payload.get("password"),
@@ -239,6 +241,69 @@ async def restart_node(project_id: str, node_id: str, config: GNS3Config):
         await drv.close()
 
 
+@router.post("/projects/{project_id}/nodes/{node_id}/reload")
+async def reload_node(project_id: str, node_id: str):
+    """Recreate a Docker node through the compute Docker lifecycle route."""
+    drv = get_driver(GNS3Config())
+    try:
+        return await drv.reload_docker_node(project_id, node_id)
+    except GNS3Error as e:
+        raise HTTPException(502, str(e))
+    finally:
+        await drv.close()
+
+
+@router.post("/projects/{project_id}/nodes/{node_id}/docker-stop")
+async def docker_stop_node(project_id: str, node_id: str):
+    drv = get_driver(GNS3Config())
+    try:
+        return await drv.stop_docker_node(project_id, node_id)
+    except GNS3Error as e:
+        raise HTTPException(502, str(e))
+    finally:
+        await drv.close()
+
+
+@router.post("/projects/{project_id}/nodes/{node_id}/docker-start")
+async def docker_start_node(project_id: str, node_id: str):
+    drv = get_driver(GNS3Config())
+    try:
+        return await drv.start_docker_node(project_id, node_id)
+    except GNS3Error as e:
+        raise HTTPException(502, str(e))
+    finally:
+        await drv.close()
+
+
+@router.post("/projects/{project_id}/nodes/{node_id}/docker-delete-instance")
+async def docker_delete_instance(project_id: str, node_id: str, request: Request):
+    """Delete only the compute Docker instance; preserve controller topology.
+
+    This remains behind the router's approval-aware direct-write guard and is
+    audited with the operator approval value by the guard middleware.
+    """
+    approved_by = request.headers.get("X-Approved-By", "").strip()
+    drv = get_driver(GNS3Config())
+    try:
+        await drv.delete_docker_node_instance(project_id, node_id)
+        log_event(
+            "gns3.docker_instance_deleted",
+            {
+                "project_id": project_id,
+                "node_id": node_id,
+                "approved_by": approved_by,
+                "scope": "compute_docker_instance_only",
+            },
+        )
+        return {"status": "deleted", "scope": "compute_docker_instance_only", "approved_by": approved_by}
+    except GNS3NotFound:
+        raise HTTPException(404, "Docker instance not found")
+    except GNS3Error as e:
+        raise HTTPException(502, str(e))
+    finally:
+        await drv.close()
+
+
 @router.post("/projects/{project_id}/nodes/{node_id}/properties")
 async def update_node_properties(
     project_id: str, node_id: str, payload: dict[str, Any]
@@ -319,14 +384,66 @@ def _infer_pager_off(node: dict) -> str | None:
     return None
 
 
+def _console_exec_failure_response(
+    *,
+    project_id: str,
+    node_id: str,
+    node_name: str | None,
+    console_host: str | None,
+    console_port: int | str | None,
+    command: str,
+    exc: Exception,
+) -> JSONResponse:
+    message = f"console exec gagal untuk {node_name or node_id}: {exc}"
+    error_text = str(exc).lower()
+    prompt_not_ready = "did not reach a cli prompt" in error_text or "prompt" in error_text
+    auth_failed = "auth" in error_text or "password" in error_text or "login" in error_text
+    if prompt_not_ready:
+        error_code = "CLI_PROMPT_NOT_READY"
+        retryable = True
+        suggestion = (
+            "Tunggu device selesai boot, pastikan prompt Router>/Router# muncul, "
+            "atau jawab initial configuration dialog dengan 'no', lalu retry."
+        )
+    elif auth_failed:
+        error_code = "CONSOLE_AUTH_FAILED"
+        retryable = False
+        suggestion = "Periksa username/password/enable secret atau parameter bootstrap perangkat."
+    else:
+        error_code = "CONSOLE_EXEC_FAILED"
+        retryable = False
+        suggestion = "Periksa status node, console host/port, dan output console sebelum retry."
+
+    return JSONResponse(
+        status_code=202,
+        content={
+            "ok": False,
+            "status": "failed",
+            "error_code": error_code,
+            "message": message,
+            "retryable": retryable,
+            "suggestion": suggestion,
+            "project_id": project_id,
+            "node_id": node_id,
+            "node": node_name,
+            "console": {"host": console_host, "port": console_port},
+            "command": command,
+            "output": "",
+        },
+    )
+
+
 @router.post("/projects/{project_id}/nodes/{node_id}/console-exec")
-async def node_console_exec(project_id: str, node_id: str, payload: NodeConsoleExecRequest):
+async def node_console_exec(project_id: str, node_id: str, payload: NodeConsoleExecRequest, request: Request):
     """Eksekusi perintah via console telnet node GNS3 (first-boot friendly).
 
     Resolve host/port console LANGSUNG dari GNS3 (tidak bergantung inventory),
     lalu jalankan ConsoleTransport dengan param kredensial/initialize opsional.
     Pager dimatikan otomatis bila node adalah ASAv/IOSv (bila belum di-set).
     """
+    approved_by = request.headers.get("X-Approved-By", "").strip()
+    if not approved_by:
+        raise HTTPException(403, "X-Approved-By is required for GNS3 console execution")
     drv = get_driver(GNS3Config())
     try:
         node = await drv.get_node(project_id, node_id)
@@ -335,6 +452,8 @@ async def node_console_exec(project_id: str, node_id: str, payload: NodeConsoleE
         if not console_host or not console_port:
             raise HTTPException(400, "Node tidak memiliki console (mis. Cloud/NAT)")
         from app.transports.console import ConsoleTransport
+        from app.drivers.gns3.driver import _resolve_console_host
+        console_host = _resolve_console_host(console_host, drv.controller_url)
         pager_off = payload.pager_off_command or _infer_pager_off(node)
         ct = ConsoleTransport(
             console_host,
@@ -351,14 +470,27 @@ async def node_console_exec(project_id: str, node_id: str, payload: NodeConsoleE
         try:
             out = await ct.run(payload.command)
         except Exception as e:
-            raise HTTPException(502, f"console exec gagal untuk {node.get('name') or node_id}: {e}")
+            log_event(node.get("name") or node_id, "GNS3_CONSOLE", payload.command, user=approved_by, status="FAIL", error=str(e))
+            return _console_exec_failure_response(
+                project_id=project_id,
+                node_id=node_id,
+                node_name=node.get("name"),
+                console_host=console_host,
+                console_port=console_port,
+                command=payload.command,
+                exc=e,
+            )
+        log_event(node.get("name") or node_id, "GNS3_CONSOLE", payload.command, result="console command completed", user=approved_by, status="OK")
         return {
+            "ok": True,
+            "status": "success",
             "project_id": project_id,
             "node_id": node_id,
             "node": node.get("name"),
             "console": {"host": console_host, "port": console_port},
             "command": payload.command,
             "output": out,
+            "approved_by": approved_by,
         }
     except GNS3Error as e:
         raise HTTPException(502, str(e))
@@ -380,13 +512,16 @@ class NodeConsoleScriptRequest(BaseModel):
 
 
 @router.post("/projects/{project_id}/nodes/{node_id}/console-interactive")
-async def node_console_interactive(project_id: str, node_id: str, payload: NodeConsoleScriptRequest):
+async def node_console_interactive(project_id: str, node_id: str, payload: NodeConsoleScriptRequest, request: Request):
     """Eksekusi perintah + jawab prompt interaktif otomatis (rule pattern->send).
 
     Berguna untuk step interaktif seperti 'crypto key generate rsa'
     (jawab modulus/confirm) atau 'copy running-config flash0:x'.
     Pager tetap dimatikan otomatis untuk node ASAv/IOSv.
     """
+    approved_by = request.headers.get("X-Approved-By", "").strip()
+    if not approved_by:
+        raise HTTPException(403, "X-Approved-By is required for GNS3 interactive console execution")
     drv = get_driver(GNS3Config())
     try:
         node = await drv.get_node(project_id, node_id)
@@ -395,6 +530,8 @@ async def node_console_interactive(project_id: str, node_id: str, payload: NodeC
         if not console_host or not console_port:
             raise HTTPException(400, "Node tidak memiliki console (mis. Cloud/NAT)")
         from app.transports.console import ConsoleTransport
+        from app.drivers.gns3.driver import _resolve_console_host
+        console_host = _resolve_console_host(console_host, drv.controller_url)
         pager_off = payload.pager_off_command or _infer_pager_off(node)
         ct = ConsoleTransport(
             console_host,
@@ -412,6 +549,7 @@ async def node_console_interactive(project_id: str, node_id: str, payload: NodeC
             out = await ct.run_scripted(payload.command, payload.answers, timeout=payload.timeout)
         except Exception as e:
             raise HTTPException(502, f"console script gagal untuk {node.get('name') or node_id}: {e}")
+        log_event(node.get("name") or node_id, "GNS3_CONSOLE_INTERACTIVE", payload.command, result="console script completed", user=approved_by, status="OK")
         return {
             "project_id": project_id,
             "node_id": node_id,
@@ -419,6 +557,7 @@ async def node_console_interactive(project_id: str, node_id: str, payload: NodeC
             "command": payload.command,
             "answers": payload.answers,
             "output": out,
+            "approved_by": approved_by,
         }
     except GNS3Error as e:
         raise HTTPException(502, str(e))

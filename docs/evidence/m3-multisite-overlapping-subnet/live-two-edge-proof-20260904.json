@@ -1,0 +1,39 @@
+{
+  "milestone": "m3-multisite-overlapping-subnet",
+  "component": "live-two-edge-overlap-proof",
+  "timestamp_utc": "2026-09-04T09:08:00Z",
+  "topology": {
+    "project": "TEST-EDGE (75573856-b9a8-4587-8fd1-391de8bf6686)",
+    "ALPINE1": "192.168.1.10/24 (LAN-A), edge-001, port 9443, reverse tunnel to host",
+    "ALPINE2": "192.168.1.11/24 (LAN-B), edge-b, port 9444, reverse tunnel to host",
+    "IOSv1": "192.168.1.1/24 (LAN-A, Switch1)",
+    "IOSv2": "192.168.1.1/24 (LAN-B, Switch2)",
+    "overlapping_ip": "192.168.1.1 on both routers, isolated by separate switches"
+  },
+  "results": {
+    "edge_b_port_9444": {
+      "hello_status": 200,
+      "ready_status": 200,
+      "task_status": 200,
+      "capability": "device.read.facts",
+      "credential_ref": "b-r1",
+      "normalized_result": {
+        "hostname": "R2",
+        "platform": "ios",
+        "vendor": "cisco",
+        "version": "15.6(2)T",
+        "uptime": "55 minutes"
+      },
+      "end_to_end": "PASS"
+    },
+    "edge_001_port_9443": {
+      "hello_status": 200,
+      "ready_status": 200,
+      "task_status": 502,
+      "credential_ref": "a-r1",
+      "error": "execution failed - SSH to IOSv1 rejected (credential mismatch suspected)",
+      "end_to_end": "PENDING_CREDENTIAL_FIX"
+    }
+  },
+  "method": "Central (Windows) -> mTLS -> 172.21.0.2:9443/9444 (reverse tunnel) -> ALPINE Edge -> SSH 192.168.1.1 -> device facts"
+}

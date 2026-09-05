@@ -1,0 +1,15 @@
+{
+  "evidence_type": "postgresql_backup_restore_drill",
+  "executed_at": "2026-09-05",
+  "source_database": "ainet_agent",
+  "restore_target": "isolated temporary database",
+  "backup_tool": "pg_dump -Fc",
+  "restore_tool": "pg_restore --exit-on-error",
+  "validation": {
+    "task_attempts_table": "present",
+    "restored_task_attempt_rows": 3
+  },
+  "cleanup": "temporary restore database and dump artifact removed",
+  "status": "PASS",
+  "secrets_logged": false
+}
