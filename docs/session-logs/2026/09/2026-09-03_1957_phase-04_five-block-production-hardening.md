@@ -2413,3 +2413,25 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   contract tests.
 - The failed invocation and corrected command are both recorded for handoff
   clarity. No source/runtime secret was exposed.
+
+### Branch release-prep publication - 2026-09-06
+
+- Operator selected option 2: publish the reviewed V5 release-preparation work
+  to a separate branch, preserving `main`.
+- Created local branch `v5-release-prep`.
+- Committed the selected Central/Edge implementation, tests, release workflow,
+  deployment/security documentation, evidence, traceability, and related
+  frontend changes in commit `df059e5` (`Prepare V5 release and GitHub signing workflow`).
+- Pushed the commit successfully to `origin/v5-release-prep`.
+- Pull request entry point:
+  `https://github.com/AntLink/ai-network-agent/pull/new/v5-release-prep`
+- Unrelated worktree changes, runtime logs, caches, environment files, and
+  pre-existing deletions were not included in that commit.
+- Production gate remains fail-closed/not ready: release approval metadata,
+  signed release artifacts, production PKI/overlay evidence, and the first
+  controlled GitHub Actions signing run are still required.
+- Security/licensing: no credentials, tokens, private keys, or device secrets
+  were written to this session log or pushed by this operation.
+- Next handoff: review the branch diff and workflow, configure GHCR/OIDC and
+  signing policy, run the workflow with an approved tag, then update the
+  release manifest and production-gate evidence only after verification.
