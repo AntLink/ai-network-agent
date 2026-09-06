@@ -2458,6 +2458,16 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - The currently stuck run is an existing remote runner and is not altered by
   this source change.
 
+### Stalled attestation run remediation - 2026-09-06
+
+- The new workflow run verified Central signature and attestation output but
+  did not advance to the Edge verification message after approximately 20
+  minutes.
+- Strengthened the per-command timeout with a 10-second SIGKILL fallback and
+  added a 30-minute maximum for the complete release job.
+- The stuck remote run must be cancelled separately; this source change only
+  affects subsequent workflow runs.
+
 ### Immutable release tag guard - 2026-09-06
 
 - Added fail-closed validation for the workflow input: only semantic version
