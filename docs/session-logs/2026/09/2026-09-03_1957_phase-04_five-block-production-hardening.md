@@ -2660,3 +2660,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   and the corresponding JSON report.
 - Next priority: complete and validate the authenticated TLS terminator and
   then bind the approved immutable release manifest to the signed artifacts.
+
+### TLS terminator staging recheck - 2026-09-06 19:21 +08:00
+
+- Docker Desktop was confirmed active; `mtls-gateway` was healthy and the
+  `nginx-staging` profile was started successfully on port 9444.
+- The initial valid-client handshake failed because the lab `ca.crl` had
+  passed its `next_update` time, not because the Edge certificate was invalid.
+- Regenerated the short-lived lab CRL with the required lab-only acknowledgement
+  and restarted only `nginx-staging`.
+- Valid mTLS handshake then returned `HTTP/1.1 200 OK` from the Central API.
+- This is staging evidence only. It does not satisfy production PKI approval,
+  revoke/force-disconnect under the production terminator, or the final gate.
