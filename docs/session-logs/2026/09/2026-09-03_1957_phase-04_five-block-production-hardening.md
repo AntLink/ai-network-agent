@@ -2458,6 +2458,16 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - Node.js 20 deprecation annotations remain warnings from third-party actions;
   they are tracked separately from the manifest failure.
 
+### Confirmed jq manifest error from GitHub run - 2026-09-06
+
+- The rerun failed with `jq: syntax error, unexpected '+', expecting '}'`
+  during `Generate release manifest evidence`.
+- The log showed the old manifest expression using `env.GITHUB_REPOSITORY`
+  and passing full image references before digest assembly, confirming that
+  `main` was still executing the pre-`0f36d6f` workflow.
+- Commit `0f36d6f` contains the corrected jq expression and image reference
+  assembly; it must be merged to `main` before another rerun.
+
 ### Cosign verification timeout hardening - 2026-09-06
 
 - Added a 180-second timeout around each Central/Edge Cosign signature and
