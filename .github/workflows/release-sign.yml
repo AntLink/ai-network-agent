@@ -78,6 +78,16 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.7.0
 
+      - name: Sign and verify Edge binary
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes edge/ainet-edge-linux --bundle edge-binary.sigstore.json
+          cosign verify-blob edge/ainet-edge-linux --bundle edge-binary.sigstore.json \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+
       - name: Build and push Central
         uses: docker/build-push-action@v7
         with:
@@ -151,6 +161,7 @@ jobs:
           central_sbom_sha="$(sha256sum central-sbom.json | awk '{print $1}')"
           edge_sbom_sha="$(sha256sum edge-sbom.json | awk '{print $1}')"
           edge_binary_sha="$(sha256sum edge/ainet-edge-linux | awk '{print $1}')"
+          edge_binary_bundle_sha="$(sha256sum edge-binary.sigstore.json | awk '{print $1}')"
           jq -n \
             --arg version "$RELEASE_TAG" \
             --arg commit "${GITHUB_SHA}" \
@@ -162,8 +173,9 @@ jobs:
             --arg central_sbom_sha "$central_sbom_sha" \
             --arg edge_sbom_sha "$edge_sbom_sha" \
             --arg edge_binary_sha "$edge_binary_sha" \
+            --arg edge_binary_bundle_sha "$edge_binary_bundle_sha" \
             --arg workflow_run "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
-            '{schema_version:1,release:{version:$version,git_commit:$commit,created_at:$created_at,approved_by:"<CONFIGURE_OPERATOR_OR_CHANGE_REFERENCE>",licensing_decision:"<CONFIGURE_APPROVED_LICENSING_REFERENCE>"},artifacts:{central_image:($central+"@"+$central_digest),edge_image:($edge+"@"+$edge_digest),edge_binary:{version:$version,sha256:$edge_binary_sha,signature_reference:"cosign-attestation-on-edge-image"}},sbom:{format:"CycloneDX JSON",central_path:"central-sbom.json",central_sha256:$central_sbom_sha,edge_path:"edge-sbom.json",edge_sha256:$edge_sbom_sha,generated_by:"anchore/sbom-action@v0"},verification:{workflow_run:$workflow_run},secrets_logged:false,production_ready:false}' \
+            '{schema_version:1,release:{version:$version,git_commit:$commit,created_at:$created_at,approved_by:"<CONFIGURE_OPERATOR_OR_CHANGE_REFERENCE>",licensing_decision:"<CONFIGURE_APPROVED_LICENSING_REFERENCE>"},artifacts:{central_image:($central+"@"+$central_digest),edge_image:($edge+"@"+$edge_digest),edge_binary:{version:$version,sha256:$edge_binary_sha,signature_reference:"edge-binary.sigstore.json",signature_bundle_sha256:$edge_binary_bundle_sha}},sbom:{format:"CycloneDX JSON",central_path:"central-sbom.json",central_sha256:$central_sbom_sha,edge_path:"edge-sbom.json",edge_sha256:$edge_sbom_sha,generated_by:"anchore/sbom-action@v0"},verification:{workflow_run:$workflow_run},secrets_logged:false,production_ready:false}' \
             > "release-manifest-${RELEASE_TAG}.json"
 
       - name: Publish release evidence
@@ -173,6 +185,7 @@ jobs:
           path: |
             central-sbom.json
             edge-sbom.json
+            edge-binary.sigstore.json
             release-manifest-${{ steps.meta.outputs.tag }}.json
 
   verify-central:
