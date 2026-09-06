@@ -164,6 +164,7 @@ func run(in io.Reader, out io.Writer, now func() time.Time) error {
 func main() {
 	listen := flag.String("control-listen", "", "mTLS control listen address, e.g. 0.0.0.0:9443")
 	controlURL := flag.String("control-url", "", "Central mTLS control URL, e.g. https://central:9443")
+	controlServerName := flag.String("control-server-name", "central", "Central TLS server name, e.g. edge-control.antlinx.com")
 	edgeID := flag.String("edge-id", "", "registered Edge identity")
 	bootID := flag.String("boot-id", "", "Edge boot/session identity")
 	caFile := flag.String("ca-file", "", "project CA PEM")
@@ -178,7 +179,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, "edge-id and boot-id are required")
 			os.Exit(2)
 		}
-		tlsConfig, err := security.ClientConfig(security.MTLSFiles{CAFile: *caFile, CertificateFile: *certFile, PrivateKeyFile: *keyFile})
+		tlsConfig, err := security.ClientConfig(security.MTLSFiles{CAFile: *caFile, CertificateFile: *certFile, PrivateKeyFile: *keyFile, ServerName: *controlServerName})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(2)

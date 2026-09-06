@@ -33,6 +33,9 @@ type MTLSFiles struct {
 	CAFile          string
 	CertificateFile string
 	PrivateKeyFile  string
+	// ServerName is the DNS name validated against the Central certificate.
+	// It defaults to the historical lab name when empty.
+	ServerName string
 }
 
 func loadCA(path string) (*x509.CertPool, error) {
@@ -65,7 +68,15 @@ func ClientConfig(files MTLSFiles) (*tls.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: ca, Certificates: []tls.Certificate{cert}, ServerName: "central"}, nil
+	serverName := clientServerName(files.ServerName)
+	return &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: ca, Certificates: []tls.Certificate{cert}, ServerName: serverName}, nil
+}
+
+func clientServerName(configured string) string {
+	if configured == "" {
+		return "central"
+	}
+	return configured
 }
 
 // ServerConfig requires a client certificate signed by the configured CA.
