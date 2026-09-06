@@ -2468,6 +2468,16 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   exit code 128. It is being removed from the release-prep branch; unrelated
   local runtime/cache files remain untouched.
 
+### GitHub Actions Node 24 modernization - 2026-09-06
+
+- Updated official action major versions to Node 24-compatible lines: checkout
+  v6, setup-go v7, Docker login v4, Buildx v4, build-push v7, and
+  upload-artifact v5.
+- This addresses the Node 20 deprecation warnings without enabling the
+  insecure Node 20 compatibility override.
+- The action versions are sourced from the official repositories; the workflow
+  still requires SHA pinning before production policy approval.
+
 ### Native Cosign attestation timeout remediation - 2026-09-06
 
 - Added Cosign's native 90-second command timeout and `max-workers=1` to
