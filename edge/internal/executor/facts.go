@@ -151,13 +151,17 @@ func executeRouterOSShell(session *ssh.Session, command string) ([]byte, error) 
 	var stdout, stderr bytes.Buffer
 	session.Stdout = &stdout
 	session.Stderr = &stderr
+	if err := session.RequestPty("xterm", 80, 24, ssh.TerminalModes{ssh.ECHO: 0}); err != nil {
+		return nil, fmt.Errorf("routeros shell pty failed: %w", err)
+	}
 	if err := session.Shell(); err != nil {
 		return nil, fmt.Errorf("routeros shell start failed: %w", err)
 	}
 	if _, err := io.WriteString(stdin, command+"\n"); err != nil {
 		return nil, fmt.Errorf("routeros shell write failed: %w", err)
 	}
-	_ = stdin.Close()
+	time.Sleep(1500 * time.Millisecond)
+	_ = session.Close()
 	if err := session.Wait(); err != nil && stdout.Len() == 0 {
 		return nil, fmt.Errorf("routeros shell command failed: %w: %s", err, stderr.String())
 	}
