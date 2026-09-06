@@ -270,3 +270,65 @@ Result/evidence: **FAIL / NOT READY** until the missing gates below pass
   deployable release identities.
 - Follow `docs/runbooks/release-signing-runbook.md` once the approved registry
   and signing identity are available.
+
+## 19. Production Host Deployment Plan
+
+> Inspected Ubuntu host 192.168.210.51 (Ubuntu 24.04.4 LTS, Docker active).
+> Findings recorded in session log `2026-09-03_1957_phase-04_five-block-production-hardening.md`
+> (commit `8be8ccf`). Existing Nginx owns TCP 443 and must be preserved. There
+> is no existing AINET deployment to preserve.
+
+### 19.1 Blocking gates before any deployment (all fail-closed)
+
+1. **Registry feed auth** – GHCR images are private; anonymous pull returns
+   `unauthorized`. Provision a read-only PAT (`read:packages`) as a host
+   secret (`docker login ghcr.io --username <user> --password-stdin`) by the
+   operator. Never place the PAT in the repository, chat, or session logs.
+2. **Production hostname** – e.g. `edge-control.antlinx.com`; must be approved
+   and must match the served certificate SAN.
+3. **Production TLS certificate** for that hostname (public CA or approved
+   private CA chain with renewal/revocation path). Lab PKI is not sufficient.
+4. **Listener/port plan** – do not modify the existing Nginx/443 service.
+   AINET listeners must use dedicated ports/addresses approved for coexistence
+   (Central API, Edge control, Redis, PostgreSQL) without clobbering existing
+   workloads.
+5. **PKI revocation policy** – approve `docs/production/revocation-policy.md`
+   and bind production revocation state to the durable registry + CRL:
+   `EDGE_CERT_REVOCATION_STATE_FILE`, terminator `ssl_crl` via
+   `deploy/mtls/nginx_crl_reload.py`.
+6. **Licensing/commercial approval** – record the approved decision reference
+   (pattern `LIC-YYYY-MM-DD-NNN-<LABEL>`) before deployment.
+
+### 19.2 Host preflight
+
+Run the read-only preflight on the target host; it never writes, pulls, or
+modifies anything and fails closed on every blocked gate:
+
+```text
+python3 deploy/production/preflight.py \
+  --hostname edge-control.antlinx.com \
+  --tls-cert /etc/ainet/pki/central.crt \
+  --manifest docs/production/release-manifest-v0.1.0.json \
+  --revocation-policy docs/production/revocation-policy.md \
+  --licensing-ref <approved LIC reference>
+```
+
+`VERDICT: READY` (exit 0) is required before proceeding.
+`READY-WITH-WARNINGS` (exit 2) still requires manual capacity/listener review;
+`NOT-READY` (exit 1) blocks deployment. Contract tests:
+`backend/tests/test_production_preflight.py`.
+
+### 19.3 Capacity and isolation review
+
+- Host showed ~3.3 GiB RAM with high swap usage. A full
+  Central/PostgreSQL/Redis/controller deployment must be
+  capacity- and blast-radius-reviewed before touching existing workloads.
+- Prefer reverse proxies/containers pinned to dedicated loopback/private
+  listener addresses; keep the existing Nginx/443 tenant untouched.
+
+### 19.4 Post-deployment hygiene
+
+- Change the host access password/keys after deployment completes and revoke
+  any temporary provisioning credentials.
+- Re-run the preflight after any host-level change and record the verdict
+  plus evidence in `docs/evidence/production-gates/`.

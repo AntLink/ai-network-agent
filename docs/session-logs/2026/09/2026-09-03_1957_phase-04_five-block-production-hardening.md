@@ -2752,3 +2752,25 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - Blockers handed off: secure GHCR read access, production hostname/listener
   decision, production PKI material and revocation policy, and commercial
   licensing approval/reference.
+
+### GHCR anonymous pull check - 2026-09-06
+
+- Read-only checks against `ghcr.io/antlink/ainet-api:v0.1.0` and
+  `ghcr.io/antlink/ainet-edge:v0.1.0` returned HTTP `401 Unauthorized`.
+- Conclusion: the packages are not yet anonymously pullable from the current
+  package paths, or the visibility change has not been applied to these exact
+  packages. No token was used or recorded.
+- Production deployment remains blocked on GHCR access until both package
+  settings are confirmed public or a secure read-only package credential is
+  provisioned on the production host.
+
+### Preflight fail-closed review - 2026-09-06
+
+- Review found that a failed `docker ps` inventory lookup could previously be
+  mistaken for an empty host and pass `no-existing-ainet`.
+- Updated `deploy/production/preflight.py` to fail that gate when the Docker
+  inventory is unreadable, and added a regression test.
+- Targeted verification: `backend/tests/test_production_preflight.py` -> 23
+  passed (one existing local pytest cache warning only).
+- Updated the preflight evidence, traceability row, and M4 session index from
+  22 to 23 tests. Production readiness remains unchanged.

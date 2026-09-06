@@ -1,0 +1,48 @@
+{
+  "milestone": "m4-production-operations",
+  "component": "production-host-preflight-and-revocation-policy",
+  "timestamp_utc": "2026-09-06T12:35:00Z",
+  "inspected_host": "192.168.210.51 (Ubuntu 24.04.4 LTS)",
+  "inspection_record": "docs/session-logs/2026/09/2026-09-03_1957_phase-04_five-block-production-hardening.md (commit 8be8ccf)",
+  "implementation": {
+    "preflight": "deploy/production/preflight.py",
+    "tests": "backend/tests/test_production_preflight.py (23 tests) - PASS",
+    "revocation_policy": "docs/production/revocation-policy.md (draft for approval)",
+    "runbook": "docs/runbooks/deployment-runbook.md section 19"
+  },
+  "preflight_gates": [
+    "docker-active",
+    "no-existing-ainet (refuses to clobber existing AINET containers)",
+    "registry-feed-auth (immutable digest manifest inspect; proves host-level GHCR secret)",
+    "hostname-required",
+    "tls-cert-valid (parse + expiry + SAN)",
+    "listener-plan (fails on bound AINET ports; preserves existing Nginx TCP 443)",
+    "capacity-memory (RAM/swap advisories)",
+    "revocation-policy",
+    "licensing-reference (LIC-YYYY-MM-DD-NNN-LABEL)"
+  ],
+  "verified_behaviors": [
+    "all required gates PASS yields VERDICT READY (exit 0)",
+    "missing hostname, licensing ref, manifest, or revocation policy => NOT-READY (exit 1)",
+    "tag-only (non-immutable) image reference blocked",
+    "existing Nginx TCP 443 detected and reported as preserved, not a conflict",
+    "AINET default port already bound => listener-plan FAIL",
+    "RAM < 2 GiB => hard FAIL; < 4 GiB or heavy swap => WARN",
+    "CLI on real host: docker detected, GHCR feed UNAUTHORIZED, safe WARN for missing openssl/ss/meminfo, exit 1"
+  ],
+  "returns": {
+    "preflight": "read-only; never pulls/images/writes; accepts no secrets",
+    "verdict_codes": {
+      "READY": 0,
+      "READY-WITH-WARNINGS": 2,
+      "NOT-READY": 1
+    }
+  },
+  "regression": "141 passed, 3 skipped (backend/tests/ with --basetemp workaround for locked pytest temp dir)",
+  "status": "COMPLETE - deployment remains blocked by external gates until approved (see runbook 19.1)",
+  "notes": [
+    "The six inspection blockers are encoded as gate checks; approval inputs (PAT/hostname/TLS/port plan/revocation policy approval/licensing) remain operator-side.",
+    "Revocation policy document is a draft and must be explicitly approved before it can unblock the revocation-policy gate.",
+    "Full suite failure of test_certificate_revocation.py observed only because of a locked 'pytest-of-mohfa' temp dir, not code; resolver: run with --basetemp."
+  ]
+}
