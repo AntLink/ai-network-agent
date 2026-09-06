@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "release": {
-    "version": "<CONFIGURE>",
-    "git_commit": "<CONFIGURE>",
-    "licensing_decision": "<CONFIGURE>"
+    "version": "v0.1.0",
+    "git_commit": "77b88948bb82b7dd1d74ae3c9a0a5477953b42bd",
+    "licensing_decision": "LIC-2026-09-06-INTERNAL-STAGING"
   },
   "required_files": [
     "docs/traceability/requirements-matrix.md",

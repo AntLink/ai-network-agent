@@ -2699,3 +2699,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - Approval, licensing, production PKI, and `production_ready` remain unset;
   the production gate must continue to fail closed until those decisions and
   evidence are supplied.
+
+### Release metadata alignment - 2026-09-06
+
+- Local release validation now recognizes the Run #21 technical metadata;
+  remaining failures are Edge binary signature binding and
+  `production_ready=false`.
+- The production gate configuration still contained release placeholders, so
+  it was aligned with the approved staging manifest: version `v0.1.0`, commit
+  `77b88948...`, and licensing reference
+  `LIC-2026-09-06-INTERNAL-STAGING`.
+- Production readiness remains intentionally false pending production PKI and
+  signed Edge binary binding evidence.
