@@ -1,0 +1,37 @@
+{
+  "milestone": "m3-multisite-overlapping-subnet",
+  "timestamp_utc": "2026-09-04T02:15:00Z",
+  "topology_under_test": [
+    {"device": "a-r1", "management_address": "192.168.1.1", "customer": "cust-a", "site": "site-a", "owning_edge": "edge-001"},
+    {"device": "b-r1", "management_address": "192.168.1.1", "customer": "cust-b", "site": "site-b", "owning_edge": "edge-b"}
+  ],
+  "implementation": {
+    "resolver": "backend/app/services/execution_routing.py",
+    "data_model": "backend/app/api/v1/endpoints/devices.py (execution_location/customer_id/site_id/edge_id fields)",
+    "api": "backend/app/api/v1/endpoints/tasks.py (/tasks/capability passes customer_id/site_id/edge_id to resolver)"
+  },
+  "unit_tests": "backend/tests/test_execution_routing.py (6 tests) - PASS",
+  "live_api_evidence": {
+    "cross_tenant_rejection": {
+      "request": "POST /api/v1/tasks/capability {device_id:a-r1, edge_id:edge-b}",
+      "status": 422,
+      "detail": "requested Edge 'edge-b' does not own device=a-r1 customer=cust-a site=site-a edge=edge-001"
+    },
+    "customer_score_rejection": {
+      "request": "POST /api/v1/tasks/capability {device_id:a-r1, edge_id:edge-001, customer_id:cust-b}",
+      "status": 422,
+      "detail": "requested customer 'cust-b' does not match device=a-r1 customer=cust-a site=site-a edge=edge-001"
+    },
+    "correct_scoped_routing": {
+      "request": "POST /api/v1/tasks/capability {device_id:a-r1, edge_id:edge-001, customer_id:cust-a, site_id:site-a}",
+      "routing": "EDGE=edge-001 (scoping passed)"
+    }
+  },
+  "positive_live_dispatch_reference": {
+    "note": "The identical Central -> Edge -> R1 device.read.facts positive dispatch was proven live in Milestone 1 (task-20260903172217-556e67, status success).",
+    "milestone1_slice": "docs/evidence/m1-vertical-slice/central-api-capability-live-20260903.json"
+  },
+  "blockers": {
+    "tap0_ubridge": "GNS3 VM host tap0 (192.168.10.254) reports carrier=0 / NO-CARRIER; the ubridge data-plane link to the customer LAN is not establishing. This is lab infrastructure and blocks the live positive overlapping-subnet dispatch at this time. Restarting R1 and EDGE-LAN-SW2 did not restore it. Not a code defect; the identical positive path is verified in Milestone 1."
+  }
+}

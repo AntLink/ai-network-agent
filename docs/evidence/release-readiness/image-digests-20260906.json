@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-06",
+  "scope": "LOCAL_DOCKER_LAB_OBSERVATION",
+  "production_ready": false,
+  "secrets_logged": false,
+  "images": [
+    {
+      "service": "redis",
+      "reference": "redis:7-alpine",
+      "digest": "sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf",
+      "status": "OBSERVED_LOCAL_RUNTIME",
+      "note": "Must be promoted to an approved registry/digest pin after release review."
+    },
+    {
+      "service": "nginx-base",
+      "reference": "nginx:alpine",
+      "digest": "sha256:72ba65eb42c10344912a84ff42408db7d34f2feb6422045700ab8fc5ffd29f1d3",
+      "status": "OBSERVED_LOCAL_BUILD_INPUT",
+      "note": "Exact production digest and image provenance still require approval."
+    },
+    {
+      "service": "api",
+      "reference": "backend-api:latest",
+      "digest": "sha256:c1a524046a609d9a6d156bb81dc7f53b2c36c9bb13b4241f788d412fc2e42144",
+      "status": "OBSERVED_LOCAL_BUILD",
+      "note": "Local build digest is not a signed release artifact."
+    },
+    {
+      "service": "mtls-gateway",
+      "reference": "backend-mtls-gateway:latest",
+      "digest": "sha256:7f1416a913861bbcc25de2a71ff7731da0263c12b6f19321d0ea50652113eaec",
+      "status": "OBSERVED_LOCAL_BUILD",
+      "note": "Local build digest is not a signed release artifact."
+    },
+    {
+      "service": "nginx-staging",
+      "reference": "backend-nginx-staging:latest",
+      "digest": "sha256:ca6936c2a533b3c9560a4de6bee5696243fe361bef5cb03751b589e4c4e4961a",
+      "status": "OBSERVED_LOCAL_BUILD",
+      "note": "Staging only; not production PKI evidence."
+    }
+  ],
+  "missing_release_inputs": [
+    "approved registry and immutable production image references",
+    "signed release manifest",
+    "SBOM and license notice bundle",
+    "exact ZeroTier build/version and controller licensing decision",
+    "operator/legal approval reference"
+  ]
+}

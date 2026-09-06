@@ -1,0 +1,17 @@
+{
+  "evidence_type": "persistent_nginx_staging_crl_revoke",
+  "captured_at": "2026-09-06",
+  "deployment": "backend/docker-compose.yml profile nginx-staging",
+  "endpoint": "https://127.0.0.1:9444",
+  "checks": {
+    "config_test": "PASS",
+    "valid_client_before_revoke": "HTTP/1.1 200 OK",
+    "crl_reload": "PASS",
+    "revoked_client_after_reload": "HTTP/1.1 400 Bad Request",
+    "valid_client_after_restore": "HTTP/1.1 200 OK",
+    "active_gateway_8443_changed": false
+  },
+  "scope": "LAB_STAGING_ONLY",
+  "production_ready": false,
+  "secrets_logged": false
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-05T23:08:18+08:00",
+  "git_commit": "<CONFIGURE>",
+  "overall_status": "FAIL",
+  "config": "C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\\docs\\production\\production-gate.json",
+  "release": {
+    "version": "<CONFIGURE>",
+    "git_commit": "<CONFIGURE>",
+    "licensing_decision": "<CONFIGURE>"
+  },
+  "required_files": [
+    {
+      "path": "docs/traceability/requirements-matrix.md",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "path": "docs/runbooks/deployment-runbook.md",
+      "status": "PASS",
+      "reason": ""
+    },
+    {
+      "path": "backend/app/services/overlay.py",
+      "status": "PASS",
+      "reason": ""
+    }
+  ],
+  "gates": [
+    {
+      "id": "UNIT-PYTHON",
+      "description": "Focused Central contract tests",
+      "required": true,
+      "status": "PASS",
+      "command_status": "PASS",
+      "evidence_status": "PASS",
+      "exit_code": 0,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.14.6, pytest-8.4.2, pluggy-1.6.0\nrootdir: C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\nplugins: anyio-4.14.2, libtmux-0.62.0, asyncio-1.4.0\nasyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function\ncollected 16 items\n\nbackend\\tests\\test_overlay_provider.py ..                                [ 12%]\nbackend\\tests\\test_edge_control.py ............                          [ 87%]\nbackend\\tests\\test_edge_identity.py ..                                   [100%]\n\n============================== warnings summary ===============================\nenv\\Lib\\site-packages\\_pytest\\cacheprovider.py:475\n  C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\\env\\Lib\\site-packages\\_pytest\\cacheprovider.py:475: PytestCacheWarning: could not create cache path C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\\.pytest_cache\\v\\cache\\nodeids: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\Users\\\\mohfa\\\\PycharmProjects\\\\ai-network-agent\\\\.pytest_cache\\\\v\\\\cache'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================== 16 passed, 1 warning in 2.66s ========================\n"
+    },
+    {
+      "id": "LIVE-REDIS",
+      "description": "Shared session/lifecycle state is proven against Redis",
+      "required": true,
+      "status": "PASS",
+      "command_status": "PASS",
+      "evidence_status": "PASS",
+      "exit_code": 0,
+      "output": ".                                                                        [100%]\n============================== warnings summary ===============================\nenv\\Lib\\site-packages\\_pytest\\cacheprovider.py:475\n  C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\\env\\Lib\\site-packages\\_pytest\\cacheprovider.py:475: PytestCacheWarning: could not create cache path C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\\.pytest_cache\\v\\cache\\nodeids: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\Users\\\\mohfa\\\\PycharmProjects\\\\ai-network-agent\\\\.pytest_cache\\\\v\\\\cache'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1 passed, 1 warning in 0.22s\n"
+    },
+    {
+      "id": "LIVE-POSTGRES",
+      "description": "Durable TaskAttempt and recovery are proven against PostgreSQL",
+      "required": true,
+      "status": "PASS",
+      "command_status": "PASS",
+      "evidence_status": "PASS",
+      "exit_code": 0,
+      "output": "..                                                                       [100%]\n============================== warnings summary ===============================\nenv\\Lib\\site-packages\\_pytest\\cacheprovider.py:475\n  C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\\env\\Lib\\site-packages\\_pytest\\cacheprovider.py:475: PytestCacheWarning: could not create cache path C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\\.pytest_cache\\v\\cache\\nodeids: [WinError 183] Cannot create a file when that file already exists: 'C:\\\\Users\\\\mohfa\\\\PycharmProjects\\\\ai-network-agent\\\\.pytest_cache\\\\v\\\\cache'\n    config.cache.set(\"cache/nodeids\", sorted(self.cached_nodeids))\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n2 passed, 1 warning in 0.31s\n"
+    },
+    {
+      "id": "LIVE-PKI-OVERLAY",
+      "description": "Certificate revocation and overlay deauthorization are proven in deployment",
+      "required": true,
+      "status": "FAIL",
+      "command_status": "FAIL",
+      "evidence_status": "PASS",
+      "exit_code": 1,
+      "output": "PKI_OVERLAY_EVIDENCE=FAIL incomplete:tls_terminator\n"
+    },
+    {
+      "id": "LIVE-GNS3-OVERLAP",
+      "description": "Two isolated Edge paths accept the same management IP in GNS3",
+      "required": true,
+      "status": "PASS",
+      "command_status": "PASS",
+      "evidence_status": "PASS",
+      "exit_code": 0,
+      "output": "GNS3_OVERLAP_EVIDENCE=PASS\n"
+    }
+  ],
+  "errors": [
+    "release.version is not configured",
+    "release.git_commit is not configured",
+    "release.licensing_decision is not configured",
+    "required gate failed: LIVE-PKI-OVERLAY"
+  ]
+}

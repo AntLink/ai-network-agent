@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-09-06",
+  "scope": "LOCAL_RELEASE_READINESS",
+  "status": "CENTRAL_EDGE_SECURITY_SCAN_PASS_CANDIDATES",
+  "production_ready": false,
+  "secrets_logged": false,
+  "sbom_generator_detected": true,
+  "sbom_generator": "anchore/syft:latest",
+  "sbom_generator_digest": "sha256:95fe0835e5bebc6f8b1f8acef68d47d63d594ef4c0f25c097ff853b23cbac74c",
+  "security_scan": {
+    "tool": "aquasec/trivy:latest",
+    "tool_digest": "sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969",
+    "artifact": "docs/evidence/release-readiness/central-api-trivy-security-candidate-v2-20260906.json",
+    "artifact_sha256": "0CBC18EBB6F2756CE113E77F7338D46E4D9479754DC0DF11FA38815E787365E9",
+    "severity_filter": "HIGH,CRITICAL",
+    "vulnerabilities": [],
+    "license_records": 319,
+    "status": "PASS_FOR_SCANNED_HIGH_CRITICAL_SCOPE"
+  },
+  "edge_security_scan": {
+    "image": "ainet-edge:security-candidate-20260906-v3",
+    "image_digest": "sha256:f365718a5b37b2dd8a61e72182d1b841127124518dc0fc1d5b4f9b11d1021b85",
+    "tool": "aquasec/trivy:latest",
+    "artifact": "docs/evidence/release-readiness/edge-trivy-security-candidate-v3-20260906.json",
+    "artifact_sha256": "A91EBE4891AB94C29804B1190CFD1F630726EE8FFFFAC318F6CF73902E208246",
+    "severity_filter": "HIGH,CRITICAL",
+    "vulnerabilities": [],
+    "license_records": 8,
+    "status": "PASS_FOR_SCANNED_HIGH_CRITICAL_SCOPE"
+  },
+  "edge_artifact": {
+    "binary": "edge/ainet-edge-linux",
+    "sha256": "337FD8ED97D0131E4C7C216903873D5F0400C1FC4D2EB221299ED7B925F89922",
+    "status": "LOCAL_UNSIGNED_CANDIDATE"
+  },
+  "sbom_artifacts": [
+    {
+      "path": "docs/evidence/release-readiness/central-api-security-candidate-v2-sbom-20260906.json",
+      "sha256": "21DAD0B69C06EF8DD8A4ADF6771605A8F29354D65353EE7158F682994EC75DB4",
+      "image_digest": "sha256:a0cadb2f1c2158109d609e0b72d723fae67afc37b6f0392199c910a7cc51739b"
+    },
+    {
+      "path": "docs/evidence/release-readiness/central-api-release-candidate-sbom-20260906.json",
+      "sha256": "A775DB6867C124CDF6E9E55B3A2E5660EBE929EBEAF74CCD7C2C42B7BC28636C",
+      "image_digest": "sha256:04caaf95e7be7748f5db84aa21d20670e907a32b596879d4dcdd3406438459c9"
+    },
+    {
+      "path": "docs/evidence/release-readiness/central-api-sbom-20260906.json",
+      "sha256": "756D25489E9B3465E6FDAD328934E5F61785CF2B78E9D28189455642F8242DC7"
+    },
+    {
+      "path": "docs/evidence/release-readiness/mtls-gateway-sbom-20260906.json",
+      "sha256": "3D4F2F238C41378DDAC95C85AA7F663378646D4F23FE187786465461EA740CA5"
+    },
+    {
+      "path": "docs/evidence/release-readiness/nginx-staging-sbom-20260906.json",
+      "sha256": "D38F27A84E00EA126CA7C41982EF04E749B44650F05BA1DDAF53BBF3CC7FB704"
+    }
+  ],
+  "findings": [
+    {
+      "area": "Central Python dependencies",
+      "source": "backend/requirements.txt",
+      "status": "CANDIDATE_LOCK_CREATED",
+      "lockfile": "backend/requirements.lock.txt",
+      "details": "Candidate lock matches pip freeze from the local API image; package hashes, index policy and clean rebuild verification remain outstanding."
+    },
+    {
+      "area": "Edge Go dependencies",
+      "source": "edge/go.mod and edge/go.sum",
+      "status": "CANDIDATE_SCAN_PASS",
+      "details": "Go 1.26.6 and x/crypto v0.55.0 are tested and the candidate image has zero HIGH/CRITICAL findings; signed release provenance remains outstanding."
+    },
+    {
+      "area": "Container images",
+      "source": "docs/evidence/release-readiness/image-digests-20260906.json",
+      "status": "LAB_ONLY",
+      "details": "Local image digests were captured, but registry provenance, signing, and production approval are absent."
+    }
+  ],
+  "required_next_actions": [
+    "Record the pinned Python base image digest and verify its registry provenance/signature",
+    "Lock Python dependencies for the release",
+    "Generate CycloneDX or SPDX SBOMs for all approved production deployment images",
+    "Record SBOM hashes and license notices in release-manifest.json",
+    "Attach vulnerability and license review evidence to the production gate"
+  ]
+}

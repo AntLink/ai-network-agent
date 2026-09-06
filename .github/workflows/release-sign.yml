@@ -1,0 +1,182 @@
+name: Release build, SBOM and signing
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Immutable release tag, for example v0.1.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout approved release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag }}
+          fetch-depth: 0
+
+      - name: Set release metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          RELEASE_TAG="${{ inputs.release_tag }}"
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "release_tag must match vMAJOR.MINOR.PATCH" >&2
+            exit 1
+          fi
+          TAG_COMMIT="$(git rev-list -n 1 "$RELEASE_TAG")"
+          CHECKED_OUT_COMMIT="$(git rev-parse HEAD)"
+          if [ "$TAG_COMMIT" != "$CHECKED_OUT_COMMIT" ]; then
+            echo "checked out commit does not match the requested release tag" >&2
+            exit 1
+          fi
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "central_image=${REGISTRY}/${OWNER}/ainet-api" >> "$GITHUB_OUTPUT"
+          echo "edge_image=${REGISTRY}/${OWNER}/ainet-edge" >> "$GITHUB_OUTPUT"
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: edge/go.mod
+          cache-dependency-path: edge/go.sum
+
+      - name: Test Edge
+        working-directory: edge
+        run: go test -race ./...
+
+      - name: Build Edge binary
+        working-directory: edge
+        run: go build -trimpath -ldflags "-s -w" -o ainet-edge-linux ./cmd/ainet-edge
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.7.0
+
+      - name: Build and push Central
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile.release
+          push: true
+          tags: ${{ steps.meta.outputs.central_image }}:${{ steps.meta.outputs.tag }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Build and push Edge
+        uses: docker/build-push-action@v6
+        with:
+          context: edge
+          file: edge/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.edge_image }}:${{ steps.meta.outputs.tag }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Install Syft
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ steps.meta.outputs.central_image }}:${{ steps.meta.outputs.tag }}
+          format: cyclonedx-json
+          output-file: central-sbom.json
+          upload-artifact: false
+
+      - name: Generate Edge SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ steps.meta.outputs.edge_image }}:${{ steps.meta.outputs.tag }}
+          format: cyclonedx-json
+          output-file: edge-sbom.json
+          upload-artifact: false
+
+      - name: Sign and attest Central and Edge images
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+          CENTRAL_IMAGE: ${{ steps.meta.outputs.central_image }}:${{ steps.meta.outputs.tag }}
+          EDGE_IMAGE: ${{ steps.meta.outputs.edge_image }}:${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          for name in central edge; do
+            if [ "$name" = central ]; then
+              IMAGE="$CENTRAL_IMAGE"
+              SBOM="central-sbom.json"
+            else
+              IMAGE="$EDGE_IMAGE"
+              SBOM="edge-sbom.json"
+            fi
+            DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest.Digest}}' | tr -d '"')"
+            REF="${IMAGE%@*}@${DIGEST}"
+            cosign sign --yes "$REF"
+            cosign attest --yes --predicate "$SBOM" --type cyclonedx "$REF"
+            echo "${name}_ref=$REF" >> "$GITHUB_ENV"
+          done
+
+      - name: Verify Central and Edge signatures and SBOM attestations
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set -euo pipefail
+          for ref in "$central_ref" "$edge_ref"; do
+            echo "Verifying signature: $ref"
+            timeout --signal=TERM 180s cosign verify "$ref" \
+              --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+              --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+            echo "Verifying CycloneDX attestation: $ref"
+            timeout --signal=TERM 180s cosign verify-attestation "$ref" --type cyclonedx \
+              --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+              --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          done
+
+      - name: Generate release manifest evidence
+        env:
+          RELEASE_TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          central_ref="${central_ref:?central_ref was not exported}"
+          edge_ref="${edge_ref:?edge_ref was not exported}"
+          central_digest="${central_ref##*@}"
+          edge_digest="${edge_ref##*@}"
+          central_sbom_sha="$(sha256sum central-sbom.json | awk '{print $1}')"
+          edge_sbom_sha="$(sha256sum edge-sbom.json | awk '{print $1}')"
+          edge_binary_sha="$(sha256sum edge/ainet-edge-linux | awk '{print $1}')"
+          jq -n \
+            --arg version "$RELEASE_TAG" \
+            --arg commit "${GITHUB_SHA}" \
+            --arg created_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg central "$central_ref" \
+            --arg central_digest "$central_digest" \
+            --arg edge "$edge_ref" \
+            --arg edge_digest "$edge_digest" \
+            --arg central_sbom_sha "$central_sbom_sha" \
+            --arg edge_sbom_sha "$edge_sbom_sha" \
+            --arg edge_binary_sha "$edge_binary_sha" \
+            '{schema_version:1,release:{version:$version,git_commit:$commit,created_at:$created_at,approved_by:"<CONFIGURE_OPERATOR_OR_CHANGE_REFERENCE>",licensing_decision:"<CONFIGURE_APPROVED_LICENSING_REFERENCE>"},artifacts:{central_image:($central+"@"+$central_digest),edge_image:($edge+"@"+$edge_digest),edge_binary:{version:$version,sha256:$edge_binary_sha,signature_reference:"cosign-attestation-on-edge-image"}},sbom:{format:"CycloneDX JSON",central_path:"central-sbom.json",central_sha256:$central_sbom_sha,edge_path:"edge-sbom.json",edge_sha256:$edge_sbom_sha,generated_by:"anchore/sbom-action@v0"},verification:{workflow_run:"https://github.com/"+env.GITHUB_REPOSITORY+"/actions/runs/"+env.GITHUB_RUN_ID},secrets_logged:false,production_ready:false}' \
+            > "release-manifest-${RELEASE_TAG}.json"
+
+      - name: Publish release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-evidence-${{ steps.meta.outputs.tag }}
+          path: |
+            central-sbom.json
+            edge-sbom.json
+            release-manifest-${{ steps.meta.outputs.tag }}.json

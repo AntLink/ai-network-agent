@@ -3,7 +3,11 @@ import os
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 
-GNS3_DEFAULT_CONTROLLER = os.getenv("GNS3_CONTROLLER_URL", "http://172.21.0.2/v2")
+from app.core.config import settings
+
+GNS3_DEFAULT_CONTROLLER = settings.GNS3_CONTROLLER_URL if settings.GNS3_CONTROLLER_URL else os.getenv(
+    "GNS3_CONTROLLER_URL", "http://localhost:3080/v2"
+)
 
 
 # ------------------------------------------------------------------

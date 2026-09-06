@@ -25,6 +25,8 @@ from app.drivers.cisco.cli import clean_cli_output
 # prompts carry a SPACE before the marker ("FortiFirewall-VM64-KVM # "), so an
 # optional whitespace run is allowed before the closing [#>].
 PROMPT_RE = re.compile(r"[A-Za-z0-9().$\-#]+(?:\s+)?[#>]\s*$")
+# BusyBox/Alpine shell prompt, e.g. `localhost:~#` or `root@alpine:~#`.
+SHELL_PROMPT_RE = re.compile(r"(?:[A-Za-z0-9._-]+@)?[A-Za-z0-9._-]+:[^\r\n#>]*[#>]\s*$")
 # RouterOS prompt: [admin@MikroTik] >  (atau dengan menu, mis. [admin@MikroTik] /ip >)
 ROUTEROS_PROMPT_RE = re.compile(r"\]\s*>\s*$")
 # Tail-anchored variants (match only at END of received stream):
@@ -209,6 +211,7 @@ class ConsoleTransport:
         while lines and (
             not lines[-1].strip()
             or ROUTEROS_PROMPT_RE.search(lines[-1].strip())
+            or SHELL_PROMPT_RE.search(lines[-1].strip())
             or PROMPT_RE.search(lines[-1].strip())
             or MORE_RE.search(lines[-1].strip())
         ):
@@ -425,15 +428,14 @@ class ConsoleTransport:
             ("confirm", CONFIRM_ANYWHERE_RE),
             ("more", MORE_RE),
             ("prompt", ROUTEROS_PROMPT_RE),
+            ("prompt", SHELL_PROMPT_RE),
             ("prompt", PROMPT_RE),
         )
         while time.perf_counter() < deadline:
             window = self.buf[self._pos:]
-            for name, rx in patterns:
-                m = rx.search(window)
-                if m:
-                    self._pos += m.end()
-                    return name
+            # RouterOS can render a prompt one character per line. Compact
+            # detection must run before generic prompt matching, otherwise
+            # the trailing `>` is mistaken for an ordinary prompt.
             compact = re.sub(r"[\s\x00-\x1f\ufffd]+", "", window).lower()
             if (
                 "newpassword:" in compact
@@ -445,6 +447,11 @@ class ConsoleTransport:
             ):
                 self._pos = len(self.buf)
                 return "newpass"
+            for name, rx in patterns:
+                m = rx.search(window)
+                if m:
+                    self._pos += m.end()
+                    return name
             chunk = await self._recv_chunk(timeout=0.4)
             local += chunk
         raise ConsoleTimeoutError(f"no expected pattern within {timeout}s; tail={local[-200:]!r}")

@@ -107,6 +107,9 @@ export interface Task {
   duration: string
   user: string
   agent: string
+  executionLocation?: 'CENTRAL' | 'EDGE' | 'LAB'
+  attemptId?: string
+  output?: unknown
 }
 
 export interface TaskStep {

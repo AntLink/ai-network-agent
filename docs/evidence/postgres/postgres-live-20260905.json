@@ -1,0 +1,29 @@
+{
+  "evidence_version": 1,
+  "captured_at": "2026-09-05",
+  "environment": "local PostgreSQL 18 staging instance",
+  "database": "postgres",
+  "status": "PASS",
+  "migration": {
+    "file": "backend/migrations/001_task_attempts.sql",
+    "result": "APPLIED_IDEMPOTENTLY",
+    "table": "task_attempts"
+  },
+  "tests": {
+    "command": "RUN_LIVE_POSTGRES=1 pytest backend/tests/test_postgres_live.py -q",
+    "result": "2 passed",
+    "covered": [
+      "concurrent single-owner dispatch claim",
+      "lease renewal",
+      "expired attempt recovery"
+    ]
+  },
+  "restore_drill": {
+    "status": "PASS",
+    "method": "custom-format data dump restored into an isolated temporary database",
+    "sentinel_verified": true,
+    "temporary_database_removed": true,
+    "dump_removed": true
+  },
+  "secrets_disclosure": "none"
+}

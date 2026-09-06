@@ -26,6 +26,20 @@ def test_clean_removes_routeros_private_ansi_sequences():
     assert ConsoleTransport.clean(raw) == "MikroTik Login:"
 
 
+def test_expect_detects_alpine_shell_prompt():
+    async def run():
+        transport = ConsoleTransport("127.0.0.1", 5000)
+        transport.buf = "localhost:~#"
+        assert await transport.expect(timeout=0.1) == "prompt"
+
+    asyncio.run(run())
+
+
+def test_clean_command_output_removes_alpine_shell_prompt():
+    raw = "localhost:~# echo READY\nREADY\nlocalhost:~#"
+    assert ConsoleTransport.clean_command_output(raw, "echo READY") == "READY"
+
+
 def test_telnet_negotiation_does_not_reply_to_duplicate_options():
     transport = ConsoleTransport("127.0.0.1", 5000)
     writer = DummyWriter()

@@ -11,11 +11,28 @@ import configparser
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import aiohttp
 
 from app.core.audit import log_event
+
+
+def _resolve_console_host(node_host: str | None, controller_url: str | None) -> str | None:
+    """Ganti console_host 0.0.0.0/localhost dengan host controller GNS3.
+
+    Saat GNS3 berjalan di server/VM remote (mis. 172.21.0.2), node
+    melaporkan console_host='0.0.0.0' karena socket console sebenarnya
+    hidup di controller/compute. Hubungkan ke host controller agar telnet
+    sampai ke port console yang diteruskan.
+    """
+    if node_host and node_host not in ("0.0.0.0", "localhost", "::1", ""):
+        return node_host
+    if controller_url:
+        parsed = urlparse(controller_url)
+        if parsed.hostname:
+            return parsed.hostname
+    return node_host
 
 
 class GNS3Error(Exception):
@@ -36,13 +53,13 @@ class GNS3Driver:
     def __init__(self, config: Dict[str, Any]):
         """
         config keys:
-          - controller_url: "http://172.21.0.2/v2" (default)
+          - controller_url: dari .env GNS3_CONTROLLER_URL (default lokal) atau payload
           - compute_url: "http://<vm-ip>/v2" (optional, for compute ops)
           - username: "admin" (default)
           - password: from gns3_server.ini or explicit
           - verify_ssl: False (default, for self-signed)
         """
-        self.controller_url = config.get("controller_url") or os.getenv("GNS3_CONTROLLER_URL", "http://172.21.0.2/v2")
+        self.controller_url = config.get("controller_url") or os.getenv("GNS3_CONTROLLER_URL", "http://localhost:3080/v2")
         self.compute_url = config.get("compute_url")
         self.username = config.get("username", "admin")
         self.password = config.get("password") or self._load_password_from_ini()
@@ -165,6 +182,28 @@ class GNS3Driver:
         await asyncio.sleep(1)
         return await self.start_node(project_id, node_id)
 
+    async def reload_docker_node(self, project_id: str, node_id: str) -> Dict:
+        """Recreate a Docker node through the GNS3 compute Docker API."""
+        return await self._post(f"compute/projects/{project_id}/docker/nodes/{node_id}/reload")
+
+    async def stop_docker_node(self, project_id: str, node_id: str) -> Dict:
+        return await self._post(f"compute/projects/{project_id}/docker/nodes/{node_id}/stop")
+
+    async def start_docker_node(self, project_id: str, node_id: str) -> Dict:
+        return await self._post(f"compute/projects/{project_id}/docker/nodes/{node_id}/start")
+
+    async def delete_docker_node_instance(self, project_id: str, node_id: str) -> None:
+        """Delete only the compute-side Docker container instance.
+
+        The controller node and its project topology remain intact.  This is
+        useful when a Docker image or bootstrap command changed and GNS3's
+        start/reload operation retained an already-created container.
+        """
+        await self._delete(
+            f"compute/projects/{project_id}/docker/nodes/{node_id}",
+            base="controller",
+        )
+
     async def delete_node(self, project_id: str, node_id: str) -> None:
         await self._delete(f"projects/{project_id}/nodes/{node_id}")
 
@@ -181,7 +220,7 @@ class GNS3Driver:
         """
         node = await self.get_node(project_id, node_id)
         return {
-            "host": node.get("console_host"),
+            "host": _resolve_console_host(node.get("console_host"), self.controller_url),
             "port": node.get("console"),
             "type": node.get("console_type", "telnet"),
         }

@@ -9,10 +9,14 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from fastapi.responses import FileResponse
 
 from app.core.config import settings
+from app.core.audit import log_event
+from app.repositories.inventory import inventory_repository
+from app.drivers.factory import get_driver
+from app.services.backup_restore import RestoreError, plan_restore
 
 router = APIRouter()
 
@@ -116,3 +120,63 @@ async def delete_backup(backup_id: str):
     if path.exists():
         path.unlink()
     return {"status": "deleted", "backup_id": backup_id}
+
+
+@router.post("/{backup_id}/restore")
+async def restore_backup(
+    backup_id: str,
+    operator_identity: str | None = Header(default=None, alias="X-Authenticated-Operator"),
+    operator_role: str | None = Header(default=None, alias="X-Operator-Role"),
+):
+    """Plan a config restore from a saved backup to its device (fail-closed).
+
+    Requires a `network-admin` operator identity. Returns the deterministic
+    restore plan and records an audit event. Live device application is a
+    separate privileged executor step; this endpoint validates eligibility and
+    authorization without pushing config in an unverified path.
+    """
+    if not operator_identity:
+        raise HTTPException(status_code=401, detail="authenticated operator identity is required")
+    if operator_role != "network-admin":
+        raise HTTPException(status_code=403, detail="network-admin role is required")
+
+    backup_id = _safe_backup_id(backup_id)
+    path = BACKUP_DIR / f"{backup_id}.cfg"
+    device_id = ""
+    try:
+        # The backup stem is `backup-<device_id>-<timestamp>`; recover device id.
+        stem = Path(backup_id).stem
+        if stem.startswith("backup-"):
+            device_id = stem[len("backup-"):].rsplit("-", 1)[0]
+        device = inventory_repository.get_device(device_id) if device_id else None
+        driver = get_driver(device) if device else None
+        plan = plan_restore(
+            backup_id=backup_id,
+            backup_path=path,
+            device=device,
+            driver=driver,
+        )
+    except RestoreError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    log_event(
+        device_id=plan.device_id,
+        action="BACKUP-RESTORE-PLAN",
+        command=f"restore:{backup_id}",
+        result="planned",
+        user=operator_identity,
+        status="PLANNED",
+        error=None,
+    )
+    return {
+        "status": "planned",
+        "restore": {
+            "backup_id": plan.backup_id,
+            "device_id": plan.device_id,
+            "device_vendor": plan.device_vendor,
+            "lines": plan.lines,
+            "bytes": plan.bytes,
+            "action": plan.action,
+            "note": plan.note,
+        },
+    }

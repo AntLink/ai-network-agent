@@ -1,9 +1,10 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import devices, config, monitoring, topology, audit, mikrotik, cisco, aruba, asa, ruijie, fortigate, gns3, policy, terminal, tasks, alerts, backups, agent, credentials, settings, discovery, containerlab, ninerouter, agent_sessions
+from app.api.v1.endpoints import devices, config, monitoring, topology, audit, mikrotik, cisco, aruba, asa, ruijie, fortigate, gns3, policy, terminal, tasks, alerts, backups, agent, credentials, settings, discovery, containerlab, ninerouter, agent_sessions, edge_control, edge_updates
 
 api_router = APIRouter()
 api_router.include_router(devices.router, prefix="/devices", tags=["devices"])
 api_router.include_router(config.router, prefix="/config", tags=["config"])
+api_router.include_router(edge_updates.router, prefix="/edge-updates", tags=["edge-updates"])
 api_router.include_router(monitoring.router, prefix="/monitoring", tags=["monitoring"])
 api_router.include_router(topology.router, prefix="/topology", tags=["topology"])
 api_router.include_router(audit.router, prefix="/audit", tags=["audit"])
@@ -26,3 +27,4 @@ api_router.include_router(settings.router, prefix="/settings", tags=["settings"]
 api_router.include_router(discovery.router, prefix="/discovery", tags=["discovery"])
 api_router.include_router(containerlab.router, prefix="/containerlab", tags=["containerlab"])
 api_router.include_router(ninerouter.router, prefix="/ninerouter", tags=["ninerouter"])
+api_router.include_router(edge_control.router, tags=["edge-control"])

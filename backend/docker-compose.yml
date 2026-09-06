@@ -9,3 +9,61 @@ services:
       - ../inventory:/inventory
       - ../backups:/backups
       - ../logs:/logs
+
+  mtls-gateway:
+    profiles: ["mtls"]
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: deploy/mtls/Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "8443:9445"
+    command:
+      - "--cert=/etc/ainet/pki/central.crt"
+      - "--key=/etc/ainet/pki/central.key"
+      - "--ca=/etc/ainet/pki/ca.crt"
+      - "--revocation-state=/app/logs/edge-certificate-revocations.json"
+      - "--listen-host=0.0.0.0"
+      - "--listen-port=9445"
+      - "--upstream-host=api"
+      - "--upstream-port=8000"
+    volumes:
+      - ../runtime/mtls:/etc/ainet/pki:ro
+      - ../logs:/app/logs:ro
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; assert urllib.request.urlopen('http://127.0.0.1:9090/ready', timeout=2).status == 200"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+
+  nginx-staging:
+    profiles: ["nginx-staging"]
+    build:
+      context: ..
+      dockerfile: deploy/mtls/nginx.Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "9444:8443"
+    volumes:
+      - ../runtime/mtls:/etc/ainet/pki:ro
+      - ../deploy/mtls/nginx-staging.conf:/etc/nginx/nginx.conf:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:rw,noexec,nosuid,size=16m
+      - /var/run:rw,noexec,nosuid,size=1m
+    security_opt:
+      - no-new-privileges:true

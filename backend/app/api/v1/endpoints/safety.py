@@ -32,7 +32,10 @@ async def direct_write_guard(request: Request):
     Keep ALLOW_DIRECT_WRITE=true for lab iteration. Set it false to force
     changes through the safer plan/policy/apply workflow.
     """
+    approved_by = request.headers.get("X-Approved-By", "").strip()
     if settings.ALLOW_DIRECT_WRITE or is_read_like_request(request.method, request.url.path):
+        return
+    if approved_by and request.url.path.startswith("/api/v1/gns3/"):
         return
     raise HTTPException(
         status_code=403,

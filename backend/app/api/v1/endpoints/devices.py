@@ -32,6 +32,10 @@ class DeviceCreateRequest(BaseModel):
     os_version: str | None = None
     uptime: str | None = None
     privilege_level: str | None = None
+    execution_location: str | None = None
+    customer_id: str | None = None
+    site_id: str | None = None
+    edge_id: str | None = None
 
 
 class DeviceUpdateRequest(BaseModel):
@@ -53,7 +57,10 @@ class DeviceUpdateRequest(BaseModel):
     os_version: str | None = None
     uptime: str | None = None
     privilege_level: str | None = None
-
+    execution_location: str | None = None
+    customer_id: str | None = None
+    site_id: str | None = None
+    edge_id: str | None = None
 
 @router.get("")
 async def list_devices(
@@ -112,6 +119,14 @@ async def create_device(payload: DeviceCreateRequest):
         device["uptime"] = payload.uptime.strip()
     if payload.privilege_level:
         device["privilege_level"] = payload.privilege_level.strip()
+    if payload.execution_location:
+        device["execution_location"] = payload.execution_location.strip()
+    if payload.customer_id:
+        device["customer_id"] = payload.customer_id.strip()
+    if payload.site_id:
+        device["site_id"] = payload.site_id.strip()
+    if payload.edge_id:
+        device["edge_id"] = payload.edge_id.strip()
 
     created = inventory_repository.create_device(device)
     return created

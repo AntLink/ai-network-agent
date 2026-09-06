@@ -1,0 +1,27 @@
+{
+  "milestone": "m4-production-operations",
+  "component": "monitoring-alerts",
+  "timestamp_utc": "2026-09-04T02:42:00Z",
+  "implementation": {
+    "engine": "backend/app/services/monitoring_alerts.py",
+    "endpoint": "POST /api/v1/alerts/evaluate",
+    "rules": "backend/app/api/v1/endpoints/alerts.py (default CPU/memory thresholds)"
+  },
+  "unit_tests": "backend/tests/test_monitoring_alerts.py (8 tests) - PASS",
+  "live_api": {
+    "request": {"device_id": "r1-m1", "metrics": {"cpu": 96, "memory": 85}},
+    "status": 200,
+    "evaluated": 3,
+    "alerts": [
+      {"metric": "cpu", "severity": "critical", "message": "CPU utilization above 90%", "value": 96.0},
+      {"metric": "cpu", "severity": "warn", "message": "CPU utilization above 75%", "value": 96.0},
+      {"metric": "memory", "severity": "warn", "message": "Memory utilization above 80%", "value": 85.0}
+    ]
+  },
+  "remaining_m4_gaps": [
+    "signed Edge binary update + canary + rollback",
+    "backup/restore drill (DB/controller/PKI) + restore endpoint",
+    "complete deterministic production deployment runbook",
+    "monitoring collector/poller + persistence + notification"
+  ]
+}
