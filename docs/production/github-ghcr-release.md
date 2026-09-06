@@ -22,7 +22,8 @@ release commit. It uses:
    digests, SBOM hash, and licensing approval reference from workflow evidence.
 5. Dispatch `Release build, SBOM and signing` manually with an immutable
    release tag. The workflow accepts only `vMAJOR.MINOR.PATCH` tags and checks
-   that the checked-out commit exactly matches that tag.
+   that the checked-out commit exactly matches that tag. This comparison uses
+   the checked-out commit, not the dispatch ref's `GITHUB_SHA`.
 6. Confirm the workflow's signer identity and OIDC issuer match the release
    policy before deployment.
 
