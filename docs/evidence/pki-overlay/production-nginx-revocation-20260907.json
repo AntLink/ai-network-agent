@@ -1,0 +1,23 @@
+{
+  "evidence_type": "production_mtls_terminator_revocation",
+  "timestamp_utc": "2026-09-06T17:45:00Z",
+  "host": "192.168.210.51",
+  "hostname": "edge-control.antlinx.com",
+  "terminator": "nginx",
+  "configuration": {
+    "ssl_verify_client": true,
+    "ssl_client_certificate": "/etc/ainet/pki/edge-client-ca.crt",
+    "ssl_crl": "/etc/ainet/pki/edge-client-ca.crl",
+    "reload": "nginx -t passed; systemctl reload nginx passed"
+  },
+  "probe": {
+    "subject": "edge-revocation-probe-20260907",
+    "serial": "1002",
+    "action": "certificate issued, revoked by production CA, CRL regenerated, Nginx reloaded",
+    "result": "HTTP 400 SSL certificate error at Nginx; request did not reach Central",
+    "central_forwarded": false
+  },
+  "secrets_logged": false,
+  "production_ready": false,
+  "notes": "Disposable probe key/certificate were removed after the test. The active edge-prod-001 certificate was not revoked. Overlay deauthorization and full production gate remain separate requirements."
+}

@@ -3,13 +3,15 @@
 Required evidence: certificate serial/fingerprint revocation, active-session
 disconnect, future handshake rejection, and overlay member deauthorization.
 
-Current status: **NOT READY**. Central application-layer certificate
+Current status: **PARTIAL**. Central application-layer certificate
 invalidation is proven with a disposable mTLS certificate, the dynamic
 gateway harness closed a revoked connection before HTTP without a restart,
 and the private controller/client test observed `ACCESS_DENIED` with no
 assigned overlay IP after deauthorization. A disposable Nginx deployment test
 did not reject the same CRL certificate and forwarded the request, so the
-production TLS-terminator deployment remains unproven.
+production TLS-terminator deployment is now proven on the approved Ubuntu
+host: `production-nginx-revocation-20260907.json` records Nginx returning HTTP
+400 before forwarding a revoked probe certificate to Central.
 
 Controller evidence is available at
 `zerotier-controller-ubuntu1-20260905.json`: the private controller is ready
@@ -38,8 +40,9 @@ Next-session acceptance sequence:
    state and connect revoke enforcement to the mTLS handshake path.
 3. Revoke a disposable lab Edge, verify active-session disconnect and future
    HELLO rejection, then deauthorize its overlay member. This Central
-   application-layer and private-controller/client sequence is now proven;
-   TLS-terminator-level rejection remains a separate deployment test.
+   application-layer, TLS-terminator, and private-controller/client sequence
+   is now proven in separate evidence; active-session disconnect and a single
+   combined production drill remain to be captured.
 4. Save redacted evidence under this directory and update
    `docs/production/production-gate.json` only after the live command is
    repeatable.

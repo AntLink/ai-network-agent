@@ -135,10 +135,26 @@ cd edge && go test ./...
   --key-file /opt/ainet-edge/edge.key --keystore-file /opt/ainet-edge/keystore.json \
   --journal-file /opt/ainet-edge/journal.json
 ```
+- For a Linux production Edge, install the version-controlled unit
+  `edge/installers/systemd/ainet-edge.service`. Create the root-owned
+  `/etc/ainet-edge/ainet-edge.env` with mode `600` and set only the approved
+  non-secret argument string (control URL, Edge ID, certificate paths,
+  keystore path, and journal path). Create a dedicated `ainet-edge` system
+  user, keep private keys/keystore readable only by that user, then run:
+```text
+systemctl daemon-reload
+systemctl enable --now ainet-edge
+systemctl is-active ainet-edge
+journalctl -u ainet-edge --no-pager -n 50
+```
+- Do not install this service on the Central host by assumption. The service
+  belongs on the approved customer-local Edge host; if Central and Edge are
+  intentionally colocated, record that topology decision and its blast-radius
+  review in the deployment evidence.
 - For client-mode Edge connecting through the production Nginx mTLS endpoint,
   set the public TLS name explicitly (the default `central` is for the lab):
 ```text
-ainet-edge.exe --control-url https://edge-control.antlinx.com \
+ainet-edge.exe --control-url https://edge-control.antlinx.com/api \
   --control-server-name edge-control.antlinx.com --edge-id edge-001 \
   --boot-id <unique-boot-id> --ca-file <edge-client-ca.crt> \
   --cert-file <edge-001.crt> --key-file <edge-001.key> \
@@ -341,3 +357,19 @@ python3 deploy/production/preflight.py \
   any temporary provisioning credentials.
 - Re-run the preflight after any host-level change and record the verdict
   plus evidence in `docs/evidence/production-gates/`.
+
+### 19.5 Central inventory persistence
+
+- The current canonical inventory repository is the JSON file at
+  `/inventory/devices.json` inside the Central container. Production Central
+  must bind-mount the host directory `/etc/ainet/inventory` to `/inventory`:
+  `-v /etc/ainet/inventory:/inventory`.
+- Before the first replacement/restart, copy the existing inventory out of
+  the container, restrict the host file to the service administrator (`chmod
+  600`), and verify that it contains the expected device identities.
+- Never run the production Central container without this mount; container
+  replacement otherwise loses device registrations. After a restart, verify
+  `/health` and retrieve at least one known device by its scoped `device_id`.
+- Back up `/etc/ainet/inventory/devices.json` with the production backup set.
+  Inventory contains topology metadata and must not be used as a credential
+  store; credentials remain Edge-local and referenced by `credential_ref`.
