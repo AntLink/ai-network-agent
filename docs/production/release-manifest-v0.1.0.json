@@ -5,7 +5,7 @@
     "git_commit": "77b88948bb82b7dd1d74ae3c9a0a5477953b42bd",
     "created_at": "2026-09-06T10:50:27Z",
     "approved_by": "mohfa (operator, 2026-09-06)",
-    "licensing_decision": "mohfa (operator, 2026-09-06)"
+    "licensing_decision": "LIC-2026-09-06-INTERNAL-STAGING"
   },
   "artifacts": {
     "central_image": "ghcr.io/antlink/ainet-api:v0.1.0@sha256:b50c1f40b2355d8a3592da15672cef5d1e3051075c8e8132326a523a2725c10c",
