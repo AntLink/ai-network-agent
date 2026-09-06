@@ -34,7 +34,7 @@ type FactsRequest struct {
 
 func factsCommand(vendor string) string {
 	if vendor == "mikrotik" || vendor == "routeros" {
-		return "/system/resource/print"
+		return "/system resource print"
 	}
 	return "show version"
 }
