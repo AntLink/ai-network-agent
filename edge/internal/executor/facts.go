@@ -131,12 +131,7 @@ func (e FactsExecutor) executeWithGoSSH(ctx context.Context, req FactsRequest, c
 		return "", fmt.Errorf("facts connector session failed: %w", err)
 	}
 	defer session.Close()
-	var out []byte
-	if req.Vendor == "mikrotik" || req.Vendor == "routeros" {
-		out, err = executeRouterOSShell(session, factsCommand(req.Vendor))
-	} else {
-		out, err = session.Output(factsCommand(req.Vendor))
-	}
+	out, err := session.Output(factsCommand(req.Vendor))
 	if err != nil {
 		return "", fmt.Errorf("facts connector command failed: %w", err)
 	}
