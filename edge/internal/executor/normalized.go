@@ -1,6 +1,9 @@
 package executor
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 var (
 	ciscoVersionRE = regexp.MustCompile(`Cisco IOS Software.*Version\s+([^,\s]+)`)
@@ -21,6 +24,22 @@ func NormalizeCiscoFacts(raw string) map[string]interface{} {
 	}
 	if match := ciscoImageRE.FindStringSubmatch(raw); len(match) == 2 {
 		result["image_file"] = match[1]
+	}
+	return result
+}
+
+// NormalizeRouterOSFacts preserves stable key/value facts from RouterOS.
+func NormalizeRouterOSFacts(raw string) map[string]interface{} {
+	result := map[string]interface{}{"vendor": "mikrotik", "platform": "routeros"}
+	for _, line := range strings.Split(raw, "\n") {
+		line = strings.TrimSpace(line)
+		if i := strings.Index(line, ":"); i > 0 {
+			key := strings.TrimSpace(line[:i])
+			value := strings.TrimSpace(line[i+1:])
+			if key != "" && value != "" {
+				result[key] = value
+			}
+		}
 	}
 	return result
 }

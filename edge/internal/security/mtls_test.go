@@ -17,3 +17,12 @@ func TestTLSMinimumIsTLS13(t *testing.T) {
 		t.Fatal("unexpected Go TLS constant")
 	}
 }
+
+func TestClientServerNameDefaultsAndCanBeOverridden(t *testing.T) {
+	if serverName := clientServerName(""); serverName != "central" {
+		t.Fatalf("default server name=%q", serverName)
+	}
+	if serverName := clientServerName("edge-control.antlinx.com"); serverName != "edge-control.antlinx.com" {
+		t.Fatalf("configured server name=%q", serverName)
+	}
+}

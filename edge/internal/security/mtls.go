@@ -33,6 +33,9 @@ type MTLSFiles struct {
 	CAFile          string
 	CertificateFile string
 	PrivateKeyFile  string
+	// ServerName is the DNS name validated against the Central certificate.
+	// It defaults to the historical lab name when empty.
+	ServerName string
 }
 
 func loadCA(path string) (*x509.CertPool, error) {
@@ -47,6 +50,21 @@ func loadCA(path string) (*x509.CertPool, error) {
 	return pool, nil
 }
 
+func loadServerRoots(path string) (*x509.CertPool, error) {
+	pool, err := x509.SystemCertPool()
+	if err != nil || pool == nil {
+		pool = x509.NewCertPool()
+	}
+	pemData, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read server CA file: %w", err)
+	}
+	if !pool.AppendCertsFromPEM(pemData) {
+		return nil, fmt.Errorf("server CA file contains no certificate")
+	}
+	return pool, nil
+}
+
 func loadCertificate(files MTLSFiles) (tls.Certificate, error) {
 	cert, err := tls.LoadX509KeyPair(files.CertificateFile, files.PrivateKeyFile)
 	if err != nil {
@@ -57,7 +75,7 @@ func loadCertificate(files MTLSFiles) (tls.Certificate, error) {
 
 // ClientConfig requires mutual TLS and refuses insecure verification settings.
 func ClientConfig(files MTLSFiles) (*tls.Config, error) {
-	ca, err := loadCA(files.CAFile)
+	ca, err := loadServerRoots(files.CAFile)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +83,15 @@ func ClientConfig(files MTLSFiles) (*tls.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: ca, Certificates: []tls.Certificate{cert}, ServerName: "central"}, nil
+	serverName := clientServerName(files.ServerName)
+	return &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: ca, Certificates: []tls.Certificate{cert}, ServerName: serverName}, nil
+}
+
+func clientServerName(configured string) string {
+	if configured == "" {
+		return "central"
+	}
+	return configured
 }
 
 // ServerConfig requires a client certificate signed by the configured CA.

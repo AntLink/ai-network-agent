@@ -6,6 +6,10 @@ import hashlib
 import json
 from pathlib import Path
 from threading import Lock
+from urllib.parse import unquote
+
+from cryptography import x509
+from cryptography.hazmat.primitives.serialization import Encoding
 
 
 def normalize_fingerprint(value: str) -> str:
@@ -78,3 +82,13 @@ class CertificateRevocationRegistry:
 
 def certificate_fingerprint(certificate_der: bytes) -> str:
     return hashlib.sha256(certificate_der).hexdigest()
+
+
+def certificate_fingerprint_from_header(value: str) -> str:
+    """Derive the SHA-256 revocation key from Nginx's escaped PEM header."""
+    pem = unquote(value).replace("\\n", "\n")
+    try:
+        certificate = x509.load_pem_x509_certificate(pem.encode("ascii"))
+    except (ValueError, UnicodeError) as exc:
+        raise ValueError("client certificate header is invalid") from exc
+    return certificate_fingerprint(certificate.public_bytes(Encoding.DER))

@@ -414,6 +414,7 @@ async def execute_capability(payload: CapabilityRequest):
                 "device_id": payload.device_id,
                 "device_host": device.get("management_address"),
                 "device_port": device.get("management_port") or 22,
+                "device_vendor": device.get("vendor", ""),
             },
         )
         try:
