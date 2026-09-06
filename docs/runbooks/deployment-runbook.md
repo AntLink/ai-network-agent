@@ -135,6 +135,15 @@ cd edge && go test ./...
   --key-file /opt/ainet-edge/edge.key --keystore-file /opt/ainet-edge/keystore.json \
   --journal-file /opt/ainet-edge/journal.json
 ```
+- For client-mode Edge connecting through the production Nginx mTLS endpoint,
+  set the public TLS name explicitly (the default `central` is for the lab):
+```text
+ainet-edge.exe --control-url https://edge-control.antlinx.com \
+  --control-server-name edge-control.antlinx.com --edge-id edge-001 \
+  --boot-id <unique-boot-id> --ca-file <edge-client-ca.crt> \
+  --cert-file <edge-001.crt> --key-file <edge-001.key> \
+  --keystore-file <keystore.json> --journal-file <journal.json>
+```
 - Verify listener: `systemctl is-active ainet-edge` and `ss -ltnp | grep 9443`.
 - Enrollment (mTLS): Central outbound client performs HELLO/READY over TLS 1.3;
   evidence: `docs/evidence/m1-vertical-slice/`.

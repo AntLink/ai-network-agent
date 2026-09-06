@@ -2774,3 +2774,217 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   passed (one existing local pytest cache warning only).
 - Updated the preflight evidence, traceability row, and M4 session index from
   22 to 23 tests. Production readiness remains unchanged.
+
+### GHCR visibility recheck - 2026-09-06
+
+- Rechecked anonymous manifest access after the operator reported both images
+  were changed to public.
+- `ghcr.io/antlink/ainet-api:v0.1.0` and
+  `ghcr.io/antlink/ainet-edge:v0.1.0` still returned HTTP `401 Unauthorized`.
+- No authentication material was used. Deployment remains blocked until the
+  exact GHCR package settings/path are corrected or a secure read-only package
+  credential is provisioned on the production host.
+
+### GHCR token endpoint confirmation - 2026-09-06
+
+- Anonymous GHCR token requests for both configured image paths returned HTTP
+  `403 Forbidden`; manifest requests remained HTTP `401 Unauthorized`.
+- This confirms the configured paths are not currently anonymously pullable,
+  regardless of the reported visibility change. The exact package landing-page
+  URL/path must be confirmed before deployment.
+
+### GHCR authenticated metadata check - 2026-09-06
+
+- GitHub CLI login completed as `AntLink` with `read:packages` scope.
+- GitHub API confirms both exact package records are `public`:
+  `users/AntLink/packages/container/ainet-api` and
+  `users/AntLink/packages/container/ainet-edge`.
+- The registry endpoint still returns HTTP `401` for anonymous manifest access,
+  even though the API visibility field is public. Deployment must therefore
+  use a secure package credential or wait for/resolve the GHCR registry ACL
+  propagation/path discrepancy; the credential itself is not logged.
+
+### GHCR authenticated pull-path validation - 2026-09-06
+
+- Using the already authenticated GitHub CLI keyring session, a temporary
+  local Docker login succeeded and `docker manifest inspect` resolved
+  `ghcr.io/antlink/ainet-api:v0.1.0`.
+- The temporary local registry login was removed immediately with
+  `docker logout ghcr.io`; no token was written to the repository or session
+  logs.
+- Conclusion: image metadata exists and authenticated access works; the
+  production host still needs its own secure GHCR credential while anonymous
+  registry access continues to return `401`.
+
+### Production host GHCR authentication check - 2026-09-06
+
+- Read-only remote verification on Ubuntu `192.168.210.51` succeeded for both
+  immutable release tags:
+  `ainet-api:v0.1.0` -> `AINET_API_PULL_OK`; and
+  `ainet-edge:v0.1.0` -> `AINET_EDGE_PULL_OK`.
+- The server-side Docker credential is therefore valid for the configured
+  package paths. No credential value was recorded in this log.
+- Next gate: run the production preflight on the host with approved hostname,
+  production TLS certificate, revocation-policy path, and licensing reference.
+
+### Live production-host preflight - 2026-09-06
+
+- Uploaded only the non-secret preflight script, release manifest, and draft
+  revocation policy to `/tmp/ainet-preflight` on Ubuntu; no private key or
+  credential was transferred.
+- Executed the read-only preflight remotely with the authenticated root Docker
+  context. Result: `NOT-READY` (exit 1).
+- PASS: Docker active; no existing AINET containers; both immutable GHCR image
+  references resolve; revocation policy file present.
+- FAIL: approved hostname missing; production TLS certificate missing; AINET
+  default port `8000` is already bound; licensing reference missing.
+- WARN: host capacity review required (about 3337 MiB RAM and about 3336 MiB
+  swap used). Existing Nginx TCP 443 was detected and marked preserved.
+- No deployment was started. Next required inputs are the approved hostname,
+  production TLS certificate, listener allocation avoiding port 8000, approved
+  licensing reference, and capacity approval.
+- Read-only listener follow-up identified TCP 8000 as an existing Node process
+  (PID 338920). It was not stopped or modified.
+
+### Production hostname DNS check - 2026-09-06
+
+- Selected production hostname: `ainet.antlinx.com`.
+- Read-only DNS check from the workstation returned no A record; TCP 443
+  connectivity also failed because the hostname is not currently resolving.
+- No Nginx, DNS, or certificate configuration was changed. DNS A/AAAA
+  provisioning to the production host must occur before TLS issuance and
+  listener validation.
+
+### Cloudflare and DST-NAT path check - 2026-09-06
+
+- Public DNS now resolves `ainet.antlinx.com` to `36.88.39.234`, consistent
+  with the reported Cloudflare/DST-NAT path.
+- External HTTPS request reaches an Ubuntu Nginx server and returns HTTP 200,
+  but the response is the existing Nginx default page; it is not evidence that
+  AINET is routed or deployed.
+- No MikroTik rule was changed or inspected remotely. AINET listener routing
+  remains unconfigured; existing TCP 443 must be preserved and the upstream
+  target must be explicitly planned before deployment.
+
+### Production Nginx/TLS inventory - 2026-09-06
+
+- Read-only `nginx -T` inspection found existing HTTPS virtual hosts for
+  `api.antlinx.com`, `mail.antlinx.com`, and `webmail.antlinx.com`.
+- No certificate files were found in the inspected Let's Encrypt/Nginx paths
+  for reuse by AINET, and no AINET listener was bound on ports 8010, 8443, or
+  9443. TCP 8000 remains occupied by the existing Node process.
+- No Nginx reload, certificate change, port change, or MikroTik change was
+  performed. A dedicated AINET vhost and origin certificate are still needed.
+
+### Edge control hostname DNS check - 2026-09-06
+
+- `edge-control.antlinx.com` now resolves publicly to `36.88.39.234`.
+- Direct TCP `8443` is currently closed/unreachable. This is expected because
+  the AINET mTLS gateway is not deployed and no public 8443 forwarding was
+  enabled.
+- Recommended listener design remains public TCP 443 through the existing
+  Nginx vhost, proxying internally to the mTLS gateway; direct exposure of
+  8443 is unnecessary. Production client-CA/CRL material is still required.
+
+### Edge-control Nginx candidate - 2026-09-06
+
+- Added candidate snippet `deploy/production/nginx-edge-control.conf.example`
+  for `edge-control.antlinx.com`.
+- Design preserves existing TCP 443, uses the valid wildcard certificate,
+  requires Edge client mTLS, extracts the Edge CN, and proxies internally to
+  Central `127.0.0.1:8010`.
+- The snippet intentionally references production client CA/CRL paths and was
+  not installed, activated, or reloaded on Ubuntu. It cannot be promoted until
+  Central is listening and production PKI files are provisioned.
+
+### Production Edge client CA bootstrap - 2026-09-06
+
+- Added non-secret OpenSSL CA configuration template:
+  `deploy/production/openssl-edge-client-ca.cnf.example`.
+- Generated a new internal Edge client CA directly on Ubuntu under
+  `/etc/ainet/pki`; the CA private key is root-only and was not transferred
+  back to the workstation or recorded in logs.
+- Generated an initial CRL with a 30-day validity window. CA certificate
+  validity is five years; exact private material remains server-local.
+- No Edge certificate was issued yet. The next secure step is to generate an
+  Edge key/CSR on the Edge host, sign the CSR on the production server, and
+  install only the resulting client certificate plus CA public certificate on
+  the Edge/Nginx trust path.
+
+### Windows Edge production certificate issuance - 2026-09-06
+
+- Added `tools/generate_edge_csr.py`, which generated `edge-001.key` and
+  `edge-001.csr` under the Windows user profile outside the repository.
+- Windows ACL on the private key was restricted to the operator account.
+- Transferred the CSR only to Ubuntu and signed it with the production Edge
+  client CA. The private key never left Windows.
+- Retrieved only public material back to Windows: `edge-001.crt`,
+  `edge-client-ca.crt`, and `edge-client-ca.crl`.
+- No Edge binary was started and no Nginx/MikroTik configuration was changed.
+  The certificate cannot be used for live control-channel testing until
+  Central is deployed and the Nginx vhost is installed after review.
+
+### Central production runtime bootstrap - 2026-09-06
+
+- Applied `task_attempts` migration to the isolated PostgreSQL container.
+- Started Central from the verified GHCR image with production-oriented Redis
+  and PostgreSQL backends, direct writes disabled, and host binding restricted
+  to `127.0.0.1:8010`.
+- Central health check returned `{"status":"ok","service":"AI Network Agent API"}`.
+- Installed the `edge-control.antlinx.com` Nginx vhost and reloaded Nginx only
+  after `nginx -t` succeeded. Existing vhosts were preserved.
+- Public mTLS request from the same workstation timed out and produced no
+  Nginx access/error entry, indicating a network hairpin/DST-NAT path issue;
+  this is not yet live Edge evidence. No firewall or MikroTik rule was changed.
+
+### Edge production TLS-name compatibility - 2026-09-06
+
+- Inspected the Go Edge client entrypoint and mTLS implementation before
+  starting the Windows Edge process.
+- Found that client TLS verification hard-coded `ServerName: "central"`,
+  which is incompatible with the production certificate for
+  `edge-control.antlinx.com`.
+- Extended the existing mTLS file contract with an explicit server name and
+  added the `--control-server-name` flag. The lab default remains `central`;
+  production client mode must use `edge-control.antlinx.com`.
+- Added a regression test for the default/override behavior.
+- Verification: `go test ./...` from `edge/` passed for all five packages.
+- No client private key or credential was written to this log.
+- Next action: build/distribute the updated Edge binary, then run a live mTLS
+  connection test from a network path that avoids local hairpin NAT. Do not
+  mark LIVE-PKI-OVERLAY complete until Central receives a real Edge HELLO.
+
+### Production dependency inventory - 2026-09-06
+
+- Read-only inspection of Ubuntu found existing OpenHands and Frigate Docker
+  containers; no AINET container is running.
+- PostgreSQL and Redis system services are inactive, and no listeners were
+  found on ports 5432, 6379, 8010, or 8443.
+- AINET Central deployment therefore still requires isolated PostgreSQL and
+  Redis provisioning (or approved external endpoints), plus a production
+  environment file. No database, container, or existing application was
+  modified because the host has only about 3.3 GiB RAM with heavy swap use.
+
+### Production image pull and runtime inventory - 2026-09-06
+
+- Pulled the verified release images to Ubuntu successfully:
+  `ainet-api:v0.1.0` digest `sha256:38728ed0...`; and
+  `ainet-edge:v0.1.0` digest `sha256:ba4ff722...`.
+- Image inspection confirmed Linux `amd64`; Central starts Uvicorn on
+  container port 8000 and Edge is a Linux binary image.
+- No AINET container was started. Existing compose/image defaults are not a
+  production configuration because Redis, PostgreSQL, secret environment, and
+  listener isolation still need to be supplied.
+
+### Production dependency bootstrap - 2026-09-06
+
+- Created an isolated Docker network `ainet-prod` and persistent volumes for
+  PostgreSQL and Redis on Ubuntu.
+- Started `ainet-postgres` (`postgres:16-alpine`, memory limit 384 MiB) and
+  `ainet-redis` (`redis:7-alpine`, memory limit 128 MiB), with no host port
+  publication. Passwords were generated and stored only in root-readable
+  `/etc/ainet/central.env`; no secret value was logged or transferred.
+- Both containers report `healthy`. Existing OpenHands and Frigate containers
+  remain running and were not modified.
+- Central is still not started: its production environment, migrations, and
+  internal port 8010 binding must be prepared and validated next.
