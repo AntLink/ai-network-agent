@@ -1,0 +1,10 @@
+.pids.json
+.session-api-key
+automation.db
+logs/
+../runtime/deepseek-browser-profile/
+../runtime/deepseek-browser-generated/
+../runtime/chatgpt-browser-profile/
+../runtime/chatgpt-browser-generated/
+source/*/node_modules/
+source/*/build/

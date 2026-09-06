@@ -18,9 +18,8 @@ def load_json(path: Path) -> dict:
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
     gap_path = root / "docs/evidence/release-readiness/sbom-gap-20260906.json"
-    manifest_path = root / "docs/production/release-manifest-v0.1.0.json"
-    if not manifest_path.exists():
-        manifest_path = root / "docs/production/release-manifest.template.json"
+    manifests = sorted((root / "docs/production").glob("release-manifest-v*.json"), reverse=True)
+    manifest_path = manifests[0] if manifests else root / "docs/production/release-manifest.template.json"
     if not gap_path.exists():
         return [f"missing evidence: {gap_path}"]
     if not manifest_path.exists():
