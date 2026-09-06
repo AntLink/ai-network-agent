@@ -167,7 +167,7 @@ jobs:
             > "release-manifest-${RELEASE_TAG}.json"
 
       - name: Publish release evidence
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: release-evidence-${{ steps.meta.outputs.tag }}
           path: |
