@@ -2711,3 +2711,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   `LIC-2026-09-06-INTERNAL-STAGING`.
 - Production readiness remains intentionally false pending production PKI and
   signed Edge binary binding evidence.
+
+### Edge binary keyless signing - 2026-09-06
+
+- Added a Cosign keyless `sign-blob` step for `edge/ainet-edge-linux`.
+- The workflow immediately verifies the binary bundle with the GitHub Actions
+  certificate identity and OIDC issuer, then publishes the bundle with the
+  release evidence artifact.
+- The release manifest now records the binary signature bundle path and its
+  SHA-256, binding the exact binary hash to a transparency-log-backed bundle.
+- This change requires a new workflow run and fresh release evidence; the
+  previous Run #21 artifact remains an older candidate and is not retroactively
+  upgraded.
