@@ -2487,6 +2487,16 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   transparency-log and certificate verification; no insecure tlog bypass was
   introduced.
 
+### Cosign process-group watchdog - 2026-09-06
+
+- The workflow still hung after Cosign printed successful attestation
+  verification, despite native and shell timeouts.
+- Added `tools/verify_cosign_attestation.py`, which launches Cosign in its own
+  process group and force-kills the group after the bounded timeout.
+- Central and Edge verification jobs now checkout only this helper using sparse
+  checkout and invoke it for CycloneDX attestation verification.
+- No transparency-log or certificate checks were disabled.
+
 ### Confirmed jq manifest error from GitHub run - 2026-09-06
 
 - The rerun failed with `jq: syntax error, unexpected '+', expecting '}'`
