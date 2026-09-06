@@ -2447,6 +2447,17 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   manifest publication remains a production approval requirement.
 - Validation: workflow YAML parse passed and `git diff --check` passed.
 
+### Release manifest generation failure remediation - 2026-09-06
+
+- A workflow run reached manifest generation and failed with exit code 3; the
+  subsequent checkout exit code 128 was a cleanup annotation after job failure.
+- Simplified manifest generation by passing the workflow URL explicitly to jq
+  instead of constructing it through jq's environment object.
+- Corrected image reference assembly so the immutable digest is appended once,
+  not duplicated.
+- Node.js 20 deprecation annotations remain warnings from third-party actions;
+  they are tracked separately from the manifest failure.
+
 ### Cosign verification timeout hardening - 2026-09-06
 
 - Added a 180-second timeout around each Central/Edge Cosign signature and

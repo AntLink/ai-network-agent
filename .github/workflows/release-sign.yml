@@ -146,6 +146,8 @@ jobs:
           edge_ref="${EDGE_REF:?edge_ref was not exported}"
           central_digest="${central_ref##*@}"
           edge_digest="${edge_ref##*@}"
+          central_image="${central_ref%@*}"
+          edge_image="${edge_ref%@*}"
           central_sbom_sha="$(sha256sum central-sbom.json | awk '{print $1}')"
           edge_sbom_sha="$(sha256sum edge-sbom.json | awk '{print $1}')"
           edge_binary_sha="$(sha256sum edge/ainet-edge-linux | awk '{print $1}')"
@@ -153,14 +155,15 @@ jobs:
             --arg version "$RELEASE_TAG" \
             --arg commit "${GITHUB_SHA}" \
             --arg created_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg central "$central_ref" \
+            --arg central "$central_image" \
             --arg central_digest "$central_digest" \
-            --arg edge "$edge_ref" \
+            --arg edge "$edge_image" \
             --arg edge_digest "$edge_digest" \
             --arg central_sbom_sha "$central_sbom_sha" \
             --arg edge_sbom_sha "$edge_sbom_sha" \
             --arg edge_binary_sha "$edge_binary_sha" \
-            '{schema_version:1,release:{version:$version,git_commit:$commit,created_at:$created_at,approved_by:"<CONFIGURE_OPERATOR_OR_CHANGE_REFERENCE>",licensing_decision:"<CONFIGURE_APPROVED_LICENSING_REFERENCE>"},artifacts:{central_image:($central+"@"+$central_digest),edge_image:($edge+"@"+$edge_digest),edge_binary:{version:$version,sha256:$edge_binary_sha,signature_reference:"cosign-attestation-on-edge-image"}},sbom:{format:"CycloneDX JSON",central_path:"central-sbom.json",central_sha256:$central_sbom_sha,edge_path:"edge-sbom.json",edge_sha256:$edge_sbom_sha,generated_by:"anchore/sbom-action@v0"},verification:{workflow_run:"https://github.com/"+env.GITHUB_REPOSITORY+"/actions/runs/"+env.GITHUB_RUN_ID},secrets_logged:false,production_ready:false}' \
+            --arg workflow_run "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            '{schema_version:1,release:{version:$version,git_commit:$commit,created_at:$created_at,approved_by:"<CONFIGURE_OPERATOR_OR_CHANGE_REFERENCE>",licensing_decision:"<CONFIGURE_APPROVED_LICENSING_REFERENCE>"},artifacts:{central_image:($central+"@"+$central_digest),edge_image:($edge+"@"+$edge_digest),edge_binary:{version:$version,sha256:$edge_binary_sha,signature_reference:"cosign-attestation-on-edge-image"}},sbom:{format:"CycloneDX JSON",central_path:"central-sbom.json",central_sha256:$central_sbom_sha,edge_path:"edge-sbom.json",edge_sha256:$edge_sbom_sha,generated_by:"anchore/sbom-action@v0"},verification:{workflow_run:$workflow_run},secrets_logged:false,production_ready:false}' \
             > "release-manifest-${RELEASE_TAG}.json"
 
       - name: Publish release evidence
