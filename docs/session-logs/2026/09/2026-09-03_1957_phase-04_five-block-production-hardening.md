@@ -2622,3 +2622,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - No application source, credentials, release tag, or production state changed.
 - Validation pending: Python compile check, YAML parse, diff check, then the
   branch must be pushed and merged before dispatching a new workflow run.
+
+### Central attestation referrer scan remediation - 2026-09-06
+
+- Run #19/latest output showed Cosign completed claims, transparency-log, and
+  certificate validation, then stalled after `Certificate subject:` without
+  returning an exit code.
+- This is treated as a referrer-scan hang, not an invalid signature.
+- The helper now streams Cosign output and accepts one validated CycloneDX
+  attestation only after the certificate marker is emitted; it then terminates
+  the remaining referrer scan process group.
+- If the marker is absent, the watchdog still returns failure/timeout; no
+  offline or transparency-log bypass was added.
