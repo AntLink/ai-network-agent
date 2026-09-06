@@ -19,6 +19,10 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      central_ref: ${{ steps.sign.outputs.central_ref }}
+      edge_ref: ${{ steps.sign.outputs.edge_ref }}
     steps:
       - name: Checkout approved release commit
         uses: actions/checkout@v4
@@ -109,6 +113,7 @@ jobs:
           upload-artifact: false
 
       - name: Sign and attest Central and Edge images
+        id: sign
         env:
           COSIGN_EXPERIMENTAL: "1"
           CENTRAL_IMAGE: ${{ steps.meta.outputs.central_image }}:${{ steps.meta.outputs.tag }}
@@ -127,30 +132,18 @@ jobs:
             REF="${IMAGE%@*}@${DIGEST}"
             cosign sign --yes "$REF"
             cosign attest --yes --predicate "$SBOM" --type cyclonedx "$REF"
-            echo "${name}_ref=$REF" >> "$GITHUB_ENV"
-          done
-
-      - name: Verify Central and Edge signatures and SBOM attestations
-        env:
-          COSIGN_EXPERIMENTAL: "1"
-        run: |
-          set -euo pipefail
-          for ref in "$central_ref" "$edge_ref"; do
-            cosign verify "$ref" \
-              --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
-              --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
-            cosign verify-attestation "$ref" --type cyclonedx \
-              --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
-              --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+            echo "${name}_ref=$REF" >> "$GITHUB_OUTPUT"
           done
 
       - name: Generate release manifest evidence
         env:
           RELEASE_TAG: ${{ steps.meta.outputs.tag }}
+          CENTRAL_REF: ${{ steps.sign.outputs.central_ref }}
+          EDGE_REF: ${{ steps.sign.outputs.edge_ref }}
         run: |
           set -euo pipefail
-          central_ref="${central_ref:?central_ref was not exported}"
-          edge_ref="${edge_ref:?edge_ref was not exported}"
+          central_ref="${CENTRAL_REF:?central_ref was not exported}"
+          edge_ref="${EDGE_REF:?edge_ref was not exported}"
           central_digest="${central_ref##*@}"
           edge_digest="${edge_ref##*@}"
           central_sbom_sha="$(sha256sum central-sbom.json | awk '{print $1}')"
@@ -178,3 +171,83 @@ jobs:
             central-sbom.json
             edge-sbom.json
             release-manifest-${{ steps.meta.outputs.tag }}.json
+
+  verify-central:
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Log in to GHCR for verification
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.7.0
+
+      - name: Verify Central signature
+        env:
+          REF: ${{ needs.release.outputs.central_ref }}
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set -euo pipefail
+          echo "Verifying Central signature: $REF"
+          timeout --signal=TERM --kill-after=10s 120s cosign verify "$REF" \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+
+      - name: Verify Central SBOM attestation
+        env:
+          REF: ${{ needs.release.outputs.central_ref }}
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set -euo pipefail
+          echo "Verifying Central CycloneDX attestation: $REF"
+          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation "$REF" --type cyclonedx \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+
+  verify-edge:
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Log in to GHCR for verification
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.7.0
+
+      - name: Verify Edge signature
+        env:
+          REF: ${{ needs.release.outputs.edge_ref }}
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set -euo pipefail
+          echo "Verifying Edge signature: $REF"
+          timeout --signal=TERM --kill-after=10s 120s cosign verify "$REF" \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+
+      - name: Verify Edge SBOM attestation
+        env:
+          REF: ${{ needs.release.outputs.edge_ref }}
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set -euo pipefail
+          echo "Verifying Edge CycloneDX attestation: $REF"
+          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation "$REF" --type cyclonedx \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"

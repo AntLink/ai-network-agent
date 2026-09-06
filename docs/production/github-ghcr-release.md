@@ -41,4 +41,9 @@ returned by GHCR and verifies that digest immediately afterward.
   uploads a generated manifest evidence file containing immutable image
   references and SBOM hashes; operator approval and licensing fields remain
   intentionally unconfigured.
+- Signature and attestation verification each have a 180-second timeout with
+  explicit image progress output, so a registry or transparency-log stall
+  fails diagnostically instead of hanging indefinitely. Verification now runs
+  in separate Central and Edge jobs, each capped at 5 minutes; each command
+  also uses a SIGKILL fallback. The build/sign job is capped at 30 minutes.
 - Production gate remains fail-closed until workflow evidence is attached.
