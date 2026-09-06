@@ -2446,6 +2446,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - Updated `docs/production/github-ghcr-release.md`; combined signed release
   manifest publication remains a production approval requirement.
 - Validation: workflow YAML parse passed and `git diff --check` passed.
+
+### Immutable release tag guard - 2026-09-06
+
+- Added fail-closed validation for the workflow input: only semantic version
+  tags matching `vMAJOR.MINOR.PATCH` are accepted.
+- The workflow now verifies the checked-out commit exactly matches the
+  requested tag before building or publishing any image.
+- Updated the operator release guide with this requirement.
+- No release tag was created and no GitHub Actions run was started.
 - No GitHub Actions run or production release was initiated; no credentials,
   signing keys, tokens, or device secrets were used or recorded.
 

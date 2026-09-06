@@ -31,10 +31,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          RELEASE_TAG="${{ inputs.release_tag }}"
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "release_tag must match vMAJOR.MINOR.PATCH" >&2
+            exit 1
+          fi
+          TAG_COMMIT="$(git rev-parse "refs/tags/${RELEASE_TAG}^{commit}")"
+          if [ "$TAG_COMMIT" != "$GITHUB_SHA" ]; then
+            echo "checked out commit does not match the requested release tag" >&2
+            exit 1
+          fi
           OWNER="${GITHUB_REPOSITORY_OWNER,,}"
           echo "central_image=${REGISTRY}/${OWNER}/ainet-api" >> "$GITHUB_OUTPUT"
           echo "edge_image=${REGISTRY}/${OWNER}/ainet-edge" >> "$GITHUB_OUTPUT"
-          echo "tag=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Set up Go
         uses: actions/setup-go@v5

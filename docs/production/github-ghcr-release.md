@@ -21,7 +21,8 @@ release commit. It uses:
 4. Configure the production gate's release version, commit, GHCR image
    digests, SBOM hash, and licensing approval reference from workflow evidence.
 5. Dispatch `Release build, SBOM and signing` manually with an immutable
-   release tag.
+   release tag. The workflow accepts only `vMAJOR.MINOR.PATCH` tags and checks
+   that the checked-out commit exactly matches that tag.
 6. Confirm the workflow's signer identity and OIDC issuer match the release
    policy before deployment.
 
