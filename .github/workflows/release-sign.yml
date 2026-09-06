@@ -218,7 +218,8 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Central CycloneDX attestation: $REF"
-          python3 tools/verify_cosign_attestation.py "$REF"
+          timeout --signal=TERM --kill-after=10s 120s \
+            python3 tools/verify_cosign_attestation.py --timeout-seconds 90 "$REF"
 
   verify-edge:
     needs: release
@@ -263,4 +264,5 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Edge CycloneDX attestation: $REF"
-          python3 tools/verify_cosign_attestation.py "$REF"
+          timeout --signal=TERM --kill-after=10s 120s \
+            python3 tools/verify_cosign_attestation.py --timeout-seconds 90 "$REF"
