@@ -2723,3 +2723,32 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - This change requires a new workflow run and fresh release evidence; the
   previous Run #21 artifact remains an older candidate and is not retroactively
   upgraded.
+
+### Run #22 evidence and production-server inspection - 2026-09-06
+
+- Run #22 completed the release, Central attestation verification, and Edge
+  attestation verification successfully. The resulting evidence was imported
+  into the repository; `production_ready` remains false by design.
+- Inspected the supplied Ubuntu production host over SSH without recording its
+  password or any secret value in this log.
+- The host is Ubuntu 24.04.4 LTS with Docker active. Existing Nginx and other
+  applications already use the production host; Nginx currently owns TCP 443.
+- No AINET Central/Edge deployment was found on the host. Existing application
+  data under `/opt` was left untouched.
+- Anonymous pulls of the private GHCR AINET images returned `unauthorized`.
+  Production deployment therefore requires a securely provisioned
+  read-only package credential on the host, or an explicitly approved package
+  visibility change. No credential was placed in this log.
+- Resource inspection showed approximately 3.3 GiB RAM with high swap usage.
+  A full Central/PostgreSQL/Redis/controller deployment must be capacity- and
+  blast-radius-reviewed before changing existing workloads.
+- The lab mTLS/CRL rehearsal is not production PKI evidence. Production still
+  requires an approved hostname, production CA/certificate chain, revocation
+  policy, and controlled Nginx or dedicated listener configuration.
+- Decision: REUSE existing Nginx/Docker host only after isolation and capacity
+  approval; EXTEND the deployment runbook and production evidence; do not
+  overwrite the existing TCP 443 service; do not mark the release production
+  ready.
+- Blockers handed off: secure GHCR read access, production hostname/listener
+  decision, production PKI material and revocation policy, and commercial
+  licensing approval/reference.
