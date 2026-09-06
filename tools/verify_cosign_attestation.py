@@ -7,24 +7,38 @@ import os
 import signal
 import subprocess
 import sys
-import tempfile
+import threading
 
 
-def run_bounded(command: list[str], timeout_seconds: int) -> int:
-    process = subprocess.Popen(command, start_new_session=(os.name != "nt"))
+def _kill_process_group(process: subprocess.Popen[object]) -> None:
+    if process.poll() is not None:
+        return
     try:
-        return process.wait(timeout=timeout_seconds)
-    except subprocess.TimeoutExpired:
         if os.name == "nt":
             process.kill()
         else:
             os.killpg(process.pid, signal.SIGKILL)
-        process.wait(timeout=15)
+    except ProcessLookupError:
+        pass
+
+
+def run_bounded(command: list[str], timeout_seconds: int) -> int:
+    process = subprocess.Popen(command, start_new_session=(os.name != "nt"))
+    watchdog = threading.Timer(args.timeout_seconds, _kill_process_group, args=(process,))
+    watchdog.daemon = True
+    watchdog.start()
+    try:
+        return_code = process.wait()
+    finally:
+        watchdog.cancel()
+
+    if return_code == -signal.SIGKILL:
         print(
             f"command exceeded {timeout_seconds}s: {' '.join(command[:3])}",
             file=sys.stderr,
         )
         return 124
+    return return_code
 
 
 def main() -> int:
