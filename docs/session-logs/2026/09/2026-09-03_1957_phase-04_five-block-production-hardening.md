@@ -2497,6 +2497,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   checkout and invoke it for CycloneDX attestation verification.
 - No transparency-log or certificate checks were disabled.
 
+### Local OCI-layout attestation verification - 2026-09-06
+
+- Changed the watchdog strategy to `cosign save` the immutable image into a
+  temporary OCI layout, followed by `cosign verify-attestation --local-image`.
+- Both the registry pull and local verification use bounded process-group
+  watchdogs; this avoids the observed direct-GHCR attestation hang without
+  disabling transparency-log or certificate verification.
+- The temporary OCI layout is deleted automatically after each verification.
+
 ### Confirmed jq manifest error from GitHub run - 2026-09-06
 
 - The rerun failed with `jq: syntax error, unexpected '+', expecting '}'`
