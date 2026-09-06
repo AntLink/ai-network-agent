@@ -2634,3 +2634,68 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   the remaining referrer scan process group.
 - If the marker is absent, the watchdog still returns failure/timeout; no
   offline or transparency-log bypass was added.
+
+### Release verification PASS - 2026-09-06
+
+- Operator reported the latest workflow completed successfully:
+  `release`, `verify-central`, and `verify-edge` all passed.
+- Repository confirmation: `origin/main` is merge commit `77b8894`, containing
+  the verifier fix from `a23c7fd`.
+- The release/signing verification gate for this run is complete. This does
+  not by itself mark the overall platform production-ready; remaining V5
+  gates still require their own evidence.
+
+### Production gate reassessment - 2026-09-06 19:14 +08:00
+
+- Executed `production_gate.py --config docs/production/production-gate.json`.
+- PASS: Python unit gate, live Redis, live PostgreSQL, and GNS3 overlapping
+  subnet evidence.
+- FAIL: `LIVE-PKI-OVERLAY`, specifically incomplete `tls_terminator` evidence.
+- FAIL: `RELEASE-SBOM-SIGNING`; the release manifest still contains
+  unconfigured approval/version/commit/licensing/digest/SBOM fields and the
+  Edge artifact is not yet recognized as a signed production release artifact.
+- The gate remains correctly fail-closed. No production approval or release
+  metadata was fabricated.
+- Generated evidence: `docs/evidence/production-gates/production-gate-20260906-191406.md`
+  and the corresponding JSON report.
+- Next priority: complete and validate the authenticated TLS terminator and
+  then bind the approved immutable release manifest to the signed artifacts.
+
+### TLS terminator staging recheck - 2026-09-06 19:21 +08:00
+
+- Docker Desktop was confirmed active; `mtls-gateway` was healthy and the
+  `nginx-staging` profile was started successfully on port 9444.
+- The initial valid-client handshake failed because the lab `ca.crl` had
+  passed its `next_update` time, not because the Edge certificate was invalid.
+- Regenerated the short-lived lab CRL with the required lab-only acknowledgement
+  and restarted only `nginx-staging`.
+- Valid mTLS handshake then returned `HTTP/1.1 200 OK` from the Central API.
+- This is staging evidence only. It does not satisfy production PKI approval,
+  revoke/force-disconnect under the production terminator, or the final gate.
+
+### TLS terminator revoke rehearsal - 2026-09-06 19:23 +08:00
+
+- Generated a lab CRL revoking `edge-001` and restarted only `nginx-staging`.
+- Revoked client request was rejected with `HTTP/1.1 400 Bad Request` and the
+  Nginx SSL certificate error response.
+- Restored an empty short-lived lab CRL, restarted `nginx-staging`, and the
+  same valid client returned `HTTP/1.1 200 OK` from the Central API.
+- The staging terminator therefore demonstrated valid-client acceptance,
+  revoked-client rejection, and recovery after CRL restoration.
+- This remains lab evidence; production PKI and production deployment approval
+  are still outstanding.
+
+### Release evidence imported from GitHub Run #21 - 2026-09-06
+
+- Inspected the downloaded `release-evidence-v0.1.0.zip` in a temporary local
+  workspace; no secrets were found in the archive.
+- Verified the Central and Edge SBOM SHA-256 values against the manifest:
+  Central `a6526011...ea4e7f`, Edge `ce70990f...bc1db5c`.
+- Recorded immutable Central/Edge image digests, Edge binary hash, workflow
+  commit `77b88948...`, and workflow run `34028438193` in
+  `docs/production/release-manifest-v0.1.0.json`.
+- Updated the release validator to prefer the versioned manifest while keeping
+  the template fallback.
+- Approval, licensing, production PKI, and `production_ready` remain unset;
+  the production gate must continue to fail closed until those decisions and
+  evidence are supplied.
