@@ -52,4 +52,7 @@ returned by GHCR and verifies that digest immediately afterward.
   in separate Central and Edge jobs, each capped at 5 minutes; each command
   uses Cosign's native 90-second timeout, one attestation worker, and a SIGKILL
   fallback. The build/sign job is capped at 30 minutes.
+- Attestation verification uses a repository wrapper that kills the entire
+  Cosign process group if the command remains hung, while retaining the
+  certificate and transparency-log checks.
 - Production gate remains fail-closed until workflow evidence is attached.

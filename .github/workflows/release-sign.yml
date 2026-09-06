@@ -183,6 +183,13 @@ jobs:
       contents: read
       packages: read
     steps:
+      - name: Checkout verification helper
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            tools/verify_cosign_attestation.py
+          sparse-checkout-cone-mode: false
+
       - name: Log in to GHCR for verification
         uses: docker/login-action@v4
         with:
@@ -211,9 +218,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Central CycloneDX attestation: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation --timeout 90s --max-workers 1 "$REF" --type cyclonedx \
-            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
-            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          python3 tools/verify_cosign_attestation.py "$REF"
 
   verify-edge:
     needs: release
@@ -223,6 +228,13 @@ jobs:
       contents: read
       packages: read
     steps:
+      - name: Checkout verification helper
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            tools/verify_cosign_attestation.py
+          sparse-checkout-cone-mode: false
+
       - name: Log in to GHCR for verification
         uses: docker/login-action@v4
         with:
@@ -251,6 +263,4 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Edge CycloneDX attestation: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation --timeout 90s --max-workers 1 "$REF" --type cyclonedx \
-            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
-            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          python3 tools/verify_cosign_attestation.py "$REF"
