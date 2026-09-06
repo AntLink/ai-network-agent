@@ -35,5 +35,8 @@ returned by GHCR and verifies that digest immediately afterward.
   release approval exists.
 - The workflow now checks out the supplied immutable release tag and publishes,
   signs, verifies, and attests both Central and Edge images. A signed combined
-  release manifest is still required before production approval.
+  release manifest is still required before production approval. Each run now
+  uploads a generated manifest evidence file containing immutable image
+  references and SBOM hashes; operator approval and licensing fields remain
+  intentionally unconfigured.
 - Production gate remains fail-closed until workflow evidence is attached.

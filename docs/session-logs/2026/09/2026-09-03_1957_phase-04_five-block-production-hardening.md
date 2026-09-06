@@ -2448,3 +2448,13 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - Validation: workflow YAML parse passed and `git diff --check` passed.
 - No GitHub Actions run or production release was initiated; no credentials,
   signing keys, tokens, or device secrets were used or recorded.
+
+### Release manifest evidence automation - 2026-09-06
+
+- Added workflow generation of a per-run release manifest evidence artifact.
+- The manifest records the immutable Central/Edge image references, SBOM
+  hashes, Edge binary hash, workflow commit, and run reference.
+- `approved_by`, licensing approval, and `production_ready` remain explicitly
+  unconfigured/false; the workflow cannot make a release production-ready by
+  itself.
+- Validation: workflow YAML parse passed and `git diff --check` passed.
