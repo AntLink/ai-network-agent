@@ -31,8 +31,10 @@
   },
   "edge_artifact": {
     "binary": "edge/ainet-edge-linux",
-    "sha256": "337FD8ED97D0131E4C7C216903873D5F0400C1FC4D2EB221299ED7B925F89922",
-    "status": "LOCAL_UNSIGNED_CANDIDATE"
+    "sha256": "2f319957de5c674a6773d6e46bfd369ad5a83b6b54ac1545bf9e9305585f6775",
+    "status": "SIGNED_RELEASE_ARTIFACT",
+    "signature_bundle": "docs/evidence/release-readiness/edge-binary.sigstore.json",
+    "signature_bundle_sha256": "95d97537f6302b012996675c735cfb74840c41e60c3fda3bea60ae2920fb48e1"
   },
   "sbom_artifacts": [
     {
