@@ -50,6 +50,21 @@ func loadCA(path string) (*x509.CertPool, error) {
 	return pool, nil
 }
 
+func loadServerRoots(path string) (*x509.CertPool, error) {
+	pool, err := x509.SystemCertPool()
+	if err != nil || pool == nil {
+		pool = x509.NewCertPool()
+	}
+	pemData, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read server CA file: %w", err)
+	}
+	if !pool.AppendCertsFromPEM(pemData) {
+		return nil, fmt.Errorf("server CA file contains no certificate")
+	}
+	return pool, nil
+}
+
 func loadCertificate(files MTLSFiles) (tls.Certificate, error) {
 	cert, err := tls.LoadX509KeyPair(files.CertificateFile, files.PrivateKeyFile)
 	if err != nil {
@@ -60,7 +75,7 @@ func loadCertificate(files MTLSFiles) (tls.Certificate, error) {
 
 // ClientConfig requires mutual TLS and refuses insecure verification settings.
 func ClientConfig(files MTLSFiles) (*tls.Config, error) {
-	ca, err := loadCA(files.CAFile)
+	ca, err := loadServerRoots(files.CAFile)
 	if err != nil {
 		return nil, err
 	}
