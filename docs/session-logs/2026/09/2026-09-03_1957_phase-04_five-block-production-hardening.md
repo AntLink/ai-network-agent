@@ -2485,6 +2485,14 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   runtime modernization.
 - The fix requires merging the updated workflow to the default branch before
   rerunning the tag workflow; the immutable `v0.1.0` tag is not moved.
+
+### Post-failure branch synchronization check - 2026-09-06
+
+- Remote `main` remains at commit `3a4856a`.
+- Remote `v5-release-prep` contains the checkout fix at commit `edd43e3`.
+- Remote tag `v0.1.0` remains present and unchanged.
+- The workflow must be merged into `main` before rerun; no tag mutation or
+  direct `main` push was performed.
 - No GitHub Actions run or production release was initiated; no credentials,
   signing keys, tokens, or device secrets were used or recorded.
 
