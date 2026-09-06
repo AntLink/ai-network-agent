@@ -2644,3 +2644,19 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - The release/signing verification gate for this run is complete. This does
   not by itself mark the overall platform production-ready; remaining V5
   gates still require their own evidence.
+
+### Production gate reassessment - 2026-09-06 19:14 +08:00
+
+- Executed `production_gate.py --config docs/production/production-gate.json`.
+- PASS: Python unit gate, live Redis, live PostgreSQL, and GNS3 overlapping
+  subnet evidence.
+- FAIL: `LIVE-PKI-OVERLAY`, specifically incomplete `tls_terminator` evidence.
+- FAIL: `RELEASE-SBOM-SIGNING`; the release manifest still contains
+  unconfigured approval/version/commit/licensing/digest/SBOM fields and the
+  Edge artifact is not yet recognized as a signed production release artifact.
+- The gate remains correctly fail-closed. No production approval or release
+  metadata was fabricated.
+- Generated evidence: `docs/evidence/production-gates/production-gate-20260906-191406.md`
+  and the corresponding JSON report.
+- Next priority: complete and validate the authenticated TLS terminator and
+  then bind the approved immutable release manifest to the signed artifacts.
