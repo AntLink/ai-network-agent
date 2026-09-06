@@ -4,6 +4,7 @@ Newest sessions should be listed first when they are closed.
 
 | Date | Session | Phase | Status | Summary |
 |---|---|---|---|---|
+| 2026-09-07 | [agent-handoff](../handoff/next-agent.md) | handoff | COMPLETE | Handoff operasional: status production gate, release v0.2.2, OpenHands scope, verifikasi, dan langkah lanjutan |
 | 2026-09-07 | [five-block-production-hardening](2026/09/2026-09-03_1957_phase-04_five-block-production-hardening.md) | phase-04 | PARTIAL | Production Central inventory persistence fixed operationally with `/etc/ainet/inventory:/inventory`; restart/health/device lookup acceptance passed; persistent Edge service, revocation enforcement, DR, and licensing gates remain |
 | 2026-09-06 | [production-host-preflight-revocation](2026/09/2026-09-06_1240_phase-04-production-host-preflight-revocation.md) | phase-04 | COMPLETE | Production host preflight `deploy/production/preflight.py` + 23 tests encoding the 6 inspection blockers as fail-closed gates (GHCR auth, hostname, TLS SAN, listener plan preserving Nginx 443, revocation policy, licensing ref); revocation policy draft `docs/production/revocation-policy.md`; runbook section 19; full regression 141 PASS / 3 skipped; deployment remains blocked on external approvals |
 | 2026-09-04 | [m4-edge-deploy-endpoint-wide](2026/09/2026-09-04_1952_phase-04_m4-edge-deploy-endpoint-wide.md) | phase-04 | COMPLETE | M4 Edge rollout endpoint (POST /edge-updates/rollout, network-admin gate) + deployment service; 5 tests, full regression 89 PASS; live binary install remains executor slice |

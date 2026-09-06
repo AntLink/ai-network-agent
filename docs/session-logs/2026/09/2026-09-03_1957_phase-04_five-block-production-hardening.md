@@ -3523,6 +3523,14 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   systemd installer, and safe OpenHands runtime wrappers. OpenHands runtime
   secrets, databases, logs, backups, dependencies, build output, and editable
   nested source checkouts remain excluded.
-- Commit created locally on branch `v5-release-prep`: `fdb36ca`
+- Commit created locally on branch `v5-release-prep`: `c5b30e7`
   (`chore: record production gate and OpenHands runtime`). No push was
   performed in this session.
+
+### Handoff documentation - 2026-09-07
+
+- Added `docs/handoff/next-agent.md` with current release evidence, exact
+  validation commands, repository hygiene rules, OpenHands scope, and the
+  prioritized next steps for another agent.
+- Added the handoff entry to `docs/session-logs/index.md`. This documentation
+  update is intentionally scoped and contains no credentials or secret values.
