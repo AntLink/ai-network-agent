@@ -2607,3 +2607,18 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   unconfigured/false; the workflow cannot make a release production-ready by
   itself.
 - Validation: workflow YAML parse passed and `git diff --check` passed.
+
+### Cosign verifier and Node24 follow-up - 2026-09-06
+
+- Latest run reported both `verify-central` and `verify-edge` exit code 1.
+- Comparison showed `origin/main` had the local-OCI helper merge without the
+  required runtime consistency; the branch copy was not identical to `main`.
+- Reworked the helper to verify the registry image directly with an explicit
+  bounded process timeout, preserving transparency-log verification and
+  avoiding an OCI layout that does not include referrer attestations.
+- Added phase/exit-duration output so future failures identify the exact
+  command and whether the timeout or Cosign verification failed.
+- Updated `actions/upload-artifact` from v5 to v6, which uses Node.js 24.
+- No application source, credentials, release tag, or production state changed.
+- Validation pending: Python compile check, YAML parse, diff check, then the
+  branch must be pushed and merged before dispatching a new workflow run.
