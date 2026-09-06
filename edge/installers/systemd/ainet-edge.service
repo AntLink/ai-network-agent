@@ -1,0 +1,23 @@
+[Unit]
+Description=AI Network Agent Edge Connector
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=ainet-edge
+Group=ainet-edge
+WorkingDirectory=/var/lib/ainet-edge
+EnvironmentFile=/etc/ainet-edge/ainet-edge.env
+ExecStart=/usr/local/bin/ainet-edge $AINET_EDGE_ARGS
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/ainet-edge
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
