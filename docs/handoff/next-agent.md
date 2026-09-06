@@ -4,6 +4,10 @@ Tanggal handoff: 2026-09-07
 Branch kerja: `v5-release-prep`
 Commit dasar: `c5b30e7` — `chore: record production gate and OpenHands runtime`
 
+PR integrasi ke `main`: [#23](https://github.com/AntLink/ai-network-agent/pull/23)
+(`codex/production-openhands-main`). PR #22 yang berbasis riwayat lama telah
+ditutup dan tidak boleh digabungkan.
+
 ## Status saat ini
 
 Milestone 1 sampai 5 memiliki bukti implementasi dan pengujian bertahap. Release

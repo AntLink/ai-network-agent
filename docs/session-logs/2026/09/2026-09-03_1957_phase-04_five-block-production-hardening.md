@@ -3534,3 +3534,12 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   prioritized next steps for another agent.
 - Added the handoff entry to `docs/session-logs/index.md`. This documentation
   update is intentionally scoped and contains no credentials or secret values.
+
+### Main-based integration PR - 2026-09-07
+
+- The original push target had diverged, so a clean branch was created from
+  current `main` without force-pushing or resetting user work.
+- Pull request #23 is the active integration path:
+  `codex/production-openhands-main` -> `main`.
+- PR #22 was closed as superseded; no merge was performed from the conflicting
+  branch. CI and required review remain the next external gate.
