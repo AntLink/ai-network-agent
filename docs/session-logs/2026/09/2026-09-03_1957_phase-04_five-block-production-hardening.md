@@ -2684,3 +2684,18 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   revoked-client rejection, and recovery after CRL restoration.
 - This remains lab evidence; production PKI and production deployment approval
   are still outstanding.
+
+### Release evidence imported from GitHub Run #21 - 2026-09-06
+
+- Inspected the downloaded `release-evidence-v0.1.0.zip` in a temporary local
+  workspace; no secrets were found in the archive.
+- Verified the Central and Edge SBOM SHA-256 values against the manifest:
+  Central `a6526011...ea4e7f`, Edge `ce70990f...bc1db5c`.
+- Recorded immutable Central/Edge image digests, Edge binary hash, workflow
+  commit `77b88948...`, and workflow run `34028438193` in
+  `docs/production/release-manifest-v0.1.0.json`.
+- Updated the release validator to prefer the versioned manifest while keeping
+  the template fallback.
+- Approval, licensing, production PKI, and `production_ready` remain unset;
+  the production gate must continue to fail closed until those decisions and
+  evidence are supplied.
