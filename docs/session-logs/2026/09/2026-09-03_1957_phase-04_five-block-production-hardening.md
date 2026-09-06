@@ -3543,3 +3543,13 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   `codex/production-openhands-main` -> `main`.
 - PR #22 was closed as superseded; no merge was performed from the conflicting
   branch. CI and required review remain the next external gate.
+
+### Project-local production gate - 2026-09-07
+
+- Added `tools/production_gate.py` as the repository-local V5 fail-closed gate,
+  reusing the established gate semantics without requiring an installed skill
+  path.
+- Verification: `python tools/production_gate.py --config
+  docs/production/production-gate.json` returned `PASS`; Python compilation
+  also passed. The generated report is retained under
+  `docs/evidence/production-gates/`.

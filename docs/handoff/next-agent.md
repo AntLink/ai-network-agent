@@ -63,10 +63,14 @@ menampilkan `PASS: production gate`.
    workflow, bukan loop `cosign` tanpa batas.
 3. Untuk perubahan production, ikuti section 19 runbook dan buat evidence baru
    di `docs/evidence/production-gates/`.
-4. Untuk perubahan Central/Edge, perbarui traceability dan session log pada
+4. Jalankan gate melalui entry point repository:
+   `python tools/production_gate.py --config docs/production/production-gate.json`.
+   Ini tidak lagi bergantung pada `.agents/skills/...` yang hanya tersedia di
+   environment agent tertentu.
+5. Untuk perubahan Central/Edge, perbarui traceability dan session log pada
    sesi yang sama; tambahkan ADR hanya untuk keputusan arsitektur berdampak
    tinggi.
-5. Prioritas pasca-gate: observability/alert delivery, DR restore berkala,
+6. Prioritas pasca-gate: observability/alert delivery, DR restore berkala,
    Central HA dengan Redis session routing, fault injection, dan semantic parity
    vendor. Jangan menganggap `production gate PASS` sebagai bukti semua skenario
    scale/HA sudah diuji live.
