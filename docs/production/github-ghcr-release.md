@@ -47,5 +47,6 @@ returned by GHCR and verifies that digest immediately afterward.
   explicit image progress output, so a registry or transparency-log stall
   fails diagnostically instead of hanging indefinitely. Verification now runs
   in separate Central and Edge jobs, each capped at 5 minutes; each command
-  also uses a SIGKILL fallback. The build/sign job is capped at 30 minutes.
+  uses Cosign's native 90-second timeout, one attestation worker, and a SIGKILL
+  fallback. The build/sign job is capped at 30 minutes.
 - Production gate remains fail-closed until workflow evidence is attached.

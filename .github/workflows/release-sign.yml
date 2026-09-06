@@ -200,7 +200,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Central signature: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify "$REF" \
+          timeout --signal=TERM --kill-after=10s 120s cosign verify --timeout 90s "$REF" \
             --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
 
@@ -211,7 +211,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Central CycloneDX attestation: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation "$REF" --type cyclonedx \
+          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation --timeout 90s --max-workers 1 "$REF" --type cyclonedx \
             --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
 
@@ -240,7 +240,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Edge signature: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify "$REF" \
+          timeout --signal=TERM --kill-after=10s 120s cosign verify --timeout 90s "$REF" \
             --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
 
@@ -251,6 +251,6 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Edge CycloneDX attestation: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation "$REF" --type cyclonedx \
+          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation --timeout 90s --max-workers 1 "$REF" --type cyclonedx \
             --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
