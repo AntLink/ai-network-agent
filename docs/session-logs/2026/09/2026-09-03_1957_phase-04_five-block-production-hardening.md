@@ -2447,6 +2447,17 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   manifest publication remains a production approval requirement.
 - Validation: workflow YAML parse passed and `git diff --check` passed.
 
+### Cosign verification timeout hardening - 2026-09-06
+
+- Added a 180-second timeout around each Central/Edge Cosign signature and
+  CycloneDX attestation verification command.
+- Added explicit progress output identifying the image currently being
+  verified.
+- This prevents a GHCR/transparency-log stall from holding a release runner
+  indefinitely; a timeout now fails the job with a diagnosable error.
+- The currently stuck run is an existing remote runner and is not altered by
+  this source change.
+
 ### Immutable release tag guard - 2026-09-06
 
 - Added fail-closed validation for the workflow input: only semantic version
