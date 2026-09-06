@@ -2447,6 +2447,27 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   manifest publication remains a production approval requirement.
 - Validation: workflow YAML parse passed and `git diff --check` passed.
 
+### Release manifest generation failure remediation - 2026-09-06
+
+- A workflow run reached manifest generation and failed with exit code 3; the
+  subsequent checkout exit code 128 was a cleanup annotation after job failure.
+- Simplified manifest generation by passing the workflow URL explicitly to jq
+  instead of constructing it through jq's environment object.
+- Corrected image reference assembly so the immutable digest is appended once,
+  not duplicated.
+- Node.js 20 deprecation annotations remain warnings from third-party actions;
+  they are tracked separately from the manifest failure.
+
+### Confirmed jq manifest error from GitHub run - 2026-09-06
+
+- The rerun failed with `jq: syntax error, unexpected '+', expecting '}'`
+  during `Generate release manifest evidence`.
+- The log showed the old manifest expression using `env.GITHUB_REPOSITORY`
+  and passing full image references before digest assembly, confirming that
+  `main` was still executing the pre-`0f36d6f` workflow.
+- Commit `0f36d6f` contains the corrected jq expression and image reference
+  assembly; it must be merged to `main` before another rerun.
+
 ### Cosign verification timeout hardening - 2026-09-06
 
 - Added a 180-second timeout around each Central/Edge Cosign signature and

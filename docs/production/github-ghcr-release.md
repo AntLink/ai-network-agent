@@ -41,6 +41,8 @@ returned by GHCR and verifies that digest immediately afterward.
   uploads a generated manifest evidence file containing immutable image
   references and SBOM hashes; operator approval and licensing fields remain
   intentionally unconfigured.
+- Manifest generation passes the workflow URL explicitly to `jq` and assembles
+  image references from a tag-free image name plus exactly one digest.
 - Signature and attestation verification each have a 180-second timeout with
   explicit image progress output, so a registry or transparency-log stall
   fails diagnostically instead of hanging indefinitely. Verification now runs
