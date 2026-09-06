@@ -2458,6 +2458,18 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - The currently stuck run is an existing remote runner and is not altered by
   this source change.
 
+### Isolated Cosign verification jobs - 2026-09-06
+
+- Replaced the single Central/Edge verification loop with independent
+  `verify-central` and `verify-edge` jobs.
+- Each verification job has a five-minute GitHub job timeout and each command
+  retains a 120-second timeout with a SIGKILL fallback.
+- The release job exports immutable image references as job outputs; the
+  verification jobs authenticate to GHCR independently with read-only package
+  permission.
+- YAML parse and whitespace validation passed. The previous stuck remote run
+  remains unaffected and must be cancelled separately.
+
 ### Stalled attestation run remediation - 2026-09-06
 
 - The new workflow run verified Central signature and attestation output but
