@@ -1,8 +1,10 @@
 package executor
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/exec"
@@ -129,11 +131,37 @@ func (e FactsExecutor) executeWithGoSSH(ctx context.Context, req FactsRequest, c
 		return "", fmt.Errorf("facts connector session failed: %w", err)
 	}
 	defer session.Close()
-	out, err := session.Output(factsCommand(req.Vendor))
+	var out []byte
+	if req.Vendor == "mikrotik" || req.Vendor == "routeros" {
+		out, err = executeRouterOSShell(session, factsCommand(req.Vendor))
+	} else {
+		out, err = session.Output(factsCommand(req.Vendor))
+	}
 	if err != nil {
 		return "", fmt.Errorf("facts connector command failed: %w", err)
 	}
 	return string(out), nil
+}
+
+func executeRouterOSShell(session *ssh.Session, command string) ([]byte, error) {
+	stdin, err := session.StdinPipe()
+	if err != nil {
+		return nil, fmt.Errorf("routeros shell stdin failed: %w", err)
+	}
+	var stdout, stderr bytes.Buffer
+	session.Stdout = &stdout
+	session.Stderr = &stderr
+	if err := session.Shell(); err != nil {
+		return nil, fmt.Errorf("routeros shell start failed: %w", err)
+	}
+	if _, err := io.WriteString(stdin, command+"\n"); err != nil {
+		return nil, fmt.Errorf("routeros shell write failed: %w", err)
+	}
+	_ = stdin.Close()
+	if err := session.Wait(); err != nil && stdout.Len() == 0 {
+		return nil, fmt.Errorf("routeros shell command failed: %w: %s", err, stderr.String())
+	}
+	return stdout.Bytes(), nil
 }
 
 func (e FactsExecutor) executeWithSystemSSH(ctx context.Context, req FactsRequest, cred credentials.Entry) (string, error) {
