@@ -2672,3 +2672,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - Valid mTLS handshake then returned `HTTP/1.1 200 OK` from the Central API.
 - This is staging evidence only. It does not satisfy production PKI approval,
   revoke/force-disconnect under the production terminator, or the final gate.
+
+### TLS terminator revoke rehearsal - 2026-09-06 19:23 +08:00
+
+- Generated a lab CRL revoking `edge-001` and restarted only `nginx-staging`.
+- Revoked client request was rejected with `HTTP/1.1 400 Bad Request` and the
+  Nginx SSL certificate error response.
+- Restored an empty short-lived lab CRL, restarted `nginx-staging`, and the
+  same valid client returned `HTTP/1.1 200 OK` from the Central API.
+- The staging terminator therefore demonstrated valid-client acceptance,
+  revoked-client rejection, and recovery after CRL restoration.
+- This remains lab evidence; production PKI and production deployment approval
+  are still outstanding.
