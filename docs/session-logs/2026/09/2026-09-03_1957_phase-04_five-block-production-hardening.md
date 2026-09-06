@@ -2458,6 +2458,16 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - Node.js 20 deprecation annotations remain warnings from third-party actions;
   they are tracked separately from the manifest failure.
 
+### Stale submodule cleanup remediation - 2026-09-06
+
+- Remote `main` now contains the corrected manifest expression and native
+  Cosign timeouts; the reported jq log was from an older run.
+- Remote repository inspection found a tracked gitlink at
+  `tmp/shadcndashboard` but no `.gitmodules` file or submodule URL.
+- This stale gitlink causes `actions/checkout` post-job cleanup to emit Git
+  exit code 128. It is being removed from the release-prep branch; unrelated
+  local runtime/cache files remain untouched.
+
 ### Native Cosign attestation timeout remediation - 2026-09-06
 
 - Added Cosign's native 90-second command timeout and `max-workers=1` to
