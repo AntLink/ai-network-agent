@@ -285,3 +285,80 @@ class PppoeServerCreate(BaseModel):
 
 class PppoeServerDelete(BaseModel):
     service_name: str
+
+
+# ---------------------------------------------------------------------------
+# OSPF Configuration (ROS7)
+# ---------------------------------------------------------------------------
+
+class OspfInstanceCreate(BaseModel):
+    name: str
+    router_id: Optional[str] = ""
+    comment: Optional[str] = ""
+
+
+class OspfInstanceDelete(BaseModel):
+    name: str
+
+
+class OspfAreaCreate(BaseModel):
+    instance: str
+    name: str
+    area_id: Optional[str] = ""
+    area_type: Optional[str] = "default"
+    comment: Optional[str] = ""
+
+
+class OspfInterfaceTemplateCreate(BaseModel):
+    instance: str
+    area: str
+    interfaces: str
+    network_type: Optional[str] = "broadcast"
+    cost: Optional[int] = 10
+    priority: Optional[int] = 1
+    comment: Optional[str] = ""
+
+
+class OspfNetworkCreate(BaseModel):
+    instance: str
+    network: str
+    area: str
+    comment: Optional[str] = ""
+
+
+class OspfNetworkDelete(BaseModel):
+    instance: str
+    network: str
+
+
+# ---------------------------------------------------------------------------
+# Config Transaction
+# ---------------------------------------------------------------------------
+
+class VerifyCheck(BaseModel):
+    command: str
+    expect: Optional[str] = None
+
+
+class ConfigTransaction(BaseModel):
+    commands: List[str]
+    verify: List[VerifyCheck] = []
+    save_on_success: bool = False
+    description: Optional[str] = ""
+
+
+# ---------------------------------------------------------------------------
+# Ping / Traceroute / Health
+# ---------------------------------------------------------------------------
+
+class PingRequest(BaseModel):
+    address: str
+    count: Optional[int] = 3
+    interval: Optional[int] = 1
+    size: Optional[int] = 56
+
+
+class TracerouteRequest(BaseModel):
+    address: str
+    max_hops: Optional[int] = 30
+    packet_size: Optional[int] = 56

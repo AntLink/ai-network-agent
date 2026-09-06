@@ -1,0 +1,850 @@
+data: {"type": "start", "id": "evt-start-1787813491", "session_id": null, "device_ids": ["static-routing-mt1"], "lab_id": null, "project_id": null, "environment": "lab", "analysis": {"intent": {"type": "network_change", "targets": [{"kind": "device", "id": "static-routing-mt1", "name": "SR-MT1", "vendor": "mikrotik"}], "policy": "APPROVAL_REQUIRED", "confidence": 0.86, "reason": "Request can change device, lab, service, or workspace state", "risk": "medium", "ambiguous": false, "missing_context": "", "suggested_tools": ["devices.config", "devices.backup_config", "devices.deploy_config", "devices.verify_change", "mikrotik.exec_readonly"]}, "tools": [{"name": "devices.config", "namespace": "devices", "description": "Collect running configuration", "inputSchema": {"device_id": "string"}, "outputSchema": {"status": "string", "tool": "string", "policy": "string", "evidence": "string", "target": "object", "summary": "string", "data": "object", "raw": "string", "error": "string|null"}, "policy": "READ_ONLY", "vendorScope": [], "executionScope": "device", "requiresApproval": false, "evidenceType": "backend_snapshot", "timeoutSeconds": 30, "rollbackSupported": false, "auditFields": ["session_id", "task_id", "target", "policy", "risk", "result"]}, {"name": "mikrotik.exec_readonly", "namespace": "mikrotik", "description": "Run MikroTik RouterOS read-only command", "inputSchema": {"device_id": "string", "command": "string"}, "outputSchema": {"status": "string", "tool": "string", "policy": "string", "evidence": "string", "target": "object", "summary": "string", "data": "object", "raw": "string", "error": "string|null"}, "policy": "READ_ONLY", "vendorScope": ["mikrotik"], "executionScope": "device", "requiresApproval": false, "evidenceType": "live_command_output", "timeoutSeconds": 30, "rollbackSupported": false, "auditFields": ["session_id", "task_id", "target", "policy", "risk", "result"]}]}}
+
+data: {"type": "workflow_state", "id": "workflow-8727c224d8", "taskId": "wf-1787813491", "state": "thinking", "label": "Thinking", "detail": "Backend sedang membaca konteks permintaan.", "activeIndex": 0, "eventsCount": 0, "devices": ["static-routing-mt1"], "createdAt": "2026-08-27T14:51:31.156949"}
+
+data: {"type": "plan", "id": "plan-1787813492", "task": "Inspect network state", "devices": ["static-routing-mt1"], "plannedActions": ["Collect current device state", "Check interfaces and routing", "Run validation probes", "Summarize findings"], "risk": "low", "requiresApproval": false, "createdAt": "2026-08-27T14:51:32.397802"}
+
+data: {"type": "workflow_state", "id": "workflow-a958a25275", "taskId": "plan-1787813492", "state": "planning", "label": "Planning", "detail": "Rencana tindakan sudah disusun.", "activeIndex": 1, "eventsCount": 1, "devices": ["static-routing-mt1"], "createdAt": "2026-08-27T14:51:32.397959"}
+
+data: {"type": "device_state", "id": "state-cd42c65d74", "taskId": "plan-1787813492", "deviceId": "static-routing-mt1", "device": "SR-MT1", "vendor": "mikrotik", "platform": "routeros", "summary": "1 device snapshot(s) collected", "content": "{\n  \"snapshots\": [\n    {\n      \"device_id\": \"static-routing-mt1\",\n      \"facts\": {\n        \"id\": \"static-routing-mt1\",\n        \"hostname\": \"SR-MT1\",\n        \"management_address\": \"172.22.134.144\",\n        \"management_port\": 2203,\n        \"vendor\": \"mikrotik\",\n        \"platform\": \"routeros\",\n        \"transport\": \"ssh\",\n        \"status\": \"active\",\n        \"console_host\": \"172.22.134.144\",\n        \"console_port\": 5008,\n        \"device_type\": \"virtual\",\n        \"model\": \"CHR\",\n        \"lab\": \"Static-Routing-Lab\"\n      },\n      \"health\": {\n        \"device_id\": \"static-routing-mt1\",\n        \"status\": \"online\",\n        \"reachable\": true,\n        \"ssh_banner\": \"SSH-2.0-ROSSSH\",\n        \"resource\": {\n          \"data\": {\n            \"uptime\": \"19h59m26s\",\n            \"version\": \"7.22.1 (stable)\",\n            \"build-time\": \"2026-03-23 14:35:15\",\n            \"factory-software\": \"7.1\",\n            \"free-memory\": \"542.6MiB\",\n            \"total-memory\": \"768.0MiB\",\n            \"cpu\": \"QEMU\",\n            \"cpu-count\": \"1\",\n            \"cpu-frequency\": \"2400MHz\",\n            \"cpu-load\": \"6%\",\n            \"free-hdd-space\": \"69.3MiB\",\n            \"total-hdd-space\": \"89.2MiB\",\n            \"write-sect-since-reboot\": \"9792\",\n            \"write-sect-total\": \"9792\",\n            \"architecture-name\": \"x86_64\",\n            \"board-name\": \"CHR QEMU Ubuntu 26.04 PC (i440FX + PIIX, 1996)\",\n            \"platform\": \"MikroTik\"\n          },\n          \"raw\": \"                   uptime: 19h59m26s                                     \\r\\n                  version: 7.22.1 (stable)                               \\r\\n               build-time: 2026-03-23 14:35:15                           \\r\\n         factory-software: 7.1                                           \\r\\n              free-memory: 542.6MiB                                      \\r\\n             total-memory: 768.0MiB                                      \\r\\n                      cpu: QEMU                                          \\r\\n                cpu-count: 1                                             \\r\\n            cpu-frequency: 2400MHz                                       \\r\\n                 cpu-load: 6%                                            \\r\\n           free-hdd-space: 69.3MiB                                       \\r\\n          total-hdd-space: 89.2MiB                                       \\r\\n  write-sect-since-reboot: 9792                                          \\r\\n         write-sect-total: 9792                                          \\r\\n        architecture-name: x86_64                                        \\r\\n               board-name: CHR QEMU Ubuntu 26.04 PC (i440FX + PIIX, 1996)\\r\\n                 platform: MikroTik                                      \\r\\n\\r\\n\"\n        }\n      },\n      \"interfaces\": {\n        \"data\": [\n          {\n            \"_index\": 0,\n            \"name\": \"ether1\",\n            \"default-name\": \"ether1\",\n            \"type\": \"ether\",\n            \"mtu\": \"1500\",\n            \"actual-mtu\": \"1500\",\n            \"vrf\": \"main\",\n            \"mac-address\": \"0C:A7:88:BC:00:00\",\n            \"last-link-up-time\": \"2026-08-26 18:52:12\",\n            \"link-downs\": \"0\"\n          },\n          {\n            \"_index\": 1,\n            \"name\": \"ether2\",\n            \"default-name\": \"ether2\",\n            \"type\": \"ether\",\n            \"mtu\": \"1500\",\n            \"actual-mtu\": \"1500\",\n            \"vrf\": \"main\",\n            \"mac-address\": \"0C:A7:88:BC:00:01\",\n            \"last-link-up-time\": \"2026-08-26 18:52:13\",\n            \"link-downs\": \"0\"\n          },\n          {\n            \"_index\": 2,\n            \"name\": \"ether3\",\n            \"default-name\": \"ether3\",\n            \"type\": \"ether\",\n            \"mtu\": \"1500\",\n            \"actual-mtu\": \"1500\",\n            \"vrf\": \"main\",\n            \"mac-address\": \"0C:A7:88:BC:00:02\",\n            \"link-downs\": \"0\"\n          },\n          {\n            \"_index\": 3,\n            \"name\": \"ether4\",\n            \"default-name\": \"ether4\",\n            \"type\": \"ether\",\n            \"mtu\": \"1500\",\n            \"actual-mtu\": \"1500\",\n            \"vrf\": \"main\",\n            \"mac-address\": \"0C:A7:88:BC:00:03\",\n            \"last-link-up-time\": \"2026-08-26 20:02:46\",\n            \"link-downs\": \"0\"\n          },\n          {\n            \"_index\": 4,\n            \"name\": \"lo\",\n            \"type\": \"loopback\",\n            \"mtu\": \"65536\",\n            \"actual-mtu\": \"65536\",\n            \"vrf\": \"main\",\n            \"mac-address\": \"00:00:00:00:00:00\",\n            \"last-link-up-time\": \"2026-08-26 18:52:11\",\n            \"link-downs\": \"0\"\n          }\n        ],\n        \"raw\": \"Flags: D - DYNAMIC; X - DISABLED; I - INACTIVE, R - RUNNING; S - SLAVE; \\r\\nP - PASSTHROUGH \\r\\n 0   R   name=\\\"ether1\\\" default-name=\\\"ether1\\\" type=\\\"ether\\\" mtu=1500 \\r\\n         actual-mtu=1500 vrf=main mac-address=0C:A7:88:BC:00:00 \\r\\n         last-link-up-time=2026-08-26 18:52:12 link-downs=0 \\r\\n\\r\\n 1   R   name=\\\"ether2\\\" default-name=\\\"ether2\\\" type=\\\"ether\\\" mtu=1500 \\r\\n         actual-mtu=1500 vrf=main mac-address=0C:A7:88:BC:00:01 \\r\\n         last-link-up-time=2026-08-26 18:52:13 link-downs=0 \\r\\n\\r\\n 2       name=\\\"ether3\\\" default-name=\\\"ether3\\\" type=\\\"ether\\\" mtu=1500 \\r\\n         actual-mtu=1500 vrf=main mac-address=0C:A7:88:BC:00:02 link-downs=0 \\r\\n\\r\\n 3   R   name=\\\"ether4\\\" default-name=\\\"ether4\\\" type=\\\"ether\\\" mtu=1500 \\r\\n         actual-mtu=1500 vrf=main mac-address=0C:A7:88:BC:00:03 \\r\\n         last-link-up-time=2026-08-26 20:02:46 link-downs=0 \\r\\n\\r\\n 4   R   name=\\\"lo\\\" type=\\\"loopback\\\" mtu=65536 actual-mtu=65536 vrf=main \\r\\n         mac-address=00:00:00:00:00:00 last-link-up-time=2026-08-26 18:52:11 \\r\\n         link-downs=0 \\r\\n\\r\\n\"\n      },\n      \"routes\": {\n        \"data\": [\n          {\n            \"_index\": 0,\n            \"dst-address\": \"0.0.0.0/0\",\n            \"routing-table\": \"main\",\n            \"gateway\": \"192.168.42.1\",\n            \"immediate-gw\": \"192.168.42.1%ether4\",\n            \"distance\": \"1\",\n            \"scope\": \"30\",\n            \"target-scope\": \"10\"\n          },\n          {\n            \"dst-address\": \"0.0.0.0/0\",\n            \"routing-table\": \"main\",\n            \"gateway\": \"192.168.42.1\",\n            \"immediate-gw\": \"192.168.42.1%ether4\",\n            \"distance\": \"1\",\n            \"scope\": \"30\",\n            \"target-scope\": \"10\",\n            \"vrf-interface\": \"ether4\"\n          },\n          {\n            \"_index\": 1,\n            \"dst-address\": \"10.10.12.0/30\",\n            \"routing-table\": \"main\",\n            \"gateway\": \"10.10.13.1\",\n            \"immediate-gw\": \"10.10.13.1%ether1\",\n            \"distance\": \"1\",\n            \"scope\": \"30\",\n            \"target-scope\": \"10\"\n          },\n          {\n            \"dst-address\": \"10.10.13.0/30\",\n            \"routing-table\": \"main\",\n            \"gateway\": \"ether1\",\n            \"immediate-gw\": \"ether1\",\n            \"distance\": \"0\",\n            \"scope\": \"10\",\n            \"target-scope\": \"5\",\n            \"local-address\": \"10.10.13.2%ether1\"\n          },\n          {\n            \"_index\": 2,\n            \"dst-address\": \"192.168.10.0/24\",\n            \"routing-table\": \"main\",\n            \"gateway\": \"10.10.13.1\",\n            \"immediate-gw\": \"10.10.13.1%ether1\",\n            \"distance\": \"1\",\n            \"scope\": \"30\",\n            \"target-scope\": \"10\"\n          },\n          {\n            \"_index\": 3,\n            \"dst-address\": \"192.168.20.0/24\",\n            \"routing-table\": \"main\",\n            \"gateway\": \"10.10.13.1\",\n            \"immediate-gw\": \"10.10.13.1%ether1\",\n            \"distance\": \"1\",\n            \"scope\": \"30\",\n            \"target-scope\": \"10\"\n          },\n          {\n            \"dst-address\": \"192.168.30.0/24\",\n            \"routing-table\": \"main\",\n            \"gateway\": \"ether2\",\n            \"immediate-gw\": \"ether2\",\n            \"distance\": \"0\",\n            \"scope\": \"10\",\n            \"target-scope\": \"5\",\n            \"local-address\": \"192.168.30.1%ether2\"\n          },\n          {\n            \"dst-address\": \"192.168.42.0/24\",\n            \"routing-table\": \"main\",\n            \"gateway\": \"ether4\",\n            \"immediate-gw\": \"ether4\",\n            \"distance\": \"0\",\n            \"scope\": \"10\",\n            \"target-scope\": \"5\",\n            \"local-address\": \"192.168.42.52%ether4\"\n          }\n        ],\n        \"raw\": \"Flags: D - DYNAMIC; X - DISABLED, I - INACTIVE, A - ACTIVE; \\r\\nc - CONNECT, s - STATIC, r - RIP, b - BGP, o - OSPF, i - IS-IS, d - DHCP, v - VPN, m - MODEM, y - BGP-MPLS-VPN;\\r\\nH - HW-OFFLOADED; + - ECMP \\r\\n 0  As + dst-address=0.0.0.0/0 routing-table=main gateway=192.168.42.1 \\r\\n         immediate-gw=192.168.42.1%ether4 distance=1 scope=30 target-scope=10 \\r\\n\\r\\n   DAd + dst-address=0.0.0.0/0 routing-table=main gateway=192.168.42.1 \\r\\n         immediate-gw=192.168.42.1%ether4 distance=1 scope=30 target-scope=10 \\r\\n         vrf-interface=ether4 \\r\\n\\r\\n 1  As   dst-address=10.10.12.0/30 routing-table=main gateway=10.10.13.1 \\r\\n         immediate-gw=10.10.13.1%ether1 distance=1 scope=30 target-scope=10 \\r\\n\\r\\n   DAc   dst-address=10.10.13.0/30 routing-table=main gateway=ether1 \\r\\n         immediate-gw=ether1 distance=0 scope=10 target-scope=5 \\r\\n         local-address=10.10.13.2%ether1 \\r\\n\\r\\n 2  As   dst-address=192.168.10.0/24 routing-table=main gateway=10.10.13.1 \\r\\n         immediate-gw=10.10.13.1%ether1 distance=1 scope=30 target-scope=10 \\r\\n\\r\\n 3  As   dst-address=192.168.20.0/24 routing-table=main gateway=10.10.13.1 \\r\\n         immediate-gw=10.10.13.1%ether1 distance=1 scope=30 target-scope=10 \\r\\n\\r\\n   DAc   dst-address=192.168.30.0/24 routing-table=main gateway=ether2 \\r\\n         immediate-gw=ether2 distance=0 scope=10 target-scope=5 \\r\\n         local-address=192.168.30.1%ether2 \\r\\n\\r\\n   DAc   dst-address=192.168.42.0/24 routing-table=main gateway=ether4 \\r\\n         immediate-gw=ether4 distance=0 scope=10 target-scope=5 \\r\\n         local-address=192.168.42.52%ether4 \\r\\n\\r\\n\"\n      }\n    }\n  ]\n}", "devices": ["static-routing-mt1"], "createdAt": "2026-08-27T14:51:32.519257"}
+
+data: {"type": "workflow_state", "id": "workflow-a36b035c6b", "taskId": "plan-1787813492", "state": "running", "label": "Running", "detail": "Backend menjalankan langkah yang disepakati.", "activeIndex": 3, "eventsCount": 4, "devices": ["static-routing-mt1"], "createdAt": "2026-08-27T14:51:32.600246"}
+
+data: {"type": "task_progress", "id": "progress-1787813493-1", "taskId": "plan-1787813492", "step": "Collect current device state", "status": "running", "message": "Collect current device state...", "order": 1, "total": 4, "createdAt": "2026-08-27T14:51:32.600392"}
+
+data: {"type": "task_progress", "id": "progress-1787813493-2", "taskId": "plan-1787813492", "step": "Check interfaces and routing", "status": "running", "message": "Check interfaces and routing...", "order": 2, "total": 4, "createdAt": "2026-08-27T14:51:32.681536"}
+
+data: {"type": "task_progress", "id": "progress-1787813493-3", "taskId": "plan-1787813492", "step": "Run validation probes", "status": "running", "message": "Run validation probes...", "order": 3, "total": 4, "createdAt": "2026-08-27T14:51:32.761739"}
+
+data: {"type": "task_progress", "id": "progress-1787813493-4", "taskId": "plan-1787813492", "step": "Summarize findings", "status": "success", "message": "Summarize findings...", "order": 4, "total": 4, "createdAt": "2026-08-27T14:51:32.842465"}
+
+data: {"type": "text", "text": "Ring"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "asan"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Device"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " SR"}
+
+data: {"type": "text", "text": "-M"}
+
+data: {"type": "text", "text": "T"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "static"}
+
+data: {"type": "text", "text": "-routing"}
+
+data: {"type": "text", "text": "-mt"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "),"}
+
+data: {"type": "text", "text": " status"}
+
+data: {"type": "text", "text": " online"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Router"}
+
+data: {"type": "text", "text": "OS"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": " sed"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": " tidak"}
+
+data: {"type": "text", "text": " akt"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "tan"}
+
+data: {"type": "text", "text": "pa"}
+
+data: {"type": "text", "text": " flag"}
+
+data: {"type": "text", "text": " RUN"}
+
+data: {"type": "text", "text": "NING"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " bel"}
+
+data: {"type": "text", "text": "um"}
+
+data: {"type": "text", "text": " mem"}
+
+data: {"type": "text", "text": "il"}
+
+data: {"type": "text", "text": "iki"}
+
+data: {"type": "text", "text": " al"}
+
+data: {"type": "text", "text": "amat"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Tem"}
+
+data: {"type": "text", "text": "uan"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "d"}
+
+data: {"type": "text", "text": "ari"}
+
+data: {"type": "text", "text": " state"}
+
+data: {"type": "text", "text": " backend"}
+
+data: {"type": "text", "text": "):"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "name"}
+
+data: {"type": "text", "text": "=\""}
+
+data: {"type": "text", "text": "ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "\""}
+
+data: {"type": "text", "text": " default"}
+
+data: {"type": "text", "text": "-name"}
+
+data: {"type": "text", "text": "=\""}
+
+data: {"type": "text", "text": "ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "\""}
+
+data: {"type": "text", "text": " type"}
+
+data: {"type": "text", "text": "=\""}
+
+data: {"type": "text", "text": "ether"}
+
+data: {"type": "text", "text": "\"`,"}
+
+data: {"type": "text", "text": " tidak"}
+
+data: {"type": "text", "text": " ada"}
+
+data: {"type": "text", "text": " flag"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "R"}
+
+data: {"type": "text", "text": "`,"}
+
+data: {"type": "text", "text": " tidak"}
+
+data: {"type": "text", "text": " ada"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "last"}
+
+data: {"type": "text", "text": "-link"}
+
+data: {"type": "text", "text": "-up"}
+
+data: {"type": "text", "text": "-time"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " \u2192"}
+
+data: {"type": "text", "text": " link"}
+
+data: {"type": "text", "text": " down"}
+
+data: {"type": "text", "text": " /"}
+
+data: {"type": "text", "text": " bel"}
+
+data: {"type": "text", "text": "um"}
+
+data: {"type": "text", "text": " akt"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Tid"}
+
+data: {"type": "text", "text": "ak"}
+
+data: {"type": "text", "text": " ada"}
+
+data: {"type": "text", "text": " entry"}
+
+data: {"type": "text", "text": " al"}
+
+data: {"type": "text", "text": "amat"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " snapshot"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Anal"}
+
+data: {"type": "text", "text": "isis"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " Pen"}
+
+data: {"type": "text", "text": "amb"}
+
+data: {"type": "text", "text": "ahan"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " dil"}
+
+data: {"type": "text", "text": "ak"}
+
+data: {"type": "text", "text": "ukan"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " tet"}
+
+data: {"type": "text", "text": "api"}
+
+data: {"type": "text", "text": " k"}
+
+data: {"type": "text", "text": "arena"}
+
+data: {"type": "text", "text": " ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": " down"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " interface"}
+
+data: {"type": "text", "text": " tidak"}
+
+data: {"type": "text", "text": " akan"}
+
+data: {"type": "text", "text": " ber"}
+
+data: {"type": "text", "text": "oper"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " samp"}
+
+data: {"type": "text", "text": "ai"}
+
+data: {"type": "text", "text": " link"}
+
+data: {"type": "text", "text": " phys"}
+
+data: {"type": "text", "text": "ik"}
+
+data: {"type": "text", "text": " mel"}
+
+data: {"type": "text", "text": "ak"}
+
+data: {"type": "text", "text": "ukan"}
+
+data: {"type": "text", "text": " up"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": " Ini"}
+
+data: {"type": "text", "text": " w"}
+
+data: {"type": "text", "text": "ajar"}
+
+data: {"type": "text", "text": " untuk"}
+
+data: {"type": "text", "text": " top"}
+
+data: {"type": "text", "text": "olog"}
+
+data: {"type": "text", "text": "i"}
+
+data: {"type": "text", "text": " lab"}
+
+data: {"type": "text", "text": " G"}
+
+data: {"type": "text", "text": "NS"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Re"}
+
+data: {"type": "text", "text": "kom"}
+
+data: {"type": "text", "text": "end"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Router"}
+
+data: {"type": "text", "text": "OS"}
+
+data: {"type": "text", "text": "):"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "router"}
+
+data: {"type": "text", "text": "os"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "/ip"}
+
+data: {"type": "text", "text": " address"}
+
+data: {"type": "text", "text": " add"}
+
+data: {"type": "text", "text": " address"}
+
+data: {"type": "text", "text": "="}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": " interface"}
+
+data: {"type": "text", "text": "="}
+
+data: {"type": "text", "text": "ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Lang"}
+
+data: {"type": "text", "text": "kah"}
+
+data: {"type": "text", "text": " ber"}
+
+data: {"type": "text", "text": "ikut"}
+
+data: {"type": "text", "text": "nya"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " J"}
+
+data: {"type": "text", "text": "al"}
+
+data: {"type": "text", "text": "ank"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " at"}
+
+data: {"type": "text", "text": "as"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " SR"}
+
+data: {"type": "text", "text": "-M"}
+
+data: {"type": "text", "text": "T"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " k"}
+
+data: {"type": "text", "text": "em"}
+
+data: {"type": "text", "text": "ud"}
+
+data: {"type": "text", "text": "ian"}
+
+data: {"type": "text", "text": " ver"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "router"}
+
+data: {"type": "text", "text": "os"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "/ip"}
+
+data: {"type": "text", "text": " address"}
+
+data: {"type": "text", "text": " print"}
+
+data: {"type": "text", "text": " where"}
+
+data: {"type": "text", "text": " interface"}
+
+data: {"type": "text", "text": "="}
+
+data: {"type": "text", "text": "ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "/interface"}
+
+data: {"type": "text", "text": " print"}
+
+data: {"type": "text", "text": " where"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": "="}
+
+data: {"type": "text", "text": "ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "plan"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "["}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " {\""}
+
+data: {"type": "text", "text": "step"}
+
+data: {"type": "text", "text": "\":"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "action"}
+
+data: {"type": "text", "text": "\":"}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "T"}
+
+data: {"type": "text", "text": "ambah"}
+
+data: {"type": "text", "text": "kan"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": " address"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " interface"}
+
+data: {"type": "text", "text": " ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "\","}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "command"}
+
+data: {"type": "text", "text": "\":"}
+
+data: {"type": "text", "text": " \"/"}
+
+data: {"type": "text", "text": "ip"}
+
+data: {"type": "text", "text": " address"}
+
+data: {"type": "text", "text": " add"}
+
+data: {"type": "text", "text": " address"}
+
+data: {"type": "text", "text": "="}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "9"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "5"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": " interface"}
+
+data: {"type": "text", "text": "="}
+
+data: {"type": "text", "text": "ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "\"},"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " {\""}
+
+data: {"type": "text", "text": "step"}
+
+data: {"type": "text", "text": "\":"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "action"}
+
+data: {"type": "text", "text": "\":"}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "Ver"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " al"}
+
+data: {"type": "text", "text": "amat"}
+
+data: {"type": "text", "text": " IP"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " status"}
+
+data: {"type": "text", "text": " link"}
+
+data: {"type": "text", "text": " ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "\","}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "command"}
+
+data: {"type": "text", "text": "\":"}
+
+data: {"type": "text", "text": " \"/"}
+
+data: {"type": "text", "text": "ip"}
+
+data: {"type": "text", "text": " address"}
+
+data: {"type": "text", "text": " print"}
+
+data: {"type": "text", "text": " where"}
+
+data: {"type": "text", "text": " interface"}
+
+data: {"type": "text", "text": "="}
+
+data: {"type": "text", "text": "ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": ";"}
+
+data: {"type": "text", "text": " /"}
+
+data: {"type": "text", "text": "interface"}
+
+data: {"type": "text", "text": " print"}
+
+data: {"type": "text", "text": " where"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": "="}
+
+data: {"type": "text", "text": "ether"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "\"}"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "]"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "verification", "id": "verify-43af737c35", "taskId": "plan-1787813492", "devices": ["static-routing-mt1"], "status": "passed", "message": "Device state reviewed and response grounded against collected context.", "checks": ["device_state", "routing", "interfaces", "follow-up continuity"], "createdAt": "2026-08-27T14:51:46.576600"}
+
+data: {"type": "workflow_state", "id": "workflow-3c6e2bf80b", "taskId": "plan-1787813492", "state": "completed", "label": "Completed", "detail": "Workflow selesai dan hasil sudah diverifikasi.", "activeIndex": 5, "eventsCount": 5, "devices": ["static-routing-mt1"], "createdAt": "2026-08-27T14:51:46.576743"}
+
+data: {"type": "done", "id": "evt-done-1787813507", "session_id": null}
+

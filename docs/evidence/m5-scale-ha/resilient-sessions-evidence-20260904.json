@@ -1,0 +1,25 @@
+{
+  "milestone": "m5-scale-ha",
+  "component": "redis-resilience-heartbeat-ratelimit",
+  "timestamp_utc": "2026-09-04T16:50:00Z",
+  "implementation": {
+    "resilient_sessions": "backend/app/services/resilient_sessions.py",
+    "in_memory_registry": "backend/app/services/edge_sessions.py",
+    "redis_registry": "backend/app/services/redis_edge_sessions.py",
+    "recovery_worker": "backend/app/services/task_attempt_recovery.py"
+  },
+  "unit_tests": "backend/tests/test_resilient_sessions.py (5 tests) - PASS",
+  "verified_behaviors": [
+    "Redis connection failure falls back to in-memory registry (fail-closed, no crash)",
+    "Redis recovery restores primary registry after transient error",
+    "Heartbeat rate limiter rejects heartbeats faster than configured interval",
+    "Heartbeat rate limiter allows after interval elapses",
+    "revoke propagates to both primary and fallback registries"
+  ],
+  "remaining_m5_gaps": [
+    "live Redis HA failover evidence (two Central instances, session routing across node loss)",
+    "heartbeat write load bounding/batching to PostgreSQL",
+    "quotas/backpressure testing",
+    "live task lease reconciliation across failover"
+  ]
+}

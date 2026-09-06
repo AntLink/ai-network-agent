@@ -1,0 +1,53 @@
+{
+  "slice": "m1-vertical-slice-apilevel",
+  "timestamp_utc": "2026-09-03T17:22:18Z",
+  "api": "POST /api/v1/tasks/capability -> 200",
+  "central": "uvicorn app.main:app on 127.0.0.1:8010",
+  "request": {
+    "device_id": "r1-m1",
+    "capability": "device.read.facts",
+    "credential_ref": "r1-lab",
+    "execution_location": "EDGE",
+    "edge_id": "edge-001",
+    "idempotency_key": "m1-cap-0002"
+  },
+  "task": {
+    "id": "task-20260903172217-556e67",
+    "name": "device.read.facts - R1",
+    "status": "success",
+    "execution_location": "EDGE",
+    "attempt_id": "attempt-a9ef73391ef34356"
+  },
+  "normalized_result": {
+    "attempt_id": "attempt-a9ef73391ef34356",
+    "capability": "device.read.facts",
+    "data": {
+      "hostname": "R1",
+      "image_file": "flash0:/vios-adventerprisek9-m",
+      "platform": "ios",
+      "uptime": "12 minutes",
+      "vendor": "cisco",
+      "version": "15.6(2)T"
+    }
+  },
+  "audit_events": [
+    {
+      "timestamp": "2026-09-04 01:22:18,263",
+      "device_id": "r1-m1",
+      "action": "TASK-EDGE-EXECUTION",
+      "command": "device.read.facts",
+      "user": "api",
+      "result": "success",
+      "source": "api"
+    },
+    {
+      "timestamp": "2026-09-04 01:17:49,980",
+      "device_id": "r1-m1",
+      "action": "TASK-EDGE-DISPATCH",
+      "command": "device.read.facts",
+      "user": "api",
+      "result": "success",
+      "source": "api"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 ---
 description: Diagnose network issues and produce analysis. Read-only.
 mode: subagent
-model: claude-3.7-sonnet
+model: 9router/opencode-reasoning
 permission:
   device_get_*: allow
   device_get_monitoring: allow

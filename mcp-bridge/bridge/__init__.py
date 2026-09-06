@@ -1,0 +1,1 @@
+"""MCP bridge package for the ai-network-agent FastAPI backend."""

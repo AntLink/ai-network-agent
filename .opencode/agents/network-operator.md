@@ -1,7 +1,7 @@
 ---
 description: Execute approved network configuration changes. Requires explicit approval.
 mode: primary
-model: claude-3.7-sonnet
+model: 9router/opencode-reasoning
 permission:
   device_get_*: allow
   config_plan: ask

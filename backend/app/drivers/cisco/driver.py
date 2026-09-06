@@ -13,6 +13,7 @@ from app.drivers.cisco.cli import (
     run_config_lines,
     send_interactive,
 )
+from app.drivers.cisco.parser import IOSParser
 from app.transports.ssh import SSHTransport, SSHConnectError, SSHTimeoutError, PromptTimeoutError
 from app.transports.console import ConsoleTransport
 
@@ -24,6 +25,17 @@ IOSV_LEGACY_SSH_OPTIONS = {
 }
 
 TXN_FLASH_FILE = "flash0:pre-txn.cfg"
+_DEVICE_LOCKS: dict[tuple[int, str], asyncio.Lock] = {}
+
+
+def _device_lock(device_id: str) -> asyncio.Lock:
+    """Serialize CLI access per device within the active event loop."""
+    key = (id(asyncio.get_running_loop()), device_id)
+    lock = _DEVICE_LOCKS.get(key)
+    if lock is None:
+        lock = asyncio.Lock()
+        _DEVICE_LOCKS[key] = lock
+    return lock
 
 
 def _prefix_to_mask(address: str) -> tuple[str, str]:
@@ -48,10 +60,12 @@ def _device_credentials(device: dict) -> tuple[str, str, str]:
 class CiscoDriver(BaseDriver):
     def _transport(self):
         username, password, _ = _device_credentials(self.device)
+        port = int(self.device.get("management_port") or 22)
         return SSHTransport(
             self.device["management_address"],
             username,
             password,
+            port=port,
             connect_options=IOSV_LEGACY_SSH_OPTIONS,
         )
 
@@ -68,7 +82,10 @@ class CiscoDriver(BaseDriver):
             int(port),
             password=password,
             enable_password=secret,
+            username=None,
+            enable=True,
             device_id=self.device["id"],
+            pager_off_command="terminal length 0",
         )
 
     @property
@@ -100,145 +117,170 @@ class CiscoDriver(BaseDriver):
         - otherwise SSH first; if SSH connection fails and a console is
           configured, retry once over console (auto-fallback, audited).
         """
-        if self._prefer_console:
-            con = self._console_transport()
-            if con:
+        async with _device_lock(self.device["id"]):
+            if self._prefer_console:
+                con = self._console_transport()
+                if con:
+                    out = (await con.run(command)).strip()
+                    raise_for_ios_error(out, command)
+                    return out
+
+            try:
+                out = (await self._transport().run(command)).strip()
+                raise_for_ios_error(out, command)
+                return out
+            except CiscoCLIError:
+                raise  # command reached device and failed; console won't help
+            except Exception as e:
+                con = self._console_transport()
+                if not con:
+                    raise
+                log_event(
+                    self.device["id"], "CONSOLE-FALLBACK",
+                    f"SSH failed ({type(e).__name__}: {e}); retrying via console",
+                )
                 out = (await con.run(command)).strip()
                 raise_for_ios_error(out, command)
                 return out
-
-        try:
-            out = (await self._transport().run(command)).strip()
-            raise_for_ios_error(out, command)
-            return out
-        except CiscoCLIError:
-            raise  # command reached device and failed; console won't help
-        except Exception as e:
-            con = self._console_transport()
-            if not con:
-                raise
-            log_event(
-                self.device["id"], "CONSOLE-FALLBACK",
-                f"SSH failed ({type(e).__name__}: {e}); retrying via console",
-            )
-            out = (await con.run(command)).strip()
-            raise_for_ios_error(out, command)
-            return out
 
     async def exec_logged(self, command: str) -> str:
         return await self._logged("EXEC", command, lambda: self._exec(command))
 
     async def _configure(self, lines: list[str]) -> str:
         """Run configuration commands with console fallback on SSH failure."""
-        if self._prefer_console:
-            con = self._console_transport()
-            if con:
-                return await self._logged("CONFIG", "; ".join(lines), lambda: con.run_config(lines))
+        async with _device_lock(self.device["id"]):
+            if self._prefer_console:
+                con = self._console_transport()
+                if con:
+                    return await self._logged("CONFIG", "; ".join(lines), lambda: con.run_config(lines))
 
-        try:
-            return await self._logged("CONFIG", "; ".join(lines), lambda: run_config_lines(self._transport(), lines))
-        except CiscoCLIError:
-            raise
-        except Exception as e:
-            con = self._console_transport()
-            if not con:
+            try:
+                return await self._logged("CONFIG", "; ".join(lines), lambda: run_config_lines(self._transport(), lines))
+            except CiscoCLIError:
                 raise
-            log_event(
-                self.device["id"], "CONSOLE-FALLBACK",
-                f"SSH config failed ({type(e).__name__}: {e}); retrying via console",
-            )
-            return await self._logged("CONFIG", "; ".join(lines), lambda: con.run_config(lines))
+            except Exception as e:
+                con = self._console_transport()
+                if not con:
+                    raise
+                log_event(
+                    self.device["id"], "CONSOLE-FALLBACK",
+                    f"SSH config failed ({type(e).__name__}: {e}); retrying via console",
+                )
+                return await self._logged("CONFIG", "; ".join(lines), lambda: con.run_config(lines))
 
     # ------------------------------------------------------------------
     # Read-only (READ)
     # ------------------------------------------------------------------
 
     async def identify(self):
-        return {"vendor": "cisco", "raw": await self.exec_logged("show version")}
+        raw = await self.exec_logged("show version")
+        return {"vendor": "cisco", "data": IOSParser.parse_version(raw), "raw": raw}
 
     async def get_facts(self):
-        return {"raw": await self.exec_logged("show version")}
+        raw = await self.exec_logged("show version")
+        return {"data": IOSParser.parse_version(raw), "raw": raw}
 
     async def get_interfaces(self):
-        return {"raw": await self.exec_logged("show ip interface brief")}
+        raw = await self.exec_logged("show ip interface brief")
+        return {"data": IOSParser.parse_interfaces_brief(raw), "raw": raw}
 
     async def get_interfaces_detail(self):
-        return {"raw": await self.exec_logged("show interfaces")}
+        raw = await self.exec_logged("show interfaces")
+        return {"data": IOSParser.parse_interfaces_detail(raw), "raw": raw}
 
     async def get_routes(self):
-        return {"raw": await self.exec_logged("show ip route")}
+        raw = await self.exec_logged("show ip route")
+        return {"data": IOSParser.parse_routes(raw), "raw": raw}
 
     async def get_arp(self):
-        return {"raw": await self.exec_logged("show ip arp")}
+        raw = await self.exec_logged("show ip arp")
+        return {"data": IOSParser.parse_arp(raw), "raw": raw}
 
     async def get_cpu_memory(self):
-        cpu = await self.exec_logged("show processes cpu summary")
+        cpu = await self.exec_logged("show processes cpu")
         mem = await self.exec_logged("show memory summary")
-        return {"cpu": cpu, "memory": mem}
+        return {"data": IOSParser.parse_cpu_memory(cpu, mem), "raw": f"CPU:\n{cpu}\n\nMemory:\n{mem}"}
 
     async def get_acls(self):
-        return {"raw": await self.exec_logged("show access-lists")}
+        raw = await self.exec_logged("show access-lists")
+        return {"data": IOSParser.parse_access_lists(raw), "raw": raw}
 
     async def get_cdp_neighbors(self):
-        return {"raw": await self.exec_logged("show cdp neighbors detail")}
+        raw = await self.exec_logged("show cdp neighbors detail")
+        return {"data": IOSParser.parse_cdp_neighbors(raw), "raw": raw}
 
     async def get_nat_translations(self):
-        return {"raw": await self.exec_logged("show ip nat translation")}
+        raw = await self.exec_logged("show ip nat translation")
+        return {"data": IOSParser.parse_nat_translations(raw), "raw": raw}
+
+    async def get_vlans(self):
+        raw = await self.exec_logged("show vlan brief")
+        return {"data": IOSParser.parse_vlans_brief(raw), "raw": raw}
 
     async def get_startup_config(self):
-        return {"raw": await self.exec_logged("show startup-config")}
+        raw = await self.exec_logged("show startup-config")
+        return {"data": raw, "raw": raw}
 
     async def get_logs(self):
-        return {"raw": await self.exec_logged("show logging")}
+        raw = await self.exec_logged("show logging")
+        return {"data": IOSParser.parse_logs(raw), "raw": raw}
 
     async def get_config(self):
-        return {"raw": await self.exec_logged("show running-config")}
+        raw = await self.exec_logged("show running-config")
+        return {"data": IOSParser.parse_running_config(raw), "raw": raw}
 
     async def backup(self):
         cmd = "show running-config"
         raw = await self._logged("BACKUP", cmd, lambda: self._transport().run(cmd))
-        return {"raw": raw}
+        return {"data": raw, "raw": raw}
 
     # ------------------------------------------------------------------
     # System configuration (CONFIG)
     # ------------------------------------------------------------------
 
     async def set_hostname(self, name: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"hostname {name}", lambda: self._configure([f"hostname {name}"])
         )
+        return {"status": "applied", "output": output}
 
     async def set_dns(self, servers: list[str]):
         lines = ["no ip name-server"] + [f"ip name-server {s}" for s in servers]
-        return await self._logged("CONFIG", "; ".join(lines), lambda: self._configure(lines))
+        output = await self._logged("CONFIG", "; ".join(lines), lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def add_ntp_server(self, server: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"ntp server {server}", lambda: self._configure([f"ntp server {server}"])
         )
+        return {"status": "applied", "output": output}
 
     async def remove_ntp_server(self, server: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"no ntp server {server}", lambda: self._configure([f"no ntp server {server}"])
         )
+        return {"status": "applied", "output": output}
 
     async def set_banner_motd(self, text: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"banner motd", lambda: self._configure([f"banner motd #{text}#"])
         )
+        return {"status": "applied", "output": output}
 
     async def create_local_user(self, username: str, password: str, privilege: int = 1):
         detail = f"username {username} privilege {privilege}"
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", detail,
             lambda: self._configure([f"username {username} privilege {privilege} secret {password}"]),
         )
+        return {"status": "applied", "output": output}
 
     async def delete_local_user(self, username: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"no username {username}",
             lambda: self._configure([f"no username {username}"]),
         )
+        return {"status": "applied", "output": output}
 
     # ------------------------------------------------------------------
     # Interface configuration (CONFIG)
@@ -246,10 +288,11 @@ class CiscoDriver(BaseDriver):
 
     async def interface_set_description(self, interface: str, description: str):
         line = f"description {description}" if description.strip() else "no description"
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"interface {interface}; {line}",
             lambda: self._configure([f"interface {interface}", line]),
         )
+        return {"status": "applied", "output": output}
 
     async def interface_set_address(self, interface: str, address: str):
         if address.lower() == "dhcp":
@@ -265,26 +308,30 @@ class CiscoDriver(BaseDriver):
                 ip, mask = parts
             lines = [f"interface {interface}", f"ip address {ip} {mask}"]
             detail = f"interface {interface}; ip address {ip} {mask}"
-        return await self._logged("CONFIG", detail, lambda: self._configure(lines))
+        output = await self._logged("CONFIG", detail, lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def interface_remove_address(self, interface: str):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"interface {interface}; no ip address",
             lambda: self._configure([f"interface {interface}", "no ip address"]),
         )
+        return {"status": "applied", "output": output}
 
     async def interface_set_mtu(self, interface: str, mtu: int):
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"interface {interface}; mtu {mtu}",
             lambda: self._configure([f"interface {interface}", f"mtu {mtu}"]),
         )
+        return {"status": "applied", "output": output}
 
     async def interface_set_state(self, interface: str, up: bool):
         line = "no shutdown" if up else "shutdown"
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"interface {interface}; {line}",
             lambda: self._configure([f"interface {interface}", line]),
         )
+        return {"status": "applied", "output": output}
 
     # ------------------------------------------------------------------
     # Routing (CONFIG)
@@ -302,12 +349,14 @@ class CiscoDriver(BaseDriver):
         line = f"ip route {target} {gateway}"
         if distance is not None:
             line += f" {distance}"
-        return await self._logged("CONFIG", line, lambda: self._configure([line]))
+        output = await self._logged("CONFIG", line, lambda: self._configure([line]))
+        return {"status": "applied", "output": output}
 
     async def remove_static_route(self, prefix: str, gateway: str):
         target = self._route_target(prefix)
         line = f"no ip route {target} {gateway}"
-        return await self._logged("CONFIG", line, lambda: self._configure([line]))
+        output = await self._logged("CONFIG", line, lambda: self._configure([line]))
+        return {"status": "applied", "output": output}
 
     # ------------------------------------------------------------------
     # ACLs (CONFIG)
@@ -318,51 +367,59 @@ class CiscoDriver(BaseDriver):
         if acl_type not in ("standard", "extended"):
             raise ValueError("acl_type must be standard|extended")
         lines = [f"ip access-list {acl_type} {name}"] + list(rules)
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"ip access-list {acl_type} {name} ({len(rules)} rule)",
             lambda: self._configure(lines),
         )
+        return {"status": "applied", "output": output}
 
     async def acl_delete(self, name: str, acl_type: str):
         acl_type = acl_type.lower()
         if acl_type not in ("standard", "extended"):
             raise ValueError("acl_type must be standard|extended")
         line = f"no ip access-list {acl_type} {name}"
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", line,
             lambda: self._configure([line]),
         )
+        return {"status": "applied", "output": output}
 
     async def acl_apply(self, name: str, interface: str, direction: str):
         direction = direction.lower()
         if direction not in ("in", "out"):
             raise ValueError("direction must be in|out")
         lines = [f"interface {interface}", f"ip access-group {name} {direction}"]
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"ip access-group {name} {direction} on {interface}",
             lambda: self._configure(lines),
         )
+        return {"status": "applied", "output": output}
 
     async def acl_unapply(self, name: str, interface: str, direction: str):
         direction = direction.lower()
         if direction not in ("in", "out"):
             raise ValueError("direction must be in|out")
         lines = [f"interface {interface}", f"no ip access-group {name} {direction}"]
-        return await self._logged(
+        output = await self._logged(
             "CONFIG", f"no ip access-group {name} {direction} on {interface}",
             lambda: self._configure(lines),
         )
+        return {"status": "applied", "output": output}
 
     # ------------------------------------------------------------------
     # Operations (TEST / CONFIG / AUDIT)
     # ------------------------------------------------------------------
 
     async def apply(self, commands: list[str]):
-        outputs = await self._logged(
-            "EXEC", f"batch[{len(commands)}]: {'; '.join(commands)}",
-            lambda: run_batch(self._transport(), commands),
-        )
-        return {"success": True, "outputs": outputs}
+        """Apply configuration commands in `configure terminal` (SSH/console).
+
+        Agent write path (net_run_command approved / approve_command) sends
+        config-mode commands, so EXEC batch (run_batch) is wrong for them.
+        _configure() already selects console or SSH with console fallback.
+        """
+        detail = f"batch[{len(commands)}]: {'; '.join(commands)}"
+        out = await self._logged("APPLY", detail, lambda: self._configure(commands))
+        return {"success": True, "outputs": [out]}
 
     async def save_config(self):
         """Save running-config to startup AND PROVE it persisted.
@@ -414,16 +471,17 @@ class CiscoDriver(BaseDriver):
         result: dict = {"device_id": self.device["id"]}
         addr = self.device.get("management_address") or ""
         host = addr.split("/")[0]
+        port = int(self.device.get("management_port") or 22)
         try:
             reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(host, 22), timeout=5.0
+                asyncio.open_connection(host, port), timeout=2.0
             )
             result["reachable"] = True
         except Exception as e:
-            result.update(reachable=False, reason=f"TCP/22 unreachable: {e}")
+            result.update(status="unreachable", reachable=False, reason=f"TCP/22 unreachable: {e}")
             return result
         try:
-            banner = await asyncio.wait_for(reader.readline(), timeout=5.0)
+            banner = await asyncio.wait_for(reader.readline(), timeout=2.0)
             result["ssh_banner"] = banner.decode(errors="replace").strip()
         except Exception:
             result["ssh_banner"] = None  # slow banner != unreachable
@@ -433,7 +491,7 @@ class CiscoDriver(BaseDriver):
         try:
             version_out = await self.exec_logged("show version")
         except Exception as e:
-            result.update(flash_ok=None, reason=f"show version failed: {e}")
+            result.update(status="degraded", flash_ok=None, reason=f"show version failed: {e}")
             return result
 
         m = re.search(r"(\S+) bytes of .*[Cc]ompact[Ff]lash", version_out)
@@ -448,6 +506,7 @@ class CiscoDriver(BaseDriver):
             result["flash_ok"] = None
 
         result["flash_broken_hint"] = "%Error opening flash" in version_out
+        result["status"] = "degraded" if result.get("flash_ok") is False else "online"
         return result
 
     # ------------------------------------------------------------------
@@ -580,10 +639,12 @@ class CiscoDriver(BaseDriver):
         lines = [f"vlan {vlan_id}"]
         if name:
             lines.append(f"name {name}")
-        return await self._logged("CONFIG", f"vlan {vlan_id}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"vlan {vlan_id}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def delete_vlan(self, vlan_id: int):
-        return await self._logged("CONFIG", f"no vlan {vlan_id}", lambda: self._configure([f"no vlan {vlan_id}"]))
+        output = await self._logged("CONFIG", f"no vlan {vlan_id}", lambda: self._configure([f"no vlan {vlan_id}"]))
+        return {"status": "applied", "output": output}
 
     async def set_access_port(self, interface: str, vlan_id: int):
         lines = [
@@ -592,7 +653,8 @@ class CiscoDriver(BaseDriver):
             f"switchport access vlan {vlan_id}",
             "spanning-tree portfast",
         ]
-        return await self._logged("CONFIG", f"access {interface} vlan {vlan_id}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"access {interface} vlan {vlan_id}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def set_trunk_port(self, interface: str, allowed_vlans: str = "all"):
         lines = [
@@ -600,7 +662,8 @@ class CiscoDriver(BaseDriver):
             "switchport mode trunk",
             f"switchport trunk allowed vlan {allowed_vlans}",
         ]
-        return await self._logged("CONFIG", f"trunk {interface} allow {allowed_vlans}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"trunk {interface} allow {allowed_vlans}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def create_subinterface(self, parent_interface: str, sub_id: int, vlan_id: int, ip_address: str | None = None):
         """Create L3 subinterface (router-on-a-stick)."""
@@ -610,7 +673,8 @@ class CiscoDriver(BaseDriver):
         ]
         if ip_address:
             lines.append(f"ip address {ip_address}")
-        return await self._logged("CONFIG", f"subif {parent_interface}.{sub_id} vlan {vlan_id}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"subif {parent_interface}.{sub_id} vlan {vlan_id}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def set_svi(self, vlan_id: int, ip_address: str | None = None, shutdown: bool = False):
         """Create / modify Switch Virtual Interface."""
@@ -621,7 +685,8 @@ class CiscoDriver(BaseDriver):
             lines.append("shutdown")
         else:
             lines.append("no shutdown")
-        return await self._logged("CONFIG", f"svi vlan {vlan_id}", lambda: self._configure(lines))
+        output = await self._logged("CONFIG", f"svi vlan {vlan_id}", lambda: self._configure(lines))
+        return {"status": "applied", "output": output}
 
     async def ping_tool(self, address: str, repeat: int = 3, timeout: int = 2):
         import re

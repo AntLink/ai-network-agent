@@ -5,6 +5,7 @@ class DeviceCreate(BaseModel):
     id: str
     hostname: Optional[str] = None
     management_address: str
+    management_port: Optional[int] = None
     vendor: Optional[str] = None
     platform: Optional[str] = None
     transport: Literal["ssh", "rest", "netconf", "console"] = "ssh"

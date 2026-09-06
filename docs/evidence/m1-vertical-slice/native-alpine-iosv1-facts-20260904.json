@@ -1,0 +1,24 @@
+{
+  "evidence_id": "m1-native-alpine-iosv1-facts-20260904",
+  "milestone": "M1",
+  "status": "PASS",
+  "path": "Central API -> Redis session queue -> native Alpine OpenRC Edge -> IOSv1",
+  "edge_id": "edge-001",
+  "device_id": "r1-native-edge001",
+  "device_address": "192.168.1.1",
+  "capability": "device.read.facts",
+  "credential_ref": "a-r1",
+  "execution_location": "EDGE",
+  "normalized_result": {
+    "hostname": "R1",
+    "vendor": "cisco",
+    "platform": "ios",
+    "version": "15.6(2)T",
+    "image_file": "flash0:/vios-adventerprisek9-m"
+  },
+  "task_status": "SUCCEEDED",
+  "attempt_status": "SUCCEEDED",
+  "audit": "TASK-EDGE-EXECUTION recorded",
+  "secret_handling": "credential_ref only; credential values omitted",
+  "verified_at": "2026-09-04T15:00:00Z"
+}

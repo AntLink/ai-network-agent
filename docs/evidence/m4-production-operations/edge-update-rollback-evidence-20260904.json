@@ -1,0 +1,20 @@
+{
+  "milestone": "m4-production-operations",
+  "component": "edge-update-rollback-safety",
+  "timestamp_utc": "2026-09-04T02:55:00Z",
+  "implementation": "backend/app/services/edge_updates.py",
+  "unit_tests": "backend/tests/test_edge_updates.py (14 tests) - PASS",
+  "verified_behaviors": [
+    "SHA-256 digest verification (rejects corrupt package and non-hex digest)",
+    "protocol + driver-capability compatibility gating",
+    "downgrade floor below security minimum rejected",
+    "bounded rollout rings (local/canary/5%/.../100%) with mandatory passed health gate",
+    "update blocked while a non-interruptible task is active",
+    "last-known-good release preserved for bounded-failure rollback",
+    "rollback permitted only when a known-good compatible release exists and no task is active"
+  ],
+  "acceptance_gate_coverage": {
+    "signed Edge update + canary": "safety core VERIFIED; release-signature/Binary distribution install remains deployment",
+    "rollback": "bounded-failure rollback decision logic VERIFIED"
+  }
+}

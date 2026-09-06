@@ -15,4 +15,5 @@ class ConfigApplyRequest(BaseModel):
 
 class ConfigRollbackRequest(BaseModel):
     device_id: str
-    backup_id: str
+    backup_id: Optional[str] = None
+    plan_id: Optional[str] = None

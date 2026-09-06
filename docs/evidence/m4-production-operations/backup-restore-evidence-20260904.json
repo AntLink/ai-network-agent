@@ -1,0 +1,20 @@
+{
+  "milestone": "m4-production-operations",
+  "component": "backup-restore-planning",
+  "timestamp_utc": "2026-09-04T03:30:00Z",
+  "implementation": "backend/app/services/backup_restore.py",
+  "endpoint": "POST /api/v1/backups/{backup_id}/restore (network-admin required, audit-trailed)",
+  "unit_tests": "backend/tests/test_backup_restore.py (6 tests) - PASS",
+  "verified_behaviors": [
+    "restore refused when backup is missing",
+    "restore refused when target device is unknown",
+    "restore refused when selected driver cannot apply config (no safe restore path)",
+    "restore refused when backup is empty",
+    "restore plan reports lines/bytes/vendor/action deterministically"
+  ],
+  "notes": [
+    "Restore planning/eligibility is fail-closed and unit-verified.",
+    "Live device config push is a separate privileged executor step requiring a reachable device (GNS3 lab unavailable this session).",
+    "DB/controller/PKI backup-restore drill remains pending (DR-001)."
+  ]
+}

@@ -1,88 +1,186 @@
-# AI Network Agent V3 Architecture
+# AI Network Agent — Architecture
+
+## System Overview
 
 ```text
-User
-  |
-  v
-OpenCode Agents  (+ Swagger UI /docs)
-  |
-  v
-.opencode/tools/*.ts
-  |
-  | HTTP
-  v
-FastAPI Backend (uvicorn app.main:app --port 8000)
-  |
-  +-- API v1 (/api/v1)
-  |    +-- /devices        : list, identify, facts, interfaces, routes, config, vlans, services, disk, memory, ntp
-  |    +-- /config         : plan / apply / rollback (stub, belum persist)
-  |    +-- /monitoring     : real-time metrics
-  |    +-- /topology       : LLDP/CDP mapping
-  |    +-- /audit          : event trail
-  |    +-- /mikrotik       : vendor-specific suite (88 endpoint total saat ini)
-  |
-  +-- Services        (device_service)
-  +-- Repositories    (inventory/devices.json)
-  +-- Policy          (risk/approval)
-  +-- Drivers
-  |    +-- MikroTik   : facts, interfaces, routes, vlan, bridge,
-  |    |                ip/firewall (filter, nat, mangle, address-list),
-  |    |                routing (static, ospf, bgp), dhcp/pool, dns/ntp,
-  |    |                system (identity, users, logging), wireless,
-  |    |                hotspot (server/profile/user/user-profile/active/
-  |    |                hosts/ip-binding/walled-garden),
-  |    |                PPP & VPN tunnel (secret CRUD, active, kick;
-  |    |                server+client l2tp/pptp/sstp/ovpn/pppoe; pppoe instance)
-  |    +-- Cisco
-  |    +-- Linux      (debian / rhel / embedded)
-  |    +-- Generic
-  |
-  +-- Transports
-       +-- SSH   (asyncssh; connect 10s / command 20s timeout)
-       +-- REST  (planned)
-       +-- NETCONF (planned)
-  |
-  v
-Network Devices
-
-Inventory terdaftar:
-- mikrotik-rb5009-tci-upt-pontianak  36.88.39.234  RB5009UG+S+   (hub L2TP/IPsec, user: ozan)
-- mikrotik-rb951ui-2hnd-home-bagem   192.168.30.1  RB951Ui-2HnD  (client wifi+l2tp, user: admin)
-- linux-embedded                     192.168.162.20 CSMS-SINGKAWANG
-- linux-debian                       172.23.193.80 fauzan
-- linux-ubuntu                       192.168.210.51 ubuntu
-- cisco-iosv-r1                      172.22.45.249 IOSv 15.6(2)T    (lab GNS3)
-- mikrotik-chr-mk-1                  172.22.37.168 CHR 7.22.1       (lab GNS3)
-
-Lab GNS3 multi-vendor (R1/R2/SW1/SW2/MK1 + 5 VPCS): lihat
-`logs/LAB-GNS3-REFERENCE.md` (topologi, port konsol, aturan IDE,
-API controller) dan `logs/SESSION-2026-08-23-gns3-lab-recovery.md`.
-Suite pengujian: `backend/grand_finale_ping.py` (8/8 lulus).
+┌─────────────────────────────────────────────────────────────────┐
+│                        Frontend (React)                         │
+│  Dashboard │ Devices │ Terminal │ Agent │ GNS3 │ Configurations │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │ HTTP/WebSocket/SSE
+┌─────────────────────────────▼───────────────────────────────────┐
+│                     FastAPI Backend (Python)                     │
+├─────────────────────────────────────────────────────────────────┤
+│  API Layer (19 modules)                                         │
+│  /devices /config /monitoring /topology /audit                  │
+│  /mikrotik /cisco /gns3 /policy /terminal                      │
+│  /tasks /alerts /backups /agent /credentials                   │
+│  /settings /discovery /containerlab /ninerouter                │
+├─────────────────────────────────────────────────────────────────┤
+│  Agent Layer                                                    │
+│  ├── AI Providers (OpenAI, Anthropic, Ollama, 9Router)         │
+│  ├── Internal Tools (get_device, ping, validate_config, etc.)  │
+│  └── Web Search/Fetch (9Router)                                │
+├─────────────────────────────────────────────────────────────────┤
+│  Service Layer                                                  │
+│  ├── Terminal Session Manager (SSH via backend)                │
+│  ├── Config Governance (plan → validate → apply → verify)      │
+│  ├── Policy Engine (risk, approval, safety)                    │
+│  └── Audit Trail                                               │
+├─────────────────────────────────────────────────────────────────┤
+│  Driver Layer                                                   │
+│  ├── Cisco IOS/IOS-XE                                          │
+│  ├── MikroTik RouterOS                                         │
+│  ├── Aruba AOS-CX                                              │
+│  ├── GNS3 Controller                                           │
+│  └── Containerlab                                              │
+├─────────────────────────────────────────────────────────────────┤
+│  Transport Layer                                                │
+│  ├── SSH (asyncssh)                                            │
+│  ├── REST API                                                  │
+│  └── WebSocket                                                 │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     Network Devices                             │
+│  Cisco IOSv │ MikroTik CHR │ Aruba AOS-CX │ Linux │ GNS3 VM   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-`.opencode/skills/` is the AI knowledge and safety layer.
-`backend/` is the executable network control-plane.
+## Backend Endpoints (19 modules)
 
-## Konvensi penting
+| Module | Prefix | Description |
+|--------|--------|-------------|
+| devices | /api/v1/devices | Device inventory, facts, interfaces, routes |
+| config | /api/v1/config | Configuration plan, apply, rollback |
+| monitoring | /api/v1/monitoring | Real-time metrics (CPU, memory, interfaces) |
+| topology | /api/v1/topology | LLDP/CDP neighbor mapping |
+| audit | /api/v1/audit | Audit trail and event history |
+| mikrotik | /api/v1/mikrotik | MikroTik vendor-specific (88+ endpoints) |
+| cisco | /api/v1/cisco | Cisco IOS/IOS-XE vendor-specific |
+| gns3 | /api/v1/gns3 | GNS3 controller/compute API |
+| policy | /api/v1/policy | Risk and approval checks |
+| terminal | /api/v1/terminal | Interactive SSH session manager |
+| tasks | /api/v1/tasks | Task execution tracking |
+| alerts | /api/v1/alerts | Alert management |
+| backups | /api/v1/backups | Backup inventory |
+| agent | /api/v1/agent | AI Network Copilot (chat, plan, tools) |
+| credentials | /api/v1/credentials | Credential management |
+| settings | /api/v1/settings | System settings |
+| discovery | /api/v1/discovery | Network discovery |
+| containerlab | /api/v1/containerlab | Containerlab management |
+| ninerouter | /api/v1/ninerouter | 9Router web search/fetch |
 
-- **Device ID** mengikuti pola `mikrotik-<board>-<identity>` sesuai `/system identity`
-  dan `/system resource board-name` device asli.
-- **Kredensial** dibaca dari `backend/.env` dengan prefix `{ID_UPPER_WITH_UNDERSCORE}_USERNAME/_PASSWORD`,
-  fallback ke `NETWORK_USERNAME/NETWORK_PASSWORD`.
-- **Safety flow** untuk perubahan konfigurasi: backup (`/export terse` -> `backups/*.rsc`)
-  -> approval user -> apply -> verify. Semua perintah tercatat via `log_event` (audit).
-- **Swagger UI**: http://127.0.0.1:8000/docs (aset dari CDN jsdelivr; klik "Try it out"
-  sebelum mengisi parameter).
+## AI Provider Abstraction
 
-## Status implementasi MikroTik API
+```python
+# backend/app/agent/providers.py
+AIProvider (base)
+├── OpenAIProvider     # OpenAI API
+├── AnthropicProvider  # Anthropic Claude API
+├── OllamaProvider     # Ollama local LLM
+└── NineRouterProvider # 9Router gateway (chat + web search/fetch)
+```
 
-| Area | Endpoint | Status |
-|------|----------|--------|
-| Resources read-only (ip, route, firewall, dhcp, wireless, hotspot, ppp, tunnel) | GET `/mikrotik/{id}/resources/*` | OK |
-| IP/VLAN/Bridge/route/firewall/dhcp/interface/system/wireless write | POST/PATCH/DELETE | OK |
-| Hotspot management | POST/PATCH/DELETE + reset/kick | OK |
-| PPP secret/profile/active/kick | POST/PATCH/DELETE + GET | OK |
-| Tunnel server set (l2tp/pptp/sstp/ovpn) + pppoe instance | PATCH/POST/DELETE | OK |
-| Tunnel client CRUD + enable/disable/monitor (5 protokol) | POST/DELETE/GET | OK |
-| Raw command runner | POST `/commands/run` | OK |
-| Config plan persist/validate/rollback | `/config/*` | STUB (belum persist) |
+### Free Model Combos (via 9Router)
+
+| Model | Tier | Description |
+|-------|------|-------------|
+| opencode-go | Free | Fast, quick tasks |
+| opencode-zen | Free | Balanced, general work |
+| opencode-cheap | Free | Cheapest available |
+| opencode-coder | Paid | Coding model |
+| opencode-reasoning | Paid | Reasoning model |
+
+## Agent Internal Tools
+
+```python
+# backend/app/agent/tools.py
+AGENT_TOOLS = {
+    "get_device":       "Get device facts and status",
+    "get_interfaces":   "Get device interface status",
+    "get_routes":       "Get device routing table",
+    "get_running_config": "Get device running config",
+    "ping":             "Ping from device to target",
+    "traceroute":       "Traceroute from device to target",
+    "validate_config":  "Validate config commands",
+    "backup_config":    "Backup device configuration",
+}
+```
+
+## Real-time Streaming
+
+| Feature | Protocol | Endpoint |
+|---------|----------|----------|
+| Terminal Output | WebSocket | WS /api/v1/terminal/sessions/{id}/stream |
+| Agent Events | SSE | GET /api/v1/agent/events/stream |
+| Task Updates | SSE | GET /api/v1/tasks/stream |
+
+## Network Copilot Workflow
+
+```text
+User Request
+    ↓
+Agent Plan (structured intent)
+    ↓
+Collect Current State (get_device, get_interfaces, get_routes)
+    ↓
+Generate Candidate Configuration
+    ↓
+Validate (validate_config, policy check)
+    ↓
+Dry Run / Diff
+    ↓
+User Approval (when required)
+    ↓
+Backup (backup_config)
+    ↓
+Deploy (config apply)
+    ↓
+Post-check (get_interfaces, ping)
+    ↓
+Success OR Rollback
+```
+
+## Safety Principles
+
+1. **No SSH in browser** — All SSH runs through backend
+2. **No credentials in frontend** — Secrets stay backend-side
+3. **Plan → Validate → Execute → Verify** — All changes go through workflow
+4. **Approval required** — Destructive changes need confirmation
+5. **Backup before deploy** — Automatic backup before changes
+6. **Rollback available** — Can undo changes if needed
+
+## Frontend Architecture
+
+```text
+src/
+├── api/network/
+│   ├── index.ts          # SWR hooks and API functions
+│   ├── backend-client.ts # Backend adapter functions
+│   ├── network-data.ts   # MSW mock data
+│   └── sse-client.ts     # SSE client utility
+├── views/                # Page components
+├── components/           # Reusable UI components
+├── types/                # TypeScript types
+└── hooks/                # Custom hooks
+```
+
+## Data Flow
+
+```text
+View Component
+    ↓
+SWR Hook (useDevices, useTasks, etc.)
+    ↓
+backendOrMock() — tries backend, falls back to MSW
+    ↓
+Backend Adapter (loadBackendDevices, etc.)
+    ↓
+HTTP Request → FastAPI Backend
+    ↓
+Driver Layer (Cisco, MikroTik, GNS3)
+    ↓
+Network Device
+```

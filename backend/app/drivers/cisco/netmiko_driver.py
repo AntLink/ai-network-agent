@@ -1,25 +1,28 @@
 """Netmiko-based Cisco IOS driver with proper enable/config/save flow."""
-import os
 from netmiko import ConnectHandler
 from app.core.audit import log_event
 
+# Import from local base module
+from .base import get_credentials, extract_hostname
+
 
 class NetmikoCiscoDriver:
-    """Cisco IOS driver using Netmiko for proper CLI interaction."""
+    """Cisco IOS driver using Netmiko for proper CLI interaction.
+    
+    Uses common credential utility from base module to avoid duplication.
+    """
 
     def __init__(self, device: dict):
         self.device = device
         self._conn = None
 
     def _get_connection_params(self) -> dict:
-        prefix = self.device["id"].upper().replace("-", "_")
-        username = os.getenv(f"{prefix}_USERNAME", os.getenv("NETWORK_USERNAME", "admin"))
-        password = os.getenv(f"{prefix}_PASSWORD", os.getenv("NETWORK_PASSWORD"))
-        # Enable secret: try device-specific, then generic, then fallback to login password
-        secret = os.getenv(f"{prefix}_SECRET", os.getenv("NETWORK_SECRET", password))
+        """Get connection parameters using shared credential utility."""
+        username, password, secret = get_credentials(self.device)
         return {
             "device_type": "cisco_ios",
             "host": self.device["management_address"],
+            "port": int(self.device.get("management_port") or 22),
             "username": username,
             "password": password,
             "secret": secret,
@@ -68,10 +71,42 @@ class NetmikoCiscoDriver:
         return outputs
 
     def save_config(self) -> str:
-        """Save running config to startup."""
+        """Save running config to startup with verification.
+        
+        Uses the same verification logic as CiscoDriver for consistency.
+        """
         conn = self._connect()
         log_event(self.device["id"], "NETMIKO_SAVE", "write memory")
         output = conn.send_command("write memory", expect_string=r"[#>]")
+        
+        # Verification: check that startup-config matches running-config
+        try:
+            run_out = conn.send_command("show running-config | include ^hostname", expect_string=r"[#>]")
+            start_out = conn.send_command("show startup-config | include ^hostname", expect_string=r"[#>]")
+            
+            run_host = extract_hostname(run_out)
+            start_host = extract_hostname(start_out)
+            
+            if not (run_host and start_host and run_host == start_host):
+                log_event(
+                    self.device["id"], "NETMIKO_SAVE_VERIFY",
+                    f"running={run_host!r} startup={start_host!r}",
+                    status="FAIL"
+                )
+                return output
+            
+            log_event(
+                self.device["id"], "NETMIKO_SAVE_VERIFY",
+                f"running={run_host!r} startup={start_host!r}",
+                status="OK"
+            )
+        except Exception as e:
+            log_event(
+                self.device["id"], "NETMIKO_SAVE_VERIFY",
+                f"Verification failed: {e}",
+                status="FAIL"
+            )
+        
         return output
 
     def __enter__(self):

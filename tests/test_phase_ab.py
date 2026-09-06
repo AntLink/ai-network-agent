@@ -282,5 +282,5 @@ def test_inventory_has_console_fields():
         ("cisco-iosvl2-sw2", 5004),
     ]:
         d = by_id[dev_id]
-        assert d.get("console_host") == "172.22.37.68"
+        assert d.get("console_host") == "172.22.46.196"
         assert d.get("console_port") == port

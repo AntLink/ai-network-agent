@@ -1,0 +1,29 @@
+{
+  "milestone": "m4-production-operations",
+  "component": "edge-rollout-deployment-endpoint",
+  "timestamp_utc": "2026-09-04T21:00:00Z",
+  "implementation": {
+    "service": "backend/app/services/edge_deployment.py",
+    "endpoint": "backend/app/api/v1/endpoints/edge_updates.py",
+    "safety_core": "backend/app/services/edge_updates.py",
+    "routes": [
+      "POST /api/v1/edge-updates/rollout (network-admin gate)",
+      "GET /api/v1/edge-updates/deployments",
+      "GET /api/v1/edge-updates/deployments/{deployment_id}"
+    ]
+  },
+  "unit_tests": "backend/tests/test_edge_deployment.py (5 tests) - PASS",
+  "verified_behaviors": [
+    "rollout plan records a deployment with ring target",
+    "default current ring tracks the most-promoted deployment",
+    "ring skip without health gate rejected (fail-closed)",
+    "unknown ring rejected",
+    "previous release preserved for rollback",
+    "operator role network-admin required for POST /rollout"
+  ],
+  "notes": [
+    "The edge_updates safety core (digest, compat, rings, rollback) was already VERIFIED (14 tests).",
+    "This endpoint wires that core into the API for operator-driven rollout/canary.",
+    "Actual binary distribution/install remains a deployment executor step; rollout planning/authorization is VERIFIED."
+  ]
+}

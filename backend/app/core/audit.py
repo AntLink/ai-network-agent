@@ -1,4 +1,5 @@
 import logging
+import re
 from pathlib import Path
 from datetime import datetime
 
@@ -8,13 +9,29 @@ LOG_DIR.mkdir(exist_ok=True)
 audit_logger = logging.getLogger("audit")
 audit_logger.setLevel(logging.INFO)
 
-file_handler = logging.FileHandler(LOG_DIR / "audit.log", encoding="utf-8")
-file_handler.setFormatter(logging.Formatter("%(asctime)s | %(message)s"))
-audit_logger.addHandler(file_handler)
+if not audit_logger.handlers:
+    file_handler = logging.FileHandler(LOG_DIR / "audit.log", encoding="utf-8")
+    file_handler.setFormatter(logging.Formatter("%(asctime)s | %(message)s"))
+    audit_logger.addHandler(file_handler)
 
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(logging.Formatter("%(asctime)s | %(message)s"))
-audit_logger.addHandler(console_handler)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(logging.Formatter("%(asctime)s | %(message)s"))
+    audit_logger.addHandler(console_handler)
+
+
+SECRET_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"(?i)\b(password|secret|ipsec-secret|wpa2-pre-shared-key)=([^\s]+)"), r"\1=***"),
+    (re.compile(r"(?i)\b(enable\s+secret\s+)(\S+)"), r"\1***"),
+    (re.compile(r"(?i)\b(username\s+\S+\s+.*?\bsecret\s+)(\S+)"), r"\1***"),
+    (re.compile(r"(?i)\b(username\s+\S+\s+.*?\bpassword\s+)(\S+)"), r"\1***"),
+)
+
+
+def redact_secrets(text: str) -> str:
+    redacted = text
+    for pattern, replacement in SECRET_PATTERNS:
+        redacted = pattern.sub(replacement, redacted)
+    return redacted
 
 
 def log_event(
@@ -33,6 +50,9 @@ def log_event(
     23:47:39 | cisco-iosv-r1 | EXEC | show version | OK | 571 ms | user=system
     23:47:40 | cisco-iosv-r1 | CONFIG | hostname R2 | FAIL | 612 ms | ERROR: ... | user=system
     """
+    command = redact_secrets(command)
+    result = redact_secrets(result)
+    error = redact_secrets(error) if error else error
     msg = f"{device_id} | {action} | {command} | user={user}"
     if status:
         msg += f" | {status}"

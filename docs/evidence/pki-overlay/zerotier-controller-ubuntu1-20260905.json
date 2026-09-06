@@ -1,0 +1,75 @@
+{
+  "evidence_version": 1,
+  "captured_at": "2026-09-05",
+  "status": "PARTIAL",
+  "controller": {
+    "host": "GNS3 VM 172.21.0.2",
+    "node_id": "14139cc3dd",
+    "api_version": 4,
+    "database_ready": true,
+    "network_id": "14139cc3dd000001",
+    "network_name": "AINET-LAB",
+    "private": true
+  },
+  "overlay_test_member": {
+    "node": "UBUNTU1",
+    "member_id": "e2542655d9",
+    "client_version": "1.16.2",
+    "client_status": "ONLINE",
+    "network_status": "OK",
+    "authorized": true,
+    "assigned_ip": "10.201.0.10",
+    "client_ip_observed": true,
+    "client_overlay_ip": "10.201.0.10/24",
+    "overlay_interface": "zt27hjzq64"
+  },
+  "deauthorization": {
+    "status": "PASS",
+    "controller_authorized_false_observed": true,
+    "client_denial_observed": true,
+    "client_assignment_removed_observed": true,
+    "post_deauthorization_status": "ACCESS_DENIED",
+    "post_deauthorization_ip_present": false,
+    "restored_authorized": true,
+    "restored_client_status": "OK",
+    "restored_client_overlay_ip": "10.201.0.10/24",
+    "reason": "controller deauthorization followed by client leave/join and a 20 second propagation window produced ACCESS_DENIED with no overlay IP; controller authorization was restored and the final client refresh returned OK PRIVATE with its overlay IP"
+  },
+  "overlay_connectivity": {
+    "status": "PASS",
+    "reason": "managed route 10.201.0.0/24 enabled controller IP publication"
+  },
+  "certificate_revocation": {
+    "status": "PARTIAL",
+    "central_application_layer_status": "PASS",
+    "hello_before_revoke_status": 200,
+    "revoke_endpoint_status": 200,
+    "disconnected_sessions": 5,
+    "hello_after_revoke_status": 403,
+    "hello_after_revoke_reason": "Edge certificate is revoked",
+    "tls_handshake_level_rejection": "PASS_LAB_CRL_HARNESS",
+    "tls_server_accepted_connection": false,
+    "tls_server_error": "certificate revoked",
+    "production_terminator_integration": "PASS_LAB_COMPOSE",
+    "compose_gateway_readiness": "PASS",
+    "compose_gateway_authenticated_hello_status": 200,
+    "compose_gateway_runtime": "backend/docker-compose.yml mtls profile",
+    "nginx_crl_harness_status": "FAIL",
+    "nginx_crl_harness_observed": "HTTP_REACHED_400",
+    "nginx_repeatable_terminator_test": {
+      "status": "PASS_LAB",
+      "valid_client_response": "HTTP/1.1 200 OK",
+      "revoked_client_response": "HTTP/1.1 400 Bad Request",
+      "upstream_hits": 1,
+      "expected_upstream_hits": 1,
+      "interpretation": "revoked request rejected by Nginx before proxy forwarding"
+    },
+    "dynamic_gateway_harness_status": "PASS_LAB_GATEWAY",
+    "dynamic_gateway_valid_request_status": 200,
+    "dynamic_gateway_revoked_request": "CONNECTION_CLOSED_BEFORE_HTTP",
+    "dynamic_gateway_container_status": "PASS_LAB_CONTAINER",
+    "dynamic_gateway_container_live_reload": true,
+    "reason": "disposable certificate fingerprint was persisted and Central rejected subsequent HELLO while disconnecting active sessions; the Python TLS CRL harness rejected the certificate before HTTP, and the official compose gateway accepted a valid authenticated HELLO in the lab. Production PKI, live denial through the supervised compose deployment, and HA integration remain unproven"
+  },
+  "secrets_disclosure": "none"
+}

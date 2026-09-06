@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "release": {
+    "version": "<CONFIGURE>",
+    "git_commit": "<CONFIGURE>",
+    "licensing_decision": "<CONFIGURE>"
+  },
+  "required_files": [
+    "docs/traceability/requirements-matrix.md",
+    "docs/runbooks/deployment-runbook.md",
+    "backend/app/services/overlay.py"
+  ],
+  "gates": [
+    {
+      "id": "UNIT-PYTHON",
+      "description": "Focused Central contract tests",
+      "required": true,
+      "command": ["cmd.exe", "/c", "set PYTHONPATH=backend&& .\\env\\Scripts\\python.exe -m pytest backend/tests/test_overlay_provider.py backend/tests/test_edge_control.py backend/tests/test_edge_identity.py"],
+      "evidence": []
+    },
+    {
+      "id": "LIVE-REDIS",
+      "description": "Shared session/lifecycle state is proven against Redis",
+      "required": true,
+      "command": ["cmd.exe", "/c", "set RUN_LIVE_REDIS=1&& set PYTHONPATH=backend&& .\\env\\Scripts\\python.exe -m pytest backend/tests/test_redis_live.py -q"],
+      "evidence": ["docs/evidence/redis-ha/README.md"]
+    },
+    {
+      "id": "LIVE-POSTGRES",
+      "description": "Durable TaskAttempt and recovery are proven against PostgreSQL",
+      "required": true,
+      "command": ["cmd.exe", "/c", ".\\env\\Scripts\\python.exe tools\\run_live_postgres_gate.py"],
+      "evidence": ["docs/evidence/postgres/README.md", "docs/evidence/postgres/postgres-live-20260905.json"]
+    },
+    {
+      "id": "LIVE-PKI-OVERLAY",
+      "description": "Certificate revocation and overlay deauthorization are proven in deployment",
+      "required": true,
+      "command": ["cmd.exe", "/c", ".\\env\\Scripts\\python.exe tools\\validate_pki_overlay_evidence.py"],
+      "evidence": ["docs/evidence/pki-overlay/README.md", "docs/evidence/pki-overlay/zerotier-controller-ubuntu1-20260905.json"]
+    },
+    {
+      "id": "LIVE-GNS3-OVERLAP",
+      "description": "Two isolated Edge paths accept the same management IP in GNS3",
+      "required": true,
+      "command": ["cmd.exe", "/c", ".\\env\\Scripts\\python.exe tools\\validate_gns3_overlap_evidence.py"],
+      "evidence": ["docs/evidence/gns3-overlap/README.md", "docs/evidence/gns3-overlap/live-two-edge-proof-20260905.json"]
+    },
+    {
+      "id": "RELEASE-SBOM-SIGNING",
+      "description": "SBOM, vulnerability scan, immutable release metadata and artifact signing are approved",
+      "required": true,
+      "command": ["cmd.exe", "/c", ".\\env\\Scripts\\python.exe tools\\validate_release_evidence.py"],
+      "evidence": ["docs/evidence/release-readiness/sbom-gap-20260906.json", "docs/production/image-signing-policy.md", "docs/production/release-manifest.template.json"]
+    }
+  ]
+}

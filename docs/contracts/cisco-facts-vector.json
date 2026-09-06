@@ -1,0 +1,11 @@
+{
+  "raw": "Cisco IOS Software, IOSv Software (VIOS-ADVENTERPRISEK9-M), Version 15.6(2)T, RELEASE SOFTWARE (fc2)\nR1 uptime is 34 minutes\nSystem image file is \"flash0:/vios-adventerprisek9-m\"",
+  "expected": {
+    "vendor": "cisco",
+    "platform": "ios",
+    "version": "15.6(2)T",
+    "hostname": "R1",
+    "uptime": "34 minutes",
+    "image_file": "flash0:/vios-adventerprisek9-m"
+  }
+}

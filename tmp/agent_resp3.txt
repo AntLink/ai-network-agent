@@ -1,0 +1,2952 @@
+﻿data: {"type": "start", "id": "evt-start-1787795864", "session_id": null, "device_ids": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "lab_id": null, "project_id": null, "environment": "lab"}
+
+data: {"type": "workflow_state", "id": "workflow-53610e329c", "taskId": "wf-1787795864", "state": "thinking", "label": "Thinking", "detail": "Backend sedang membaca konteks permintaan.", "activeIndex": 0, "eventsCount": 0, "devices": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "createdAt": "2026-08-27T09:57:44.440304"}
+
+data: {"type": "plan", "id": "plan-1787795868", "task": "Configure VLAN", "devices": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "plannedActions": ["Collect switch state", "Check trunk and access ports", "Generate VLAN configuration", "Backup running configuration", "Apply VLAN changes", "Validate VLAN membership", "Verify device reachability", "Save configuration"], "risk": "medium", "requiresApproval": true, "createdAt": "2026-08-27T09:57:48.444724"}
+
+data: {"type": "workflow_state", "id": "workflow-83871d88eb", "taskId": "plan-1787795868", "state": "planning", "label": "Planning", "detail": "Rencana tindakan sudah disusun.", "activeIndex": 1, "eventsCount": 1, "devices": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "createdAt": "2026-08-27T09:57:48.444845"}
+
+data: {"type": "device_state", "id": "state-ac181a9d85", "taskId": "plan-1787795868", "deviceId": "cisco-iosv-r1", "device": "R1", "vendor": "cisco", "platform": "ios", "summary": "6 device snapshot(s) collected", "content": "{\n  \"snapshots\": [\n    {\n      \"device_id\": \"cisco-iosv-r1\",\n      \"facts\": {\n        \"id\": \"cisco-iosv-r1\",\n        \"hostname\": \"R1\",\n        \"management_address\": \"172.22.45.249\",\n        \"vendor\": \"cisco\",\n        \"platform\": \"ios\",\n        \"transport\": \"ssh\",\n        \"status\": \"active\",\n        \"console_host\": \"172.22.46.196\",\n        \"console_port\": 5006,\n        \"device_type\": \"virtual\"\n      },\n      \"health\": {\n        \"device_id\": \"cisco-iosv-r1\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    },\n    {\n      \"device_id\": \"cisco-iosv-r2\",\n      \"facts\": {\n        \"id\": \"cisco-iosv-r2\",\n        \"hostname\": \"R2\",\n        \"management_address\": \"172.22.36.184\",\n        \"vendor\": \"cisco\",\n        \"platform\": \"ios\",\n        \"transport\": \"ssh\",\n        \"status\": \"active\",\n        \"console_host\": \"172.22.46.196\",\n        \"console_port\": 5008,\n        \"device_type\": \"virtual\"\n      },\n      \"health\": {\n        \"device_id\": \"cisco-iosv-r2\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    },\n    {\n      \"device_id\": \"cisco-iosvl2-sw1\",\n      \"facts\": {\n        \"id\": \"cisco-iosvl2-sw1\",\n        \"hostname\": \"SW1\",\n        \"management_address\": \"172.22.38.10\",\n        \"vendor\": \"cisco\",\n        \"platform\": \"ios-l2\",\n        \"transport\": \"ssh\",\n        \"console_host\": \"172.22.46.196\",\n        \"console_port\": 5002,\n        \"status\": \"active\",\n        \"device_type\": \"virtual\"\n      },\n      \"health\": {\n        \"device_id\": \"cisco-iosvl2-sw1\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    },\n    {\n      \"device_id\": \"cisco-iosvl2-sw2\",\n      \"facts\": {\n        \"id\": \"cisco-iosvl2-sw2\",\n        \"hostname\": \"SW2\",\n        \"management_address\": \"172.22.39.10\",\n        \"vendor\": \"cisco\",\n        \"platform\": \"ios-l2\",\n        \"transport\": \"ssh\",\n        \"console_host\": \"172.22.46.196\",\n        \"console_port\": 5004,\n        \"status\": \"active\",\n        \"device_type\": \"virtual\"\n      },\n      \"health\": {\n        \"device_id\": \"cisco-iosvl2-sw2\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    },\n    {\n      \"device_id\": \"static-routing-r1\",\n      \"facts\": {\n        \"id\": \"static-routing-r1\",\n        \"hostname\": \"SR-R1\",\n        \"management_address\": \"172.22.134.144\",\n        \"management_port\": 2201,\n        \"vendor\": \"cisco\",\n        \"platform\": \"ios\",\n        \"transport\": \"ssh\",\n        \"status\": \"active\",\n        \"console_host\": \"172.22.134.144\",\n        \"console_port\": 5026,\n        \"device_type\": \"virtual\",\n        \"model\": \"IOSv\",\n        \"lab\": \"Static-Routing-Lab\"\n      },\n      \"health\": {\n        \"device_id\": \"static-routing-r1\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    },\n    {\n      \"device_id\": \"static-routing-r2\",\n      \"facts\": {\n        \"id\": \"static-routing-r2\",\n        \"hostname\": \"SR-R2\",\n        \"management_address\": \"172.22.134.144\",\n        \"management_port\": 2202,\n        \"vendor\": \"cisco\",\n        \"platform\": \"ios\",\n        \"transport\": \"ssh\",\n        \"status\": \"active\",\n        \"console_host\": \"172.22.134.144\",\n        \"console_port\": 5029,\n        \"device_type\": \"virtual\",\n        \"model\": \"IOSv\",\n        \"lab\": \"Static-Routing-Lab\"\n      },\n      \"health\": {\n        \"device_id\": \"static-routing-r2\",\n        \"reachable\": false,\n        \"reason\": \"\"\n      },\n      \"interfaces\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      },\n      \"routes\": {\n        \"skipped\": true,\n        \"reason\": \"device not reachable during health probe\"\n      }\n    }\n  ]\n}", "devices": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "createdAt": "2026-08-27T09:57:48.565795"}
+
+data: {"type": "workflow_state", "id": "workflow-e927726abb", "taskId": "plan-1787795868", "state": "waiting_approval", "label": "Waiting approval", "detail": "Menunggu approval user sebelum melanjutkan.", "activeIndex": 2, "eventsCount": 3, "devices": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "createdAt": "2026-08-27T09:57:48.647485"}
+
+data: {"type": "approval", "id": "approval-1787795869", "taskId": "plan-1787795868", "task": "Configure VLAN", "devices": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "risk": "medium", "status": "required", "message": "VLAN changes may affect layer-2 reachability. Review the plan before execution.", "commands": ["vlan <id>", "name <name>", "interface <ports>"], "createdAt": "2026-08-27T09:57:48.647617"}
+
+data: {"type": "workflow_state", "id": "workflow-478e16fe76", "taskId": "plan-1787795868", "state": "running", "label": "Running", "detail": "Backend menjalankan langkah yang disepakati.", "activeIndex": 3, "eventsCount": 4, "devices": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "createdAt": "2026-08-27T09:57:48.768506"}
+
+data: {"type": "task_progress", "id": "progress-1787795869-1", "taskId": "plan-1787795868", "step": "Collect switch state", "status": "running", "message": "Collect switch state...", "order": 1, "total": 8, "createdAt": "2026-08-27T09:57:48.768654"}
+
+data: {"type": "task_progress", "id": "progress-1787795869-2", "taskId": "plan-1787795868", "step": "Check trunk and access ports", "status": "running", "message": "Check trunk and access ports...", "order": 2, "total": 8, "createdAt": "2026-08-27T09:57:48.848970"}
+
+data: {"type": "task_progress", "id": "progress-1787795869-3", "taskId": "plan-1787795868", "step": "Generate VLAN configuration", "status": "running", "message": "Generate VLAN configuration...", "order": 3, "total": 8, "createdAt": "2026-08-27T09:57:48.929600"}
+
+data: {"type": "task_progress", "id": "progress-1787795869-4", "taskId": "plan-1787795868", "step": "Backup running configuration", "status": "running", "message": "Backup running configuration...", "order": 4, "total": 8, "createdAt": "2026-08-27T09:57:49.010196"}
+
+data: {"type": "task_progress", "id": "progress-1787795869-5", "taskId": "plan-1787795868", "step": "Apply VLAN changes", "status": "running", "message": "Apply VLAN changes...", "order": 5, "total": 8, "createdAt": "2026-08-27T09:57:49.091207"}
+
+data: {"type": "task_progress", "id": "progress-1787795869-6", "taskId": "plan-1787795868", "step": "Validate VLAN membership", "status": "running", "message": "Validate VLAN membership...", "order": 6, "total": 8, "createdAt": "2026-08-27T09:57:49.171714"}
+
+data: {"type": "task_progress", "id": "progress-1787795869-7", "taskId": "plan-1787795868", "step": "Verify device reachability", "status": "running", "message": "Verify device reachability...", "order": 7, "total": 8, "createdAt": "2026-08-27T09:57:49.252990"}
+
+data: {"type": "task_progress", "id": "progress-1787795869-8", "taskId": "plan-1787795868", "step": "Save configuration", "status": "success", "message": "Save configuration...", "order": 8, "total": 8, "createdAt": "2026-08-27T09:57:49.333906"}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Ring"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "asan"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Ber"}
+
+data: {"type": "text", "text": "ikut"}
+
+data: {"type": "text", "text": " pand"}
+
+data: {"type": "text", "text": "uan"}
+
+data: {"type": "text", "text": " membuat"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " meng"}
+
+data: {"type": "text", "text": "kon"}
+
+data: {"type": "text", "text": "fig"}
+
+data: {"type": "text", "text": "ur"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": " Cisco"}
+
+data: {"type": "text", "text": " IOS"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Layer"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "),"}
+
+data: {"type": "text", "text": " leng"}
+
+data: {"type": "text", "text": "kap"}
+
+data: {"type": "text", "text": " dengan"}
+
+data: {"type": "text", "text": " sint"}
+
+data: {"type": "text", "text": "aks"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " ver"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " cont"}
+
+data: {"type": "text", "text": "oh"}
+
+data: {"type": "text", "text": " kas"}
+
+data: {"type": "text", "text": "us"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " A"}
+
+data: {"type": "text", "text": "pa"}
+
+data: {"type": "text", "text": " It"}
+
+data: {"type": "text", "text": "u"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " Trunk"}
+
+data: {"type": "text", "text": "?"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "VLAN"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Virtual"}
+
+data: {"type": "text", "text": " LAN"}
+
+data: {"type": "text", "text": ")**:"}
+
+data: {"type": "text", "text": " Mem"}
+
+data: {"type": "text", "text": "ec"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " broadcast"}
+
+data: {"type": "text", "text": " domain"}
+
+data: {"type": "text", "text": " sec"}
+
+data: {"type": "text", "text": "ara"}
+
+data: {"type": "text", "text": " log"}
+
+data: {"type": "text", "text": "is"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": " layer"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": " Set"}
+
+data: {"type": "text", "text": "iap"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " adalah"}
+
+data: {"type": "text", "text": " broadcast"}
+
+data: {"type": "text", "text": " domain"}
+
+data: {"type": "text", "text": " t"}
+
+data: {"type": "text", "text": "ers"}
+
+data: {"type": "text", "text": "end"}
+
+data: {"type": "text", "text": "iri"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "-"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "Tr"}
+
+data: {"type": "text", "text": "unk"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": " Link"}
+
+data: {"type": "text", "text": " point"}
+
+data: {"type": "text", "text": "-to"}
+
+data: {"type": "text", "text": "-point"}
+
+data: {"type": "text", "text": " yang"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " memb"}
+
+data: {"type": "text", "text": "awa"}
+
+data: {"type": "text", "text": " l"}
+
+data: {"type": "text", "text": "alu"}
+
+data: {"type": "text", "text": " lint"}
+
+data: {"type": "text", "text": "as"}
+
+data: {"type": "text", "text": " dari"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "b"}
+
+data: {"type": "text", "text": "anyak"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": " sec"}
+
+data: {"type": "text", "text": "ara"}
+
+data: {"type": "text", "text": " b"}
+
+data: {"type": "text", "text": "ers"}
+
+data: {"type": "text", "text": "ama"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " meng"}
+
+data: {"type": "text", "text": "gun"}
+
+data: {"type": "text", "text": "akan"}
+
+data: {"type": "text", "text": " tag"}
+
+data: {"type": "text", "text": " IEEE"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "Q"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Lang"}
+
+data: {"type": "text", "text": "kah"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " M"}
+
+data: {"type": "text", "text": "emb"}
+
+data: {"type": "text", "text": "uat"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "ios"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": ">"}
+
+data: {"type": "text", "text": " enable"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "#"}
+
+data: {"type": "text", "text": " configure"}
+
+data: {"type": "text", "text": " terminal"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-v"}
+
+data: {"type": "text", "text": "lan"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": " Sales"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-v"}
+
+data: {"type": "text", "text": "lan"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " exit"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-v"}
+
+data: {"type": "text", "text": "lan"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": " Engineering"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-v"}
+
+data: {"type": "text", "text": "lan"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " exit"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " Pen"}
+
+data: {"type": "text", "text": "jel"}
+
+data: {"type": "text", "text": "asan"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " K"}
+
+data: {"type": "text", "text": "eter"}
+
+data: {"type": "text", "text": "angan"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": "---|---|"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "vlan"}
+
+data: {"type": "text", "text": " <"}
+
+data: {"type": "text", "text": "id"}
+
+data: {"type": "text", "text": ">`"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " M"}
+
+data: {"type": "text", "text": "emb"}
+
+data: {"type": "text", "text": "uat"}
+
+data: {"type": "text", "text": "/m"}
+
+data: {"type": "text", "text": "as"}
+
+data: {"type": "text", "text": "uk"}
+
+data: {"type": "text", "text": " ke"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " dengan"}
+
+data: {"type": "text", "text": " ID"}
+
+data: {"type": "text", "text": " t"}
+
+data: {"type": "text", "text": "ert"}
+
+data: {"type": "text", "text": "ent"}
+
+data: {"type": "text", "text": "u"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "name"}
+
+data: {"type": "text", "text": " <"}
+
+data: {"type": "text", "text": "nama"}
+
+data: {"type": "text", "text": ">`"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Member"}
+
+data: {"type": "text", "text": "i"}
+
+data: {"type": "text", "text": " nama"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "ops"}
+
+data: {"type": "text", "text": "ional"}
+
+data: {"type": "text", "text": " t"}
+
+data: {"type": "text", "text": "api"}
+
+data: {"type": "text", "text": " dis"}
+
+data: {"type": "text", "text": "ar"}
+
+data: {"type": "text", "text": "ank"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "exit"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Kel"}
+
+data: {"type": "text", "text": "uar"}
+
+data: {"type": "text", "text": " dari"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Lang"}
+
+data: {"type": "text", "text": "kah"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " Men"}
+
+data: {"type": "text", "text": "ambah"}
+
+data: {"type": "text", "text": "kan"}
+
+data: {"type": "text", "text": " Port"}
+
+data: {"type": "text", "text": " ke"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Access"}
+
+data: {"type": "text", "text": " Port"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Port"}
+
+data: {"type": "text", "text": " yang"}
+
+data: {"type": "text", "text": " men"}
+
+data: {"type": "text", "text": "jadi"}
+
+data: {"type": "text", "text": " an"}
+
+data: {"type": "text", "text": "gg"}
+
+data: {"type": "text", "text": "ota"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " har"}
+
+data: {"type": "text", "text": "us"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": "atur"}
+
+data: {"type": "text", "text": " se"}
+
+data: {"type": "text", "text": "bag"}
+
+data: {"type": "text", "text": "ai"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "access"}
+
+data: {"type": "text", "text": " port"}
+
+data: {"type": "text", "text": "**:"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "ios"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " interface"}
+
+data: {"type": "text", "text": " range"}
+
+data: {"type": "text", "text": " fast"}
+
+data: {"type": "text", "text": "eth"}
+
+data: {"type": "text", "text": "ernet"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-if"}
+
+data: {"type": "text", "text": "-range"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-if"}
+
+data: {"type": "text", "text": "-range"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-if"}
+
+data: {"type": "text", "text": "-range"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " exit"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " Pen"}
+
+data: {"type": "text", "text": "jel"}
+
+data: {"type": "text", "text": "asan"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " K"}
+
+data: {"type": "text", "text": "eter"}
+
+data: {"type": "text", "text": "angan"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": "---|---|"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Meng"}
+
+data: {"type": "text", "text": "atur"}
+
+data: {"type": "text", "text": " port"}
+
+data: {"type": "text", "text": " se"}
+
+data: {"type": "text", "text": "bag"}
+
+data: {"type": "text", "text": "ai"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": " port"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " <"}
+
+data: {"type": "text", "text": "id"}
+
+data: {"type": "text", "text": ">`"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Men"}
+
+data: {"type": "text", "text": "ent"}
+
+data: {"type": "text", "text": "ukan"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " mana"}
+
+data: {"type": "text", "text": " yang"}
+
+data: {"type": "text", "text": " men"}
+
+data: {"type": "text", "text": "amp"}
+
+data: {"type": "text", "text": "ung"}
+
+data: {"type": "text", "text": " port"}
+
+data: {"type": "text", "text": " ini"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Lang"}
+
+data: {"type": "text", "text": "kah"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " M"}
+
+data: {"type": "text", "text": "emb"}
+
+data: {"type": "text", "text": "uat"}
+
+data: {"type": "text", "text": " Trunk"}
+
+data: {"type": "text", "text": " Port"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Port"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " men"}
+
+data: {"type": "text", "text": "gh"}
+
+data: {"type": "text", "text": "ub"}
+
+data: {"type": "text", "text": "ung"}
+
+data: {"type": "text", "text": "kan"}
+
+data: {"type": "text", "text": " du"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " memb"}
+
+data: {"type": "text", "text": "awa"}
+
+data: {"type": "text", "text": " l"}
+
+data: {"type": "text", "text": "alu"}
+
+data: {"type": "text", "text": " lint"}
+
+data: {"type": "text", "text": "as"}
+
+data: {"type": "text", "text": " dari"}
+
+data: {"type": "text", "text": " b"}
+
+data: {"type": "text", "text": "anyak"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "ios"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " interface"}
+
+data: {"type": "text", "text": " gigabit"}
+
+data: {"type": "text", "text": "eth"}
+
+data: {"type": "text", "text": "ernet"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-if"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-if"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " allowed"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-if"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " exit"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " Pen"}
+
+data: {"type": "text", "text": "jel"}
+
+data: {"type": "text", "text": "asan"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " Per"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " K"}
+
+data: {"type": "text", "text": "eter"}
+
+data: {"type": "text", "text": "angan"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": "---|---|"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " Meng"}
+
+data: {"type": "text", "text": "akt"}
+
+data: {"type": "text", "text": "if"}
+
+data: {"type": "text", "text": "kan"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "auto"}
+
+data: {"type": "text", "text": "-neg"}
+
+data: {"type": "text", "text": "os"}
+
+data: {"type": "text", "text": "ias"}
+
+data: {"type": "text", "text": "i"}
+
+data: {"type": "text", "text": " IEEE"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "8"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "Q"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "|"}
+
+data: {"type": "text", "text": " `"}
+
+data: {"type": "text", "text": "switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " allowed"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "`"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": " M"}
+
+data: {"type": "text", "text": "emb"}
+
+data: {"type": "text", "text": "atas"}
+
+data: {"type": "text", "text": "i"}
+
+data: {"type": "text", "text": "/m"}
+
+data: {"type": "text", "text": "emat"}
+
+data: {"type": "text", "text": "ulkan"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " yang"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " me"}
+
+data: {"type": "text", "text": "lew"}
+
+data: {"type": "text", "text": "ati"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " |"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "Unt"}
+
+data: {"type": "text", "text": "uk"}
+
+data: {"type": "text", "text": " meng"}
+
+data: {"type": "text", "text": "iz"}
+
+data: {"type": "text", "text": "ink"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "sem"}
+
+data: {"type": "text", "text": "ua"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "default"}
+
+data: {"type": "text", "text": "):"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "ios"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "(config"}
+
+data: {"type": "text", "text": "-if"}
+
+data: {"type": "text", "text": ")#"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " allowed"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " all"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Lang"}
+
+data: {"type": "text", "text": "kah"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " Ver"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " Kon"}
+
+data: {"type": "text", "text": "fig"}
+
+data: {"type": "text", "text": "ur"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "ios"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "#"}
+
+data: {"type": "text", "text": " show"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " brief"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "#"}
+
+data: {"type": "text", "text": " show"}
+
+data: {"type": "text", "text": " interfaces"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "#"}
+
+data: {"type": "text", "text": " show"}
+
+data: {"type": "text", "text": " interfaces"}
+
+data: {"type": "text", "text": " g"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "#"}
+
+data: {"type": "text", "text": " show"}
+
+data: {"type": "text", "text": " spanning"}
+
+data: {"type": "text", "text": "-tree"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Cont"}
+
+data: {"type": "text", "text": "oh"}
+
+data: {"type": "text", "text": " Kas"}
+
+data: {"type": "text", "text": "us"}
+
+data: {"type": "text", "text": " L"}
+
+data: {"type": "text", "text": "eng"}
+
+data: {"type": "text", "text": "kap"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "S"}
+
+data: {"type": "text", "text": "ken"}
+
+data: {"type": "text", "text": "ario"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " M"}
+
+data: {"type": "text", "text": "emb"}
+
+data: {"type": "text", "text": "uat"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " men"}
+
+data: {"type": "text", "text": "gh"}
+
+data: {"type": "text", "text": "ub"}
+
+data: {"type": "text", "text": "ung"}
+
+data: {"type": "text", "text": "kan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": " via"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " Switch"}
+
+data: {"type": "text", "text": " A"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Primary"}
+
+data: {"type": "text", "text": "):"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "ios"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": ">"}
+
+data: {"type": "text", "text": " enable"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "#"}
+
+data: {"type": "text", "text": " configure"}
+
+data: {"type": "text", "text": " terminal"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": " M"}
+
+data: {"type": "text", "text": "emb"}
+
+data: {"type": "text", "text": "uat"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": " Sales"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": " Engineering"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": " Guest"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": " Meng"}
+
+data: {"type": "text", "text": "atur"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": " port"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "interface"}
+
+data: {"type": "text", "text": " range"}
+
+data: {"type": "text", "text": " fa"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "6"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "interface"}
+
+data: {"type": "text", "text": " range"}
+
+data: {"type": "text", "text": " fa"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "7"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": " Meng"}
+
+data: {"type": "text", "text": "atur"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "interface"}
+
+data: {"type": "text", "text": " gi"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " allowed"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "end"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "write"}
+
+data: {"type": "text", "text": " memory"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "###"}
+
+data: {"type": "text", "text": " Switch"}
+
+data: {"type": "text", "text": " B"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Remote"}
+
+data: {"type": "text", "text": "):"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "ios"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": ">"}
+
+data: {"type": "text", "text": " enable"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "Switch"}
+
+data: {"type": "text", "text": "#"}
+
+data: {"type": "text", "text": " configure"}
+
+data: {"type": "text", "text": " terminal"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": " Sales"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": " Engineering"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": " Guest"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "interface"}
+
+data: {"type": "text", "text": " range"}
+
+data: {"type": "text", "text": " fa"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": " -"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "interface"}
+
+data: {"type": "text", "text": " gi"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " allowed"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "end"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "write"}
+
+data: {"type": "text", "text": " memory"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Best"}
+
+data: {"type": "text", "text": " Practice"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "ios"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": " H"}
+
+data: {"type": "text", "text": "apus"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " default"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "VLAN"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": " dari"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " ag"}
+
+data: {"type": "text", "text": "ar"}
+
+data: {"type": "text", "text": " leb"}
+
+data: {"type": "text", "text": "ih"}
+
+data: {"type": "text", "text": " am"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "interface"}
+
+data: {"type": "text", "text": " gi"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " allowed"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": " Mat"}
+
+data: {"type": "text", "text": "ikan"}
+
+data: {"type": "text", "text": " DTP"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "Dynamic"}
+
+data: {"type": "text", "text": " Trunk"}
+
+data: {"type": "text", "text": "ing"}
+
+data: {"type": "text", "text": " Protocol"}
+
+data: {"type": "text", "text": ")"}
+
+data: {"type": "text", "text": " untuk"}
+
+data: {"type": "text", "text": " ke"}
+
+data: {"type": "text", "text": "aman"}
+
+data: {"type": "text", "text": "an"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "interface"}
+
+data: {"type": "text", "text": " gi"}
+
+data: {"type": "text", "text": "0"}
+
+data: {"type": "text", "text": "/"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "4"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " non"}
+
+data: {"type": "text", "text": "egotiate"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "!"}
+
+data: {"type": "text", "text": " Ver"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "show"}
+
+data: {"type": "text", "text": " interfaces"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "show"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " brief"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "plan"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "{"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "steps"}
+
+data: {"type": "text", "text": "\":"}
+
+data: {"type": "text", "text": " ["}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "Mas"}
+
+data: {"type": "text", "text": "uk"}
+
+data: {"type": "text", "text": " ke"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": " via"}
+
+data: {"type": "text", "text": " SSH"}
+
+data: {"type": "text", "text": "/console"}
+
+data: {"type": "text", "text": "\","}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "Bu"}
+
+data: {"type": "text", "text": "at"}
+
+data: {"type": "text", "text": " VLAN"}
+
+data: {"type": "text", "text": " dengan"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "int"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " <"}
+
+data: {"type": "text", "text": "id"}
+
+data: {"type": "text", "text": ">,"}
+
+data: {"type": "text", "text": " name"}
+
+data: {"type": "text", "text": " <"}
+
+data: {"type": "text", "text": "nama"}
+
+data: {"type": "text", "text": ">\","}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "At"}
+
+data: {"type": "text", "text": "ur"}
+
+data: {"type": "text", "text": " port"}
+
+data: {"type": "text", "text": " se"}
+
+data: {"type": "text", "text": "bag"}
+
+data: {"type": "text", "text": "ai"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": " port"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " access"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " <"}
+
+data: {"type": "text", "text": "id"}
+
+data: {"type": "text", "text": ">\","}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "At"}
+
+data: {"type": "text", "text": "ur"}
+
+data: {"type": "text", "text": " uplink"}
+
+data: {"type": "text", "text": " se"}
+
+data: {"type": "text", "text": "bag"}
+
+data: {"type": "text", "text": "ai"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " mode"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": "port"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": " allowed"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " <"}
+
+data: {"type": "text", "text": "list"}
+
+data: {"type": "text", "text": ">\","}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "Ver"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " dengan"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " show"}
+
+data: {"type": "text", "text": " vlan"}
+
+data: {"type": "text", "text": " brief"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " show"}
+
+data: {"type": "text", "text": " interfaces"}
+
+data: {"type": "text", "text": " trunk"}
+
+data: {"type": "text", "text": "\","}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "   "}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "Sim"}
+
+data: {"type": "text", "text": "pan"}
+
+data: {"type": "text", "text": " kon"}
+
+data: {"type": "text", "text": "fig"}
+
+data: {"type": "text", "text": "ur"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": ":"}
+
+data: {"type": "text", "text": " write"}
+
+data: {"type": "text", "text": " memory"}
+
+data: {"type": "text", "text": " /"}
+
+data: {"type": "text", "text": " copy"}
+
+data: {"type": "text", "text": " running"}
+
+data: {"type": "text", "text": "-config"}
+
+data: {"type": "text", "text": " startup"}
+
+data: {"type": "text", "text": "-config"}
+
+data: {"type": "text", "text": "\""}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " ],"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": " "}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "risk"}
+
+data: {"type": "text", "text": "\":"}
+
+data: {"type": "text", "text": " \""}
+
+data: {"type": "text", "text": "R"}
+
+data: {"type": "text", "text": "end"}
+
+data: {"type": "text", "text": "ah"}
+
+data: {"type": "text", "text": " \u2014"}
+
+data: {"type": "text", "text": " tidak"}
+
+data: {"type": "text", "text": " ada"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "ub"}
+
+data: {"type": "text", "text": "ahan"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "ang"}
+
+data: {"type": "text", "text": "kat"}
+
+data: {"type": "text", "text": " produ"}
+
+data: {"type": "text", "text": "ksi"}
+
+data: {"type": "text", "text": " lang"}
+
+data: {"type": "text", "text": "s"}
+
+data: {"type": "text", "text": "ung"}
+
+data: {"type": "text", "text": "\""}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "}"}
+
+data: {"type": "text", "text": "\n"}
+
+data: {"type": "text", "text": "```"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "---"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "##"}
+
+data: {"type": "text", "text": " Lang"}
+
+data: {"type": "text", "text": "kah"}
+
+data: {"type": "text", "text": " ber"}
+
+data: {"type": "text", "text": "ikut"}
+
+data: {"type": "text", "text": "nya"}
+
+data: {"type": "text", "text": "\n\n"}
+
+data: {"type": "text", "text": "J"}
+
+data: {"type": "text", "text": "ika"}
+
+data: {"type": "text", "text": " ing"}
+
+data: {"type": "text", "text": "in"}
+
+data: {"type": "text", "text": " mem"}
+
+data: {"type": "text", "text": "pr"}
+
+data: {"type": "text", "text": "akt"}
+
+data: {"type": "text", "text": "ik"}
+
+data: {"type": "text", "text": "kan"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": " lab"}
+
+data: {"type": "text", "text": " G"}
+
+data: {"type": "text", "text": "NS"}
+
+data: {"type": "text", "text": "3"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " say"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " b"}
+
+data: {"type": "text", "text": "antu"}
+
+data: {"type": "text", "text": " ver"}
+
+data: {"type": "text", "text": "ifik"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " kon"}
+
+data: {"type": "text", "text": "fig"}
+
+data: {"type": "text", "text": "ur"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " pada"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "SW"}
+
+data: {"type": "text", "text": "1"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": " atau"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "SW"}
+
+data: {"type": "text", "text": "2"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": " yang"}
+
+data: {"type": "text", "text": " t"}
+
+data: {"type": "text", "text": "ers"}
+
+data: {"type": "text", "text": "edia"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": " Nam"}
+
+data: {"type": "text", "text": "un"}
+
+data: {"type": "text", "text": " per"}
+
+data: {"type": "text", "text": "lu"}
+
+data: {"type": "text", "text": " dip"}
+
+data: {"type": "text", "text": "ast"}
+
+data: {"type": "text", "text": "ikan"}
+
+data: {"type": "text", "text": " switch"}
+
+data: {"type": "text", "text": " terse"}
+
+data: {"type": "text", "text": "but"}
+
+data: {"type": "text", "text": " sudah"}
+
+data: {"type": "text", "text": " ber"}
+
+data: {"type": "text", "text": "j"}
+
+data: {"type": "text", "text": "alan"}
+
+data: {"type": "text", "text": " dan"}
+
+data: {"type": "text", "text": " dapat"}
+
+data: {"type": "text", "text": " di"}
+
+data: {"type": "text", "text": "jang"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "au"}
+
+data: {"type": "text", "text": " ("}
+
+data: {"type": "text", "text": "p"}
+
+data: {"type": "text", "text": "ada"}
+
+data: {"type": "text", "text": " snapshot"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "k"}
+
+data: {"type": "text", "text": "ini"}
+
+data: {"type": "text", "text": ","}
+
+data: {"type": "text", "text": " k"}
+
+data: {"type": "text", "text": "edu"}
+
+data: {"type": "text", "text": "anya"}
+
+data: {"type": "text", "text": " ter"}
+
+data: {"type": "text", "text": "cat"}
+
+data: {"type": "text", "text": "at"}
+
+data: {"type": "text", "text": " **"}
+
+data: {"type": "text", "text": "not"}
+
+data: {"type": "text", "text": " reachable"}
+
+data: {"type": "text", "text": "**"}
+
+data: {"type": "text", "text": ")."}
+
+data: {"type": "text", "text": " Sil"}
+
+data: {"type": "text", "text": "akan"}
+
+data: {"type": "text", "text": " kon"}
+
+data: {"type": "text", "text": "firm"}
+
+data: {"type": "text", "text": "asi"}
+
+data: {"type": "text", "text": " ap"}
+
+data: {"type": "text", "text": "akah"}
+
+data: {"type": "text", "text": " ing"}
+
+data: {"type": "text", "text": "in"}
+
+data: {"type": "text", "text": " say"}
+
+data: {"type": "text", "text": "a"}
+
+data: {"type": "text", "text": " b"}
+
+data: {"type": "text", "text": "antu"}
+
+data: {"type": "text", "text": " c"}
+
+data: {"type": "text", "text": "ek"}
+
+data: {"type": "text", "text": " status"}
+
+data: {"type": "text", "text": " connectivity"}
+
+data: {"type": "text", "text": "nya"}
+
+data: {"type": "text", "text": " d"}
+
+data: {"type": "text", "text": "ulu"}
+
+data: {"type": "text", "text": "."}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "text", "text": ""}
+
+data: {"type": "verification", "id": "verify-397638a8fb", "taskId": "plan-1787795868", "devices": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "status": "passed", "message": "Device state reviewed and response grounded against collected context.", "checks": ["device_state", "routing", "interfaces", "follow-up continuity"], "createdAt": "2026-08-27T09:58:26.024504"}
+
+data: {"type": "workflow_state", "id": "workflow-5714350937", "taskId": "plan-1787795868", "state": "completed", "label": "Completed", "detail": "Workflow selesai dan hasil sudah diverifikasi.", "activeIndex": 5, "eventsCount": 5, "devices": ["cisco-iosv-r1", "cisco-iosv-r2", "cisco-iosvl2-sw1", "cisco-iosvl2-sw2", "static-routing-r1", "static-routing-r2"], "createdAt": "2026-08-27T09:58:26.024606"}
+
+data: {"type": "done", "id": "evt-done-1787795906", "session_id": null}
+

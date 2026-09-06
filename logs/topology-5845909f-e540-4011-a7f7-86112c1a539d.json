@@ -1,0 +1,91 @@
+{
+  "data": {
+    "id": "5845909f-e540-4011-a7f7-86112c1a539d",
+    "name": "Static Routing Lab",
+    "project_id": "5845909f-e540-4011-a7f7-86112c1a539d",
+    "nodes": [
+      {
+        "id": "static-routing-r1",
+        "hostname": "R1",
+        "vendor": "cisco",
+        "kind": "router",
+        "nodeType": "qemu",
+        "status": "offline",
+        "ip": "172.22.50.10"
+      },
+      {
+        "id": "static-routing-r2",
+        "hostname": "R2",
+        "vendor": "cisco",
+        "kind": "router",
+        "nodeType": "qemu",
+        "status": "offline",
+        "ip": "172.22.50.11"
+      },
+      {
+        "id": "static-routing-pc1",
+        "hostname": "PC1",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "offline",
+        "ip": "192.168.10.10"
+      },
+      {
+        "id": "static-routing-pc2",
+        "hostname": "PC2",
+        "vendor": "linux",
+        "kind": "host",
+        "nodeType": "vpcs",
+        "status": "offline",
+        "ip": "192.168.20.10"
+      }
+    ],
+    "links": [
+      {
+        "id": "sr-r1-r2",
+        "source": "static-routing-r1",
+        "target": "static-routing-r2",
+        "sourceInterface": "Gi0/0",
+        "targetInterface": "Gi0/0",
+        "status": "down"
+      },
+      {
+        "id": "sr-pc1-r1",
+        "source": "static-routing-pc1",
+        "target": "static-routing-r1",
+        "sourceInterface": "eth0",
+        "targetInterface": "Gi0/1",
+        "status": "down"
+      },
+      {
+        "id": "sr-pc2-r2",
+        "source": "static-routing-pc2",
+        "target": "static-routing-r2",
+        "sourceInterface": "eth0",
+        "targetInterface": "Gi0/1",
+        "status": "down"
+      }
+    ],
+    "layout": {
+      "static-routing-pc1": {
+        "x": 60,
+        "y": 300
+      },
+      "static-routing-r1": {
+        "x": 60,
+        "y": 130
+      },
+      "static-routing-r2": {
+        "x": 360,
+        "y": 130
+      },
+      "static-routing-pc2": {
+        "x": 360,
+        "y": 300
+      }
+    }
+  },
+  "saved_at": "2026-08-26T00:00:00Z",
+  "source": "saved"
+}

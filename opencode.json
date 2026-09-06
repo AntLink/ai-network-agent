@@ -1,5 +1,15 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "ai-network-agent": {
+      "type": "local",
+      "command": [
+        "C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\\mcp-bridge\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\mohfa\\PycharmProjects\\ai-network-agent\\mcp-bridge\\server.py"
+      ],
+      "enabled": true
+    }
+  },
   "permission": {
     "skill": {
       "*": "allow"
