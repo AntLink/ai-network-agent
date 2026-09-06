@@ -2,32 +2,31 @@
   "schema_version": 1,
   "release": {
     "version": "v0.1.0",
-    "git_commit": "77b88948bb82b7dd1d74ae3c9a0a5477953b42bd",
-    "created_at": "2026-09-06T10:50:27Z",
-    "approved_by": "<CONFIGURE_OPERATOR_OR_CHANGE_REFERENCE>",
-    "licensing_decision": "<CONFIGURE_APPROVED_LICENSING_REFERENCE>"
+    "git_commit": "bf10ef69031b0e7cf022b0bb1d31104b96aa5e8e",
+    "created_at": "2026-09-06T11:54:03Z",
+    "approved_by": "mohfa",
+    "licensing_decision": "LIC-2026-09-06-001-COMMERCIAL"
   },
   "artifacts": {
-    "central_image": "ghcr.io/antlink/ainet-api:v0.1.0@sha256:b50c1f40b2355d8a3592da15672cef5d1e3051075c8e8132326a523a2725c10c",
-    "edge_image": "ghcr.io/antlink/ainet-edge:v0.1.0@sha256:f60570643be3b5585d0750be7e919b7ea1b09ffdc67d70fb268c8a2df616b818",
+    "central_image": "ghcr.io/antlink/ainet-api:v0.1.0@sha256:38728ed0ea06a9f435c3ed89297a2e545eb07754bc60f895e730f80de9acbcd1",
+    "edge_image": "ghcr.io/antlink/ainet-edge:v0.1.0@sha256:ba4ff7226fa826ea83c673260501e8a8251e26f54d9c6c1d1be1300ca1104cf7",
     "edge_binary": {
       "version": "v0.1.0",
       "sha256": "2f319957de5c674a6773d6e46bfd369ad5a83b6b54ac1545bf9e9305585f6775",
-      "signature_reference": "cosign-attestation-on-edge-image"
+      "signature_reference": "edge-binary.sigstore.json",
+      "signature_bundle_sha256": "95d97537f6302b012996675c735cfb74840c41e60c3fda3bea60ae2920fb48e1"
     }
   },
   "sbom": {
     "format": "CycloneDX JSON",
     "central_path": "central-sbom.json",
-    "central_sha256": "a6526011b80e1e1aeb2ca2be73441226bfd66160e91b3e821d87831f99ea4e7f",
+    "central_sha256": "ce1ba65edc9a3ee6388b1c9d85f03d559d985fe0692ddef65b14be13eaa61743",
     "edge_path": "edge-sbom.json",
-    "edge_sha256": "ce70990f2c0cfbf74d1ee6ec0323fbb1a3fa09de6375b3f32945ed6ccbc1db5c",
+    "edge_sha256": "d8c63c2625c016b916c4e167fa47b15ca0fe4ecdee1c900c8e591779a08930ab",
     "generated_by": "anchore/sbom-action@v0"
   },
   "verification": {
-    "workflow_run": "https://github.com/AntLink/ai-network-agent/actions/runs/34028438193",
-    "production_gate_report": "<REQUIRED_EVIDENCE_PATH>",
-    "deployment_runbook_review": "docs/runbooks/deployment-runbook.md"
+    "workflow_run": "https://github.com/AntLink/ai-network-agent/actions/runs/34031456191"
   },
   "secrets_logged": false,
   "production_ready": false
