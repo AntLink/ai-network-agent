@@ -43,5 +43,6 @@ returned by GHCR and verifies that digest immediately afterward.
   intentionally unconfigured.
 - Signature and attestation verification each have a 180-second timeout with
   explicit image progress output, so a registry or transparency-log stall
-  fails diagnostically instead of hanging indefinitely.
+  fails diagnostically instead of hanging indefinitely. The timeout now uses a
+  SIGKILL fallback, and the complete release job is capped at 30 minutes.
 - Production gate remains fail-closed until workflow evidence is attached.

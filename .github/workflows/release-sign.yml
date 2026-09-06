@@ -19,6 +19,7 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout approved release commit
         uses: actions/checkout@v4
@@ -137,11 +138,11 @@ jobs:
           set -euo pipefail
           for ref in "$central_ref" "$edge_ref"; do
             echo "Verifying signature: $ref"
-            timeout --signal=TERM 180s cosign verify "$ref" \
+            timeout --signal=TERM --kill-after=10s 180s cosign verify "$ref" \
               --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
               --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
             echo "Verifying CycloneDX attestation: $ref"
-            timeout --signal=TERM 180s cosign verify-attestation "$ref" --type cyclonedx \
+            timeout --signal=TERM --kill-after=10s 180s cosign verify-attestation "$ref" --type cyclonedx \
               --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
               --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
           done
