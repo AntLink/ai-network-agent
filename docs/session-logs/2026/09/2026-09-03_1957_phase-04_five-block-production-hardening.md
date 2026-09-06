@@ -2458,6 +2458,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - Node.js 20 deprecation annotations remain warnings from third-party actions;
   they are tracked separately from the manifest failure.
 
+### Native Cosign attestation timeout remediation - 2026-09-06
+
+- Added Cosign's native 90-second command timeout and `max-workers=1` to
+  Central/Edge signature and CycloneDX attestation verification.
+- Retained the external timeout/SIGKILL fallback and per-job five-minute cap.
+- This addresses the observed `verify-attestation` hang while preserving
+  transparency-log and certificate verification; no insecure tlog bypass was
+  introduced.
+
 ### Confirmed jq manifest error from GitHub run - 2026-09-06
 
 - The rerun failed with `jq: syntax error, unexpected '+', expecting '}'`
