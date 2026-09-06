@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/ai-network-agent/edge/internal/credentials"
@@ -166,6 +167,27 @@ func executeRouterOSShell(session *ssh.Session, command string) ([]byte, error) 
 func (e FactsExecutor) executeWithSystemSSH(ctx context.Context, req FactsRequest, cred credentials.Entry) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, e.Timeout)
 	defer cancel()
+	knownHosts, err := os.CreateTemp("", "ainet-edge-known-hosts-")
+	if err != nil {
+		return "", fmt.Errorf("create pinned known-hosts file: %w", err)
+	}
+	knownHostsPath := knownHosts.Name()
+	defer os.Remove(knownHostsPath)
+	if err := knownHosts.Chmod(0600); err != nil {
+		knownHosts.Close()
+		return "", fmt.Errorf("protect pinned known-hosts file: %w", err)
+	}
+	host := req.Host
+	if req.Port != 22 {
+		host = fmt.Sprintf("[%s]:%d", req.Host, req.Port)
+	}
+	if _, err := fmt.Fprintf(knownHosts, "%s %s\n", host, strings.TrimSpace(cred.HostKey)); err != nil {
+		knownHosts.Close()
+		return "", fmt.Errorf("write pinned known-hosts file: %w", err)
+	}
+	if err := knownHosts.Close(); err != nil {
+		return "", fmt.Errorf("close pinned known-hosts file: %w", err)
+	}
 
 	// Debug log
 	f, ferr := os.OpenFile(debugLog, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
@@ -175,8 +197,8 @@ func (e FactsExecutor) executeWithSystemSSH(ctx context.Context, req FactsReques
 	}
 
 	args := []string{
-		"-o", "StrictHostKeyChecking=no",
-		"-o", "UserKnownHostsFile=/dev/null",
+		"-o", "StrictHostKeyChecking=yes",
+		"-o", "UserKnownHostsFile=" + knownHostsPath,
 		"-o", "ConnectTimeout=15",
 		"-o", "PreferredAuthentications=password",
 		"-o", "NumberOfPasswordPrompts=1",
