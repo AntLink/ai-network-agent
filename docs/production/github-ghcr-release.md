@@ -33,7 +33,7 @@ returned by GHCR and verifies that digest immediately afterward.
 
 - The workflow has not been executed because no approved release tag or GHCR
   release approval exists.
-- The workflow currently publishes and attests Central; Edge signing and
-  combined release-manifest publication should be added after the first
-  controlled run validates the GHCR/Cosign identity contract.
+- The workflow now checks out the supplied immutable release tag and publishes,
+  signs, verifies, and attests both Central and Edge images. A signed combined
+  release manifest is still required before production approval.
 - Production gate remains fail-closed until workflow evidence is attached.

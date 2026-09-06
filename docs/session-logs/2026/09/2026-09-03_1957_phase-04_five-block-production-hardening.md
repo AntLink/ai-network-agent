@@ -2435,3 +2435,16 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
 - Next handoff: review the branch diff and workflow, configure GHCR/OIDC and
   signing policy, run the workflow with an approved tag, then update the
   release manifest and production-gate evidence only after verification.
+
+### Release workflow hardening - 2026-09-06
+
+- Corrected the GitHub release workflow to checkout the operator-supplied
+  immutable `release_tag` with full history before building artifacts.
+- Added Edge SBOM generation and extended Cosign signing, verification, and
+  CycloneDX attestation to both Central and Edge images.
+- Extended the uploaded release evidence artifact to include both SBOM files.
+- Updated `docs/production/github-ghcr-release.md`; combined signed release
+  manifest publication remains a production approval requirement.
+- Validation: workflow YAML parse passed and `git diff --check` passed.
+- No GitHub Actions run or production release was initiated; no credentials,
+  signing keys, tokens, or device secrets were used or recorded.

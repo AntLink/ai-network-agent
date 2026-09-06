@@ -22,6 +22,9 @@ jobs:
     steps:
       - name: Checkout approved release commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag }}
+          fetch-depth: 0
 
       - name: Set release metadata
         id: meta
@@ -86,32 +89,54 @@ jobs:
           output-file: central-sbom.json
           upload-artifact: false
 
-      - name: Sign and attest Central image
-        env:
-          COSIGN_EXPERIMENTAL: "1"
-          IMAGE: ${{ steps.meta.outputs.central_image }}:${{ steps.meta.outputs.tag }}
-        run: |
-          set -euo pipefail
-          DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest.Digest}}' | tr -d '"')"
-          REF="${IMAGE%@*}@${DIGEST}"
-          cosign sign --yes "$REF"
-          cosign attest --yes --predicate central-sbom.json --type cyclonedx "$REF"
-          echo "central_ref=$REF" >> "$GITHUB_ENV"
+      - name: Generate Edge SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ steps.meta.outputs.edge_image }}:${{ steps.meta.outputs.tag }}
+          format: cyclonedx-json
+          output-file: edge-sbom.json
+          upload-artifact: false
 
-      - name: Verify Central signature and SBOM attestation
+      - name: Sign and attest Central and Edge images
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+          CENTRAL_IMAGE: ${{ steps.meta.outputs.central_image }}:${{ steps.meta.outputs.tag }}
+          EDGE_IMAGE: ${{ steps.meta.outputs.edge_image }}:${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          for name in central edge; do
+            if [ "$name" = central ]; then
+              IMAGE="$CENTRAL_IMAGE"
+              SBOM="central-sbom.json"
+            else
+              IMAGE="$EDGE_IMAGE"
+              SBOM="edge-sbom.json"
+            fi
+            DIGEST="$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest.Digest}}' | tr -d '"')"
+            REF="${IMAGE%@*}@${DIGEST}"
+            cosign sign --yes "$REF"
+            cosign attest --yes --predicate "$SBOM" --type cyclonedx "$REF"
+            echo "${name}_ref=$REF" >> "$GITHUB_ENV"
+          done
+
+      - name: Verify Central and Edge signatures and SBOM attestations
         env:
           COSIGN_EXPERIMENTAL: "1"
         run: |
           set -euo pipefail
-          cosign verify "$central_ref" \
-            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
-            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
-          cosign verify-attestation "$central_ref" --type cyclonedx \
-            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
-            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          for ref in "$central_ref" "$edge_ref"; do
+            cosign verify "$ref" \
+              --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+              --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+            cosign verify-attestation "$ref" --type cyclonedx \
+              --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+              --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          done
 
       - name: Publish release evidence
         uses: actions/upload-artifact@v4
         with:
           name: release-evidence-${{ steps.meta.outputs.tag }}
-          path: central-sbom.json
+          path: |
+            central-sbom.json
+            edge-sbom.json
