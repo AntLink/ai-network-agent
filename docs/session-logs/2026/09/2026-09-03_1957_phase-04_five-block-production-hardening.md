@@ -2464,6 +2464,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   production-significant operator decisions.
 - Next operator action: approve a semantic release version, create the tag on
   the reviewed commit, then dispatch the manual GitHub signing workflow.
+
+### Approved release tag publication - 2026-09-06
+
+- Operator approved release version `v0.1.0`.
+- Created and pushed annotated tag `v0.1.0` from branch `v5-release-prep`.
+- Local tag dereferences to commit `c9da6b147d27001ce7a1fda7b886233589559637`.
+- Remote tag publication was confirmed with `git ls-remote`.
+- The GitHub signing workflow has not yet been dispatched; GHCR/OIDC and
+  package-write settings still need operator verification.
 - No GitHub Actions run or production release was initiated; no credentials,
   signing keys, tokens, or device secrets were used or recorded.
 
