@@ -25,7 +25,7 @@ jobs:
       edge_ref: ${{ steps.sign.outputs.edge_ref }}
     steps:
       - name: Checkout approved release commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.release_tag }}
           fetch-depth: 0
@@ -52,7 +52,7 @@ jobs:
           echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: edge/go.mod
           cache-dependency-path: edge/go.sum
@@ -66,20 +66,20 @@ jobs:
         run: go build -trimpath -ldflags "-s -w" -o ainet-edge-linux ./cmd/ainet-edge
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.7.0
 
       - name: Build and push Central
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: backend/Dockerfile.release
@@ -88,7 +88,7 @@ jobs:
           labels: org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Build and push Edge
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: edge
           file: edge/Dockerfile
@@ -167,7 +167,7 @@ jobs:
             > "release-manifest-${RELEASE_TAG}.json"
 
       - name: Publish release evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: release-evidence-${{ steps.meta.outputs.tag }}
           path: |
@@ -184,7 +184,7 @@ jobs:
       packages: read
     steps:
       - name: Log in to GHCR for verification
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -224,7 +224,7 @@ jobs:
       packages: read
     steps:
       - name: Log in to GHCR for verification
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

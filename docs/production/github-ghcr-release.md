@@ -43,6 +43,9 @@ returned by GHCR and verifies that digest immediately afterward.
   intentionally unconfigured.
 - Manifest generation passes the workflow URL explicitly to `jq` and assembles
   image references from a tag-free image name plus exactly one digest.
+- Official GitHub/Docker actions are pinned to Node 24-compatible major lines:
+  checkout v6, setup-go v7, Docker login v4, Buildx v4, build-push v7, and
+  upload-artifact v5.
 - Signature and attestation verification each have a 180-second timeout with
   explicit image progress output, so a registry or transparency-log stall
   fails diagnostically instead of hanging indefinitely. Verification now runs
