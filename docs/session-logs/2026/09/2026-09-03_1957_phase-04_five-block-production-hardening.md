@@ -2634,3 +2634,13 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   the remaining referrer scan process group.
 - If the marker is absent, the watchdog still returns failure/timeout; no
   offline or transparency-log bypass was added.
+
+### Release verification PASS - 2026-09-06
+
+- Operator reported the latest workflow completed successfully:
+  `release`, `verify-central`, and `verify-edge` all passed.
+- Repository confirmation: `origin/main` is merge commit `77b8894`, containing
+  the verifier fix from `a23c7fd`.
+- The release/signing verification gate for this run is complete. This does
+  not by itself mark the overall platform production-ready; remaining V5
+  gates still require their own evidence.
