@@ -2455,6 +2455,15 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   requested tag before building or publishing any image.
 - Updated the operator release guide with this requirement.
 - No release tag was created and no GitHub Actions run was started.
+
+### Remote release-tag readiness check - 2026-09-06
+
+- Confirmed `origin/v5-release-prep` is synchronized at commit `5553559`.
+- No `v*` release tag currently exists on the remote repository.
+- No tag was created automatically because release version and approval are
+  production-significant operator decisions.
+- Next operator action: approve a semantic release version, create the tag on
+  the reviewed commit, then dispatch the manual GitHub signing workflow.
 - No GitHub Actions run or production release was initiated; no credentials,
   signing keys, tokens, or device secrets were used or recorded.
 
