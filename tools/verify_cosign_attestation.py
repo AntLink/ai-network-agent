@@ -16,10 +16,13 @@ def run_bounded(command: list[str], timeout_seconds: int) -> int:
     try:
         return process.wait(timeout=timeout_seconds)
     except subprocess.TimeoutExpired:
-        if os.name == "nt":
-            process.kill()
-        else:
-            os.killpg(process.pid, signal.SIGKILL)
+        try:
+            if os.name == "nt":
+                process.kill()
+            else:
+                os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
         try:
             process.wait(timeout=15)
         except subprocess.TimeoutExpired:
