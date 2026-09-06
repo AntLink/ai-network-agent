@@ -27,6 +27,14 @@ type FactsRequest struct {
 	Host          string
 	Port          int
 	CredentialRef string
+	Vendor        string
+}
+
+func factsCommand(vendor string) string {
+	if vendor == "mikrotik" || vendor == "routeros" {
+		return "/system/resource/print"
+	}
+	return "show version"
 }
 
 // FactsExecutor maps the capability to a fixed read-only command. It never
@@ -121,7 +129,7 @@ func (e FactsExecutor) executeWithGoSSH(ctx context.Context, req FactsRequest, c
 		return "", fmt.Errorf("facts connector session failed: %w", err)
 	}
 	defer session.Close()
-	out, err := session.Output("show version")
+	out, err := session.Output(factsCommand(req.Vendor))
 	if err != nil {
 		return "", fmt.Errorf("facts connector command failed: %w", err)
 	}
@@ -150,7 +158,7 @@ func (e FactsExecutor) executeWithSystemSSH(ctx context.Context, req FactsReques
 		"-o", "PubkeyAcceptedAlgorithms=+ssh-rsa",
 		"-o", "BatchMode=no",
 		fmt.Sprintf("%s@%s", cred.Username, req.Host),
-		"show version",
+		factsCommand(req.Vendor),
 	}
 	proc := exec.CommandContext(ctx, "/usr/bin/sshpass", append([]string{"-p", cred.Password, "/usr/bin/ssh"}, args...)...)
 	proc.Env = append(os.Environ(), "PATH=/usr/bin:/bin:/sbin:/usr/sbin", "LANG=C")
