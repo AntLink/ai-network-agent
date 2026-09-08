@@ -1355,3 +1355,9 @@ Start the next session by verifying live `/health` remains 200 and `/`,
 - Replaced the Direct devices table card shell with the same structural layout used by Active Edge connectors: edge-to-edge card wrapper, identical title-row treatment, border separators, padding, and table viewport.
 - Direct-specific filters and management actions remain intact; only the presentation structure was aligned.
 - No credentials, tokens, or device secrets were recorded.
+### 2026-09-09 — Direct devices header typography matched
+
+- Operator: Codex
+- Matched the Direct devices title row to Active Edge connectors: same font sizing, subtitle sizing, alignment, border, and padding.
+- Direct-only controls remain available in the same header action area.
+- No credentials, tokens, or device secrets were recorded.

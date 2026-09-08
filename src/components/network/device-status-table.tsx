@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { Eye, MoreHorizontal, PencilLine, Play, RotateCcw, Search, Server, ServerCog, ShieldCheck, Terminal, Trash2 } from 'lucide-react'
+import { Eye, MoreHorizontal, PencilLine, Play, RotateCcw, Search, ServerCog, ShieldCheck, Terminal, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from 'src/components/ui/button'
 import { CardTitle } from 'src/components/ui/card'
@@ -84,14 +84,12 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
-          <div>
-            <div className="flex items-center gap-2">
-              {!compact && <span className="rounded-lg bg-muted p-1.5 text-muted-foreground"><Server className="size-4" /></span>}
-              <CardTitle>{compact ? 'Device Status Overview' : allowManagementActions ? 'Direct devices' : 'Edge devices'}</CardTitle>
-              {!compact && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">{filteredDevices.length}</span>}
-            </div>
-            <p className="text-sm text-muted-foreground">
+      <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
+        <div>
+            <p className="font-medium">
+              {compact ? 'Device Status Overview' : allowManagementActions ? 'Direct devices' : 'Edge devices'}
+            </p>
+            <p className="text-xs text-muted-foreground">
               {allowManagementActions ? 'Koneksi langsung melalui IP public atau management address.' : 'Perangkat yang terdeteksi dan dikelola melalui Edge connector.'}
             </p>
           </div>
