@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import { MoreHorizontal, PencilLine, Play, RotateCcw, Search, ServerCog, ShieldCheck, Terminal, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from 'src/components/ui/button'
@@ -7,9 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from 'src/components/ui/card
 import { Input } from 'src/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'src/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'src/components/ui/table'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from 'src/components/ui/dropdown-menu'
 import { EmptyState } from 'src/components/network/page-state'
 import { StatusBadge, VendorBadge } from 'src/components/network/status-badge'
-import { buttonVariants } from 'src/components/ui/button'
 import { cn } from 'src/lib/utils'
 import type { Device } from 'src/types/network'
 
@@ -20,11 +20,12 @@ type DeviceStatusTableProps = {
   onEditDevice?: (device: Device) => void
   onDeleteDevice?: (device: Device) => void
   footer?: ReactNode
+  allowManagementActions?: boolean
 }
 
 const allValue = 'all'
 
-export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEditDevice, onDeleteDevice, footer }: DeviceStatusTableProps) {
+export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEditDevice, onDeleteDevice, footer, allowManagementActions = true }: DeviceStatusTableProps) {
   const [query, setQuery] = useState('')
   const [vendor, setVendor] = useState(allValue)
   const [status, setStatus] = useState(allValue)
@@ -76,39 +77,42 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
   }
 
   return (
-    <Card>
-      <CardHeader className="gap-4 border-b">
+    <Card className="overflow-hidden rounded-2xl border-border/70 shadow-sm">
+      <CardHeader className="gap-3 border-b border-border/70 bg-muted/20">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <CardTitle>{compact ? 'Device Status Overview' : 'Devices'}</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>{compact ? 'Device Status Overview' : 'Direct devices'}</CardTitle>
+              {!compact && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">{filteredDevices.length}</span>}
+            </div>
             <p className="text-sm text-muted-foreground">Cisco IOSv, MikroTik CHR, Aruba AOS-CX, Linux, and lab nodes.</p>
           </div>
           {!compact && (
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={() => onAddDevice?.() ?? toast.info('Add Device coming soon')}><ServerCog className="size-4" /> Add Device</Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {allowManagementActions && <Button size="sm" variant="outline" onClick={() => onAddDevice?.() ?? toast.info('Add Device coming soon')}><ServerCog className="size-4" /> Add Device</Button>}
               <Button variant="outline" onClick={() => navigate('/discovery')}><Search className="size-4" /> Discover Devices</Button>
-              <Button onClick={() => toast.info('Import CSV coming soon')}><RotateCcw className="size-4" /> Import CSV</Button>
+              {allowManagementActions && <Button size="sm" onClick={() => toast.info('Import CSV coming soon')}><RotateCcw className="size-4" /> Import CSV</Button>}
             </div>
           )}
         </div>
 
         {!compact && (
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
-            <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search hostname, IP, serial, model..." />
-            <FilterSelect label="Vendor" value={vendor} values={options.vendors} onChange={setVendor} />
-            <FilterSelect label="Status" value={status} values={options.statuses} onChange={setStatus} />
-            <FilterSelect label="Lab" value={lab} values={options.labs} onChange={setLab} />
-            <FilterSelect label="Tag" value={tag} values={options.tags} onChange={setTag} />
+          <div className="flex flex-wrap items-center gap-2">
+            <Input className="w-full sm:w-60" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search hostname, IP, serial, model..." />
+            <FilterSelect className="w-[120px]" label="Vendor" value={vendor} values={options.vendors} onChange={setVendor} />
+            <FilterSelect className="w-[120px]" label="Status" value={status} values={options.statuses} onChange={setStatus} />
+            <FilterSelect className="w-[120px]" label="Lab" value={lab} values={options.labs} onChange={setLab} />
+            <FilterSelect className="w-[120px]" label="Tag" value={tag} values={options.tags} onChange={setTag} />
           </div>
         )}
       </CardHeader>
-      <CardContent className="py-5">
+      <CardContent className="px-3 py-4 sm:px-5">
         {filteredDevices.length === 0 ? (
           <EmptyState title="No devices match the current filters." />
         ) : (
           <>
-            <div className="overflow-x-auto rounded-lg border border-border">
-            <Table>
+            <div className="overflow-x-auto rounded-xl border border-border/70">
+            <Table className="min-w-[1180px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Device</TableHead>
@@ -120,56 +124,68 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
                   <TableHead>CPU</TableHead>
                   <TableHead>Memory</TableHead>
                   <TableHead>Latency</TableHead>
+                  <TableHead>Open Ports</TableHead>
                   <TableHead>Last Seen</TableHead>
-                  <TableHead>Device Type</TableHead>
+                  <TableHead>Execution Context</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredDevices.map((device) => (
-                  <TableRow key={device.id}>
+                  <TableRow key={device.id} className="hover:bg-muted/40">
                     <TableCell>
-                      <div className="font-medium">{device.hostname}</div>
-                      <div className="text-xs text-muted-foreground">{device.lab}</div>
+                      <div className="whitespace-nowrap font-medium">{device.hostname}</div>
+                      <div className="font-mono text-xs text-muted-foreground">{device.id}</div>
                     </TableCell>
                     <TableCell><VendorBadge vendor={device.vendor} /></TableCell>
-                    <TableCell>{device.model}</TableCell>
-                    <TableCell className="font-mono text-xs">{device.managementIp}</TableCell>
-                    <TableCell>{device.platform}</TableCell>
+                    <TableCell className="whitespace-nowrap">{device.model}</TableCell>
+                    <TableCell className="whitespace-nowrap font-mono text-xs">{device.managementIp}</TableCell>
+                    <TableCell className="whitespace-nowrap">{device.platform}</TableCell>
                     <TableCell><StatusBadge status={device.status} /></TableCell>
-                    <TableCell>{device.cpu}%</TableCell>
-                    <TableCell>{device.memory}%</TableCell>
-                    <TableCell>{device.latencyMs === null ? '-' : `${device.latencyMs} ms`}</TableCell>
-                    <TableCell>{device.lastSeen}</TableCell>
+                    <TableCell className="whitespace-nowrap">{device.cpu}%</TableCell>
+                    <TableCell className="whitespace-nowrap">{device.memory}%</TableCell>
+                    <TableCell className="whitespace-nowrap">{device.latencyMs === null ? '-' : `${device.latencyMs} ms`}</TableCell>
+                    <TableCell className="min-w-44">
+                      {device.openPorts?.length
+                        ? <div className="flex max-w-64 flex-wrap gap-1">{device.openPorts.map((item) => <span key={`${item.port}-${item.service}`} className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">{item.port}/{item.service}</span>)}</div>
+                        : '-'}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">{device.lastSeen}</TableCell>
                     <TableCell>
-                      {device.deviceType === 'physical' ? 'Physical' : 'Virtual'}
+                      <div className="font-medium">{contextLabel(device)}</div>
+                      <div className="max-w-44 truncate text-xs text-muted-foreground">{contextDetail(device)}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex min-w-80 justify-end gap-1">
-                        <Link className={cn(buttonVariants({ size: 'sm' }))} to={`/devices/${device.id}`}>
-                          Open
-                        </Link>
-                        <Button size="icon-sm" variant="outline" title="SSH" onClick={() => handleSSH(device)}>
-                          <Terminal className="size-4" />
-                        </Button>
-                        <Button size="icon-sm" variant="outline" title="Run Command" onClick={() => handleSSH(device)}>
-                          <Play className="size-4" />
-                        </Button>
-                        <Button size="icon-sm" variant="outline" title="Configure" onClick={() => handleConfigure(device)}>
-                          <ServerCog className="size-4" />
-                        </Button>
-                        <Button size="icon-sm" variant="outline" title="Backup" onClick={() => handleBackup(device)}>
-                          <ShieldCheck className="size-4" />
-                        </Button>
-                        <Button size="icon-sm" variant="outline" title="Edit device" onClick={() => onEditDevice?.(device)}>
-                          <PencilLine className="size-4" />
-                        </Button>
-                        <Button size="icon-sm" variant="destructive" title="Delete device" onClick={() => onDeleteDevice?.(device)}>
-                          <Trash2 className="size-4" />
-                        </Button>
-                        <Button size="icon-sm" variant="ghost" title="More">
-                          <MoreHorizontal className="size-4" />
-                        </Button>
+                      <div className="flex justify-end">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={`Actions for ${device.hostname}`} title="Actions">
+                            <MoreHorizontal className="size-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem className="flex items-center gap-2" onClick={() => navigate(`/devices/${device.id}`, { state: { device } })}>
+                              <MoreHorizontal className="size-4" /> Open device
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleSSH(device)}>
+                              <Terminal className="size-4" /> SSH
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleSSH(device)}>
+                              <Play className="size-4" /> Run command
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleConfigure(device)}>
+                              <ServerCog className="size-4" /> Configure
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex items-center gap-2" onClick={() => void handleBackup(device)}>
+                              <ShieldCheck className="size-4" /> Backup
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="flex items-center gap-2" onClick={() => onEditDevice?.(device)}>
+                              <PencilLine className="size-4" /> Edit device
+                            </DropdownMenuItem>
+                            <DropdownMenuItem variant="destructive" className="flex items-center gap-2" onClick={() => onDeleteDevice?.(device)}>
+                              <Trash2 className="size-4" /> Delete device
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -188,11 +204,13 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
 }
 
 function FilterSelect({
+  className,
   label,
   value,
   values,
   onChange,
 }: {
+  className?: string
   label: string
   value: string
   values: string[]
@@ -200,7 +218,7 @@ function FilterSelect({
 }) {
   return (
     <Select value={value} onValueChange={(nextValue) => onChange(nextValue ?? allValue)}>
-      <SelectTrigger>
+      <SelectTrigger className={cn('w-full', className)}>
         <SelectValue placeholder={label} />
       </SelectTrigger>
       <SelectContent>
@@ -213,4 +231,18 @@ function FilterSelect({
       </SelectContent>
     </Select>
   )
+}
+
+function contextLabel(device: Device) {
+  if (device.source === 'edge' || device.executionLocation === 'EDGE' || device.edgeId) return 'Edge'
+  if (device.source === 'gns3' || device.deviceType === 'virtual') return 'GNS3'
+  return 'Direct IP'
+}
+
+function contextDetail(device: Device) {
+  if (contextLabel(device) === 'Edge') {
+    return [device.edgeId, device.customerId, device.siteId].filter(Boolean).join(' / ') || 'Customer LAN'
+  }
+  if (contextLabel(device) === 'GNS3') return device.projectName || device.lab || 'GNS3 project'
+  return device.managementIp || 'Direct management address'
 }

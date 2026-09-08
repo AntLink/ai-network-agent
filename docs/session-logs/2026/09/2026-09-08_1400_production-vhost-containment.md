@@ -1277,3 +1277,8 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   identity/metric cells and lighter hover states. TypeScript check and Vite
   production build passed; browser smoke found the updated labels with no
   console errors.
+- Polished the Direct Devices table consistently with the Devices page: rounded
+  card treatment, subtle header background, compact result count, clearer device
+  identity (hostname plus device ID), consistent filter/button spacing, stable
+  column widths, and row hover feedback. TypeScript check and Vite production
+  build passed.
