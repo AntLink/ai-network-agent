@@ -1296,3 +1296,5 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   inheriting the Direct devices label. TypeScript check and Vite production
   build passed; authenticated browser smoke confirmed the Direct devices
   title, description, counters, and existing action controls.
+- Matched the `Discover Devices` toolbar button size to `Add Device` by using
+  the same small outline button treatment in the Direct devices view.

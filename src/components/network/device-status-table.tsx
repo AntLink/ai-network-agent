@@ -98,7 +98,7 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
           {!compact && (
             <div className="flex flex-wrap items-center gap-2">
               {allowManagementActions && <Button size="sm" variant="outline" onClick={() => onAddDevice?.() ?? toast.info('Add Device coming soon')}><ServerCog className="size-4" /> Add Device</Button>}
-              <Button variant="outline" onClick={() => navigate('/discovery')}><Search className="size-4" /> Discover Devices</Button>
+              <Button size="sm" variant="outline" onClick={() => navigate('/discovery')}><Search className="size-4" /> Discover Devices</Button>
               {allowManagementActions && <Button size="sm" onClick={() => toast.info('Import CSV coming soon')}><RotateCcw className="size-4" /> Import CSV</Button>}
             </div>
           )}
