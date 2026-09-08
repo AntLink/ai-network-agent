@@ -1304,3 +1304,8 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   `72288029fa07c0183c312581732f1b57f06f8117dc1dce32b556a145cd7ce27e` matched
   on Alpine, and `rc-service ainet-edge status` returned `started` with
   `edge-001` running.
+- Enabled the existing bounded service-port discovery on ALPINE1 by adding
+  the persistent `--discovery-service-scan` flag to `/etc/conf.d/ainet-edge`.
+  The scanner remains policy-scoped to ARP-observed targets and common ports;
+  it does not run nmap or expand arbitrary CIDRs. ALPINE1 restarted
+  successfully and the subsequent runtime log showed no new submission error.
