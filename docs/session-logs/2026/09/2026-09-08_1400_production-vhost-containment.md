@@ -1340,3 +1340,11 @@ Start the next session by verifying live `/health` remains 200 and `/`,
 - Filters and status summaries remain below the shared header and do not change device data or action permissions.
 - No credentials, tokens, or device secrets were recorded.
 - Verification: TypeScript/build validation to be run after this patch.
+### 2026-09-09 — Direct devices table shell aligned with Active Edge connectors
+
+- Operator: Codex
+- Scope: `src/components/network/device-status-table.tsx`
+- Aligned the actual table container with Active Edge connectors: removed the extra rounded inner border and internal horizontal padding so the table header/rows use the same card edge-to-edge presentation.
+- Preserved Direct devices management actions and filters.
+- No credentials, tokens, or device secrets were recorded.
+- Verification: frontend build passed.

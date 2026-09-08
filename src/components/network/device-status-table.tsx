@@ -122,12 +122,12 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
           </div>
         )}
       </CardHeader>
-      <CardContent className="px-4 py-4">
+      <CardContent className="px-0 pb-0 pt-0">
         {filteredDevices.length === 0 ? (
           <EmptyState title="No devices match the current filters." />
         ) : (
           <>
-            <div className="overflow-x-auto rounded-xl border border-border/70">
+            <div className="overflow-x-auto">
             <Table className="min-w-[1180px]">
               <TableHeader>
                 <TableRow>
@@ -216,7 +216,7 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
             </Table>
           </div>
           {footer && (
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">{footer}</div>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 px-4 pb-4">{footer}</div>
             )}
           </>
         )}
