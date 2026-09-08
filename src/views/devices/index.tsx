@@ -1,6 +1,7 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
-import { createDevice, deleteDevice, updateDevice, useDevicesPage } from 'src/api/network'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Cable, ChevronLeft, ChevronRight, Globe2, Loader2, Radio, Server } from 'lucide-react'
+import { Link } from 'react-router'
+import { createDevice, deleteDevice, updateDevice, useDevicesPage, useEdgeRuntimeStatuses } from 'src/api/network'
 import { DeviceStatusTable } from 'src/components/network/device-status-table'
 import { EmptyState, ErrorState, LoadingState } from 'src/components/network/page-state'
 import { toast } from 'sonner'
@@ -9,9 +10,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from 'src/components/ui/input'
 import { Label } from 'src/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'src/components/ui/select'
+import { Badge } from 'src/components/ui/badge'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'src/components/ui/table'
+import { StatusBadge } from 'src/components/network/status-badge'
 import type { Device } from 'src/types/network'
+import type { EdgeRuntimeStatus } from 'src/api/network/backend-client'
 
 const PAGE_SIZES = [10, 25, 50, 100]
+type DeviceScope = 'edge' | 'direct'
 
 type DeviceFormState = {
   id: string
@@ -67,6 +73,7 @@ const DevicesPage = () => {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(25)
   const { data, error, isLoading, isValidating, mutate } = useDevicesPage({ page, limit })
+  const { data: edgeStatuses, isLoading: edgeStatusesLoading, error: edgeStatusesError } = useEdgeRuntimeStatuses()
   const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -76,18 +83,11 @@ const DevicesPage = () => {
   const [editingDevice, setEditingDevice] = useState<Device | null>(null)
   const [deletingDevice, setDeletingDevice] = useState<Device | null>(null)
   const [form, setForm] = useState<DeviceFormState>(() => createEmptyDeviceForm())
+  const [scope, setScope] = useState<DeviceScope>('edge')
 
   useEffect(() => {
     if (limit > 0) setPage((current) => current)
   }, [limit])
-
-  if (isLoading && !data) {
-    return <LoadingState rows={6} />
-  }
-
-  if (error && !data) {
-    return <ErrorState message="Failed to load device inventory." />
-  }
 
   const rawData = data?.data as unknown
   const isArray = Array.isArray(rawData)
@@ -97,27 +97,67 @@ const DevicesPage = () => {
   const pages = isArray ? 1 : (pageData?.pages ?? 1)
   const tableLoading = isValidating && !!data
 
+  const scopeCounts = useMemo(() => ({
+    edge: edgeStatuses?.length ?? devices.filter((device) => (device.source ?? inferDeviceSource(device)) === 'edge').length,
+    direct: devices.filter((device) => (device.source ?? inferDeviceSource(device)) === 'direct').length,
+  }), [devices, edgeStatuses])
+
+  const visibleDevices = useMemo(() => devices.filter((device) => {
+    if ((device.source ?? inferDeviceSource(device)) !== scope) return false
+    return true
+  }), [devices, scope])
+
+  if (isLoading && !data) {
+    return <LoadingState rows={6} />
+  }
+
+  if (error && !data) {
+    return <ErrorState message="Failed to load device inventory." />
+  }
+
   const handleLimitChange = (value: string | null) => {
     if (value) { setLimit(Number(value)); setPage(1) }
   }
 
   return (
-    <div className="grid gap-4">
-      <div className="flex items-center justify-between">
+    <div className="grid gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-normal">Devices</h1>
-          <p className="text-sm text-muted-foreground">Inventory, SSH reachability, vendor platform, and lab context.</p>
+          <div className="flex items-center gap-2">
+            <div className="rounded-lg bg-primary/10 p-2 text-primary"><Server className="size-5" /></div>
+            <h1 className="text-2xl font-semibold tracking-normal">Devices</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">Kelola perangkat melalui Edge atau koneksi langsung.</p>
         </div>
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           {tableLoading && <Loader2 className="size-3.5 animate-spin" />}
-          <span>{total} devices</span>
+          <Badge variant="secondary">{total} perangkat</Badge>
         </div>
       </div>
 
-      {devices.length ? (
+      <div className="grid gap-3 md:grid-cols-2">
+        <ScopeCard active={scope === 'edge'} title="Edge Devices" detail="Customer LAN melalui Edge" count={scopeCounts.edge} onClick={() => setScope('edge')} />
+        <ScopeCard active={scope === 'direct'} title="Direct Devices" detail="IP langsung / public address" count={scopeCounts.direct} onClick={() => setScope('direct')} />
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card/80 px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <Badge variant="outline">{scope === 'edge' ? 'EDGE ROUTING VIEW' : 'DIRECT IP VIEW'}</Badge>
+          <span className="text-sm text-muted-foreground">{scope === 'edge' ? `${edgeStatuses?.length ?? 0} Edge terdeteksi` : `${visibleDevices.length} perangkat ditampilkan`}</span>
+        </div>
+        {scope === 'edge' && <span className="flex items-center gap-1.5 text-xs text-emerald-600"><Radio className="size-3.5" /> Live refresh</span>}
+      </div>
+
+      {scope === 'edge' ? (
+        <EdgeRuntimeList
+          statuses={edgeStatuses ?? []}
+          isLoading={edgeStatusesLoading}
+          hasError={Boolean(edgeStatusesError)}
+        />
+      ) : visibleDevices.length ? (
         <>
           <DeviceStatusTable
-            devices={devices}
+            devices={visibleDevices}
             footer={
               <>
                 <p className="text-sm text-muted-foreground">
@@ -159,7 +199,7 @@ const DevicesPage = () => {
           />
         </>
       ) : (
-        <EmptyState title="No devices found." />
+        <EmptyState title="No direct devices found." />
       )}
 
       <Dialog
@@ -516,7 +556,109 @@ const DevicesPage = () => {
   )
 }
 
+function EdgeRuntimeList({
+  statuses,
+  isLoading,
+  hasError,
+}: {
+  statuses: EdgeRuntimeStatus[]
+  isLoading: boolean
+  hasError: boolean
+}) {
+  if (isLoading && statuses.length === 0) return <LoadingState rows={3} />
+  if (hasError && statuses.length === 0) return <ErrorState message="Failed to load live Edge sessions." />
+  if (statuses.length === 0) return <EmptyState title="No active Edge sessions found." />
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
+      <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
+        <div>
+          <p className="font-medium">Active Edge connectors</p>
+          <p className="text-xs text-muted-foreground">Koneksi customer LAN yang sedang terhubung ke Central.</p>
+        </div>
+        <Cable className="size-4 text-muted-foreground" />
+      </div>
+      <div className="overflow-x-auto">
+      <Table className="min-w-[1180px]">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Edge ID</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>OS</TableHead>
+            <TableHead>Management IP</TableHead>
+            <TableHead>MAC address</TableHead>
+            <TableHead>CPU</TableHead>
+            <TableHead>Memory</TableHead>
+            <TableHead>Latency</TableHead>
+            <TableHead>Control channel</TableHead>
+            <TableHead>Boot ID</TableHead>
+            <TableHead>Last heartbeat</TableHead>
+            <TableHead>Session age</TableHead>
+            <TableHead className="text-right">Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {statuses.map((edge) => (
+            <TableRow key={edge.edge_id} className="hover:bg-muted/40">
+              <TableCell className="whitespace-nowrap font-medium">{edge.edge_id}</TableCell>
+              <TableCell><StatusBadge status={edge.status} /></TableCell>
+              <TableCell>{edge.os || '—'}</TableCell>
+              <TableCell className="font-mono text-xs">{edge.management_ip || '—'}</TableCell>
+              <TableCell className="font-mono text-xs">{edge.mac_address || '—'}</TableCell>
+              <TableCell className="whitespace-nowrap">{formatEdgeMetric(edge.cpu_percent, '%')}</TableCell>
+              <TableCell className="whitespace-nowrap">{formatEdgeMetric(edge.memory_percent, '%')}</TableCell>
+              <TableCell className="whitespace-nowrap">{formatEdgeMetric(edge.latency_ms, ' ms')}</TableCell>
+              <TableCell>{edge.ready && edge.status === 'online' ? 'Ready / online' : 'Offline'}</TableCell>
+              <TableCell className="font-mono text-xs">{edge.boot_id || '-'}</TableCell>
+              <TableCell className="whitespace-nowrap">{edge.last_seen ? new Date(edge.last_seen).toLocaleString() : '-'}</TableCell>
+              <TableCell className="whitespace-nowrap">{Math.round(edge.age_seconds)}s / {edge.ttl_seconds}s</TableCell>
+              <TableCell className="text-right">
+                <Button type="button" size="sm" nativeButton={false} render={<Link to={`/devices/edge/${encodeURIComponent(edge.edge_id)}`} />}>
+                  Open
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      </div>
+    </div>
+  )
+}
+
+function formatEdgeMetric(value: number | null | undefined, suffix: string) {
+  return typeof value === 'number' && Number.isFinite(value) ? `${Math.round(value * 10) / 10}${suffix}` : '—'
+}
+
 export default DevicesPage
+
+function ScopeCard({ active, title, detail, count, onClick }: { active: boolean; title: string; detail: string; count: number; onClick: () => void }) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={onClick}
+      className={`h-auto min-h-[86px] items-start justify-between rounded-2xl border-border/70 p-4 text-left shadow-sm transition-colors hover:border-primary/50 hover:bg-muted/30 ${active ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : ''}`}
+    >
+      <span className="flex items-start gap-3">
+        <span className={`mt-0.5 rounded-lg p-2 ${active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+          {title.startsWith('Edge') ? <Cable className="size-4" /> : <Globe2 className="size-4" />}
+        </span>
+        <span className="grid gap-1">
+          <span className="font-semibold">{title}</span>
+          <span className="text-xs font-normal text-muted-foreground">{detail}</span>
+        </span>
+      </span>
+      <span className="rounded-full bg-muted px-2.5 py-1 text-lg font-semibold tabular-nums">{count}</span>
+    </Button>
+  )
+}
+
+function inferDeviceSource(device: Device): NonNullable<Device['source']> {
+  if (device.executionLocation === 'EDGE' || device.edgeId) return 'edge'
+  if (device.deviceType === 'virtual' || device.tags.some((tag) => ['gns3', 'gns3-chr', 'm1', 'm3'].includes(tag.toLowerCase()))) return 'gns3'
+  return 'direct'
+}
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (

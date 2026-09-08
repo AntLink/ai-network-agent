@@ -1270,3 +1270,10 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   repeated `POST /api/v1/tasks/capability` 404 (`Device not found`) errors while
   preserving the distinction between OBSERVED and MANAGED. TypeScript/Vite
   production build passed.
+- Polished the Devices page visual hierarchy: improved page spacing, icon-led
+  heading, compact device count badge, clearer scope cards for Edge/Direct,
+  live-refresh indicator, and a framed Active Edge connectors section. The wide
+  Edge table now scrolls cleanly on small screens with stable non-wrapping
+  identity/metric cells and lighter hover states. TypeScript check and Vite
+  production build passed; browser smoke found the updated labels with no
+  console errors.
