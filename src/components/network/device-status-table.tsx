@@ -83,8 +83,8 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
   }
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-border/70 shadow-sm">
-      <CardHeader className="gap-3 border-b border-border/70 bg-muted/20">
+    <Card className="overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm">
+      <CardHeader className="gap-3 border-b border-border/70 bg-transparent px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
           </div>
         )}
       </CardHeader>
-      <CardContent className="px-3 py-4 sm:px-5">
+      <CardContent className="px-4 py-4">
         {filteredDevices.length === 0 ? (
           <EmptyState title="No devices match the current filters." />
         ) : (

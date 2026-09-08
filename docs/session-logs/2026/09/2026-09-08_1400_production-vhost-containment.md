@@ -1325,3 +1325,7 @@ Start the next session by verifying live `/health` remains 200 and `/`,
 - Added the same non-modal `...` action menu to the `Active Edge connectors`
   table. Each Edge connector now exposes `Open`, `SSH`, `Run command`, and
   `Configure` without changing the existing Edge detail navigation.
+- Aligned the Direct devices table container with the Active Edge connectors
+  layout: matching card background, compact header spacing, border treatment,
+  and table content padding while retaining Direct-specific filters and its
+  management action menu.
