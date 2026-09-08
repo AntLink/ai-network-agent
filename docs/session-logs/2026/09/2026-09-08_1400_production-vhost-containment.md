@@ -1263,3 +1263,10 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   polling and multiple service ports for one IP are now collapsed to one row per
   source/IP in the UI. Per-port evidence remains retained by Central and is
   still rendered in the device table's Open Ports column. TypeScript check passed.
+- Fixed automatic telemetry polling for discovery-only devices. The Edge detail
+  page now sends `device.read.telemetry` only for inventory-managed devices with
+  a Central record and credential reference; unregistered discovery observations
+  are displayed without generating invalid task requests. This removes the
+  repeated `POST /api/v1/tasks/capability` 404 (`Device not found`) errors while
+  preserving the distinction between OBSERVED and MANAGED. TypeScript/Vite
+  production build passed.

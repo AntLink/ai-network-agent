@@ -38,9 +38,10 @@ export default function EdgeDetailPage() {
 
   const discoveredDevices = buildDiscoveredDevices(liveObservations ?? [], decodedEdgeId, edge)
   const managedTargets = edgeDevices.filter((device) => device.vendor !== 'other' && device.managementIp !== 'layer2-only')
-  const telemetryTargets = managedTargets.length > 0
-    ? managedTargets
-    : discoveredDevices.filter((device) => device.managementIp !== 'layer2-only').slice(0, 8)
+  // Discovery observations are not inventory-managed devices. They have no
+  // Central device record or credential binding, so never send telemetry tasks
+  // for them; doing so produces an expected `Device not found` response.
+  const telemetryTargets = managedTargets
   const telemetryTarget = telemetryTargets[0]
   const telemetryTargetKey = telemetryTargets.map((device) => device.id).join('|')
   const pollTelemetry = useCallback(async () => {
