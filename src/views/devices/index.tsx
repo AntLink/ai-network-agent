@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Cable, ChevronLeft, ChevronRight, Globe2, Loader2, Radio, Server } from 'lucide-react'
-import { Link } from 'react-router'
+import { Cable, ChevronLeft, ChevronRight, Eye, Globe2, Loader2, MoreHorizontal, Play, Radio, Server, ServerCog, Terminal } from 'lucide-react'
+import { useNavigate } from 'react-router'
 import { createDevice, deleteDevice, updateDevice, useDevicesPage, useEdgeRuntimeStatuses } from 'src/api/network'
 import { DeviceStatusTable } from 'src/components/network/device-status-table'
 import { EmptyState, ErrorState, LoadingState } from 'src/components/network/page-state'
@@ -12,6 +12,7 @@ import { Label } from 'src/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'src/components/ui/select'
 import { Badge } from 'src/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'src/components/ui/table'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from 'src/components/ui/dropdown-menu'
 import { StatusBadge } from 'src/components/network/status-badge'
 import type { Device } from 'src/types/network'
 import type { EdgeRuntimeStatus } from 'src/api/network/backend-client'
@@ -565,6 +566,7 @@ function EdgeRuntimeList({
   isLoading: boolean
   hasError: boolean
 }) {
+  const navigate = useNavigate()
   if (isLoading && statuses.length === 0) return <LoadingState rows={3} />
   if (hasError && statuses.length === 0) return <ErrorState message="Failed to load live Edge sessions." />
   if (statuses.length === 0) return <EmptyState title="No active Edge sessions found." />
@@ -613,9 +615,27 @@ function EdgeRuntimeList({
               <TableCell className="whitespace-nowrap">{edge.last_seen ? new Date(edge.last_seen).toLocaleString() : '-'}</TableCell>
               <TableCell className="whitespace-nowrap">{Math.round(edge.age_seconds)}s / {edge.ttl_seconds}s</TableCell>
               <TableCell className="text-right">
-                <Button type="button" size="sm" nativeButton={false} render={<Link to={`/devices/edge/${encodeURIComponent(edge.edge_id)}`} />}>
-                  Open
-                </Button>
+                <div className="flex justify-end">
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={`Actions for ${edge.edge_id}`} title="Actions">
+                      <MoreHorizontal className="size-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem className="flex items-center gap-2" onClick={() => navigate(`/devices/edge/${encodeURIComponent(edge.edge_id)}`)}>
+                        <Eye className="size-4" /> Open
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center gap-2" onClick={() => navigate('/terminal', { state: { deviceId: edge.edge_id } })}>
+                        <Terminal className="size-4" /> SSH
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center gap-2" onClick={() => navigate('/terminal', { state: { deviceId: edge.edge_id } })}>
+                        <Play className="size-4" /> Run command
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center gap-2" onClick={() => navigate('/configurations', { state: { deviceId: edge.edge_id } })}>
+                        <ServerCog className="size-4" /> Configure
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </TableCell>
             </TableRow>
           ))}

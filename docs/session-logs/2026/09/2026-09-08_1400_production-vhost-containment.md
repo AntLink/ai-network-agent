@@ -1322,3 +1322,6 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   retain their previous management menu (`Open device`, `SSH`, `Run command`,
   `Configure`, `Backup`, `Edit device`, and `Delete device`), while Edge rows
   use the four operational actions requested for Edge execution.
+- Added the same non-modal `...` action menu to the `Active Edge connectors`
+  table. Each Edge connector now exposes `Open`, `SSH`, `Run command`, and
+  `Configure` without changing the existing Edge detail navigation.
