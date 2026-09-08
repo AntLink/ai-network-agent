@@ -1290,3 +1290,9 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   long generated discovery ID is no longer rendered in the table; it displays
   `Edge Discovery`, while the full ID remains available through the element
   title and runtime data. TypeScript check passed.
+- Refined the Direct devices table header with context-aware description and
+  compact Online/Warning/Offline counters based on the currently filtered
+  rows. Edge detail now correctly uses the `Edge devices` title instead of
+  inheriting the Direct devices label. TypeScript check and Vite production
+  build passed; authenticated browser smoke confirmed the Direct devices
+  title, description, counters, and existing action controls.

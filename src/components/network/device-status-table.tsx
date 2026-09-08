@@ -63,6 +63,12 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
     })
   }, [devices, lab, query, status, tag, vendor])
 
+  const statusCounts = useMemo(() => ({
+    online: filteredDevices.filter((device) => device.status === 'online').length,
+    warning: filteredDevices.filter((device) => device.status === 'warning').length,
+    offline: filteredDevices.filter((device) => device.status === 'offline').length,
+  }), [filteredDevices])
+
   const handleSSH = (device: Device) => {
     navigate('/terminal', { state: { deviceId: device.id } })
   }
@@ -82,10 +88,12 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <CardTitle>{compact ? 'Device Status Overview' : 'Direct devices'}</CardTitle>
+              <CardTitle>{compact ? 'Device Status Overview' : allowManagementActions ? 'Direct devices' : 'Edge devices'}</CardTitle>
               {!compact && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">{filteredDevices.length}</span>}
             </div>
-            <p className="text-sm text-muted-foreground">Cisco IOSv, MikroTik CHR, Aruba AOS-CX, Linux, and lab nodes.</p>
+            <p className="text-sm text-muted-foreground">
+              {allowManagementActions ? 'Koneksi langsung melalui IP public atau management address.' : 'Perangkat yang terdeteksi dan dikelola melalui Edge connector.'}
+            </p>
           </div>
           {!compact && (
             <div className="flex flex-wrap items-center gap-2">
@@ -103,6 +111,13 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
             <FilterSelect className="w-[120px]" label="Status" value={status} values={options.statuses} onChange={setStatus} />
             <FilterSelect className="w-[120px]" label="Lab" value={lab} values={options.labs} onChange={setLab} />
             <FilterSelect className="w-[120px]" label="Tag" value={tag} values={options.tags} onChange={setTag} />
+          </div>
+        )}
+        {!compact && (
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <StatusSummary label="Online" value={statusCounts.online} tone="success" />
+            <StatusSummary label="Warning" value={statusCounts.warning} tone="warning" />
+            <StatusSummary label="Offline" value={statusCounts.offline} tone="muted" />
           </div>
         )}
       </CardHeader>
@@ -233,6 +248,15 @@ function FilterSelect({
       </SelectContent>
     </Select>
   )
+}
+
+function StatusSummary({ label, value, tone }: { label: string; value: number; tone: 'success' | 'warning' | 'muted' }) {
+  const toneClass = tone === 'success'
+    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300'
+    : tone === 'warning'
+      ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300'
+      : 'border-border bg-muted/50 text-muted-foreground'
+  return <span className={cn('rounded-full border px-2 py-1', toneClass)}>{label} <span className="font-semibold tabular-nums">{value}</span></span>
 }
 
 function contextLabel(device: Device) {
