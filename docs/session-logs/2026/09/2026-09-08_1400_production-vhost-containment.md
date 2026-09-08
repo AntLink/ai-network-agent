@@ -1286,3 +1286,7 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   non-modal. Opening the `...` menu no longer blocks page/table scrolling while
   the action list remains keyboard and pointer accessible. TypeScript check
   passed.
+- Shortened the secondary identity label for discovery-only Edge devices. The
+  long generated discovery ID is no longer rendered in the table; it displays
+  `Edge Discovery`, while the full ID remains available through the element
+  title and runtime data. TypeScript check passed.

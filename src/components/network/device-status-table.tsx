@@ -135,7 +135,9 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
                   <TableRow key={device.id} className="hover:bg-muted/40">
                     <TableCell>
                       <div className="whitespace-nowrap font-medium">{device.hostname}</div>
-                      <div className="font-mono text-xs text-muted-foreground">{device.id}</div>
+                      <div className="max-w-44 truncate text-xs text-muted-foreground" title={device.tags.includes('discovered') ? 'Edge Discovery' : device.id}>
+                        {device.tags.includes('discovered') ? 'Edge Discovery' : device.id}
+                      </div>
                     </TableCell>
                     <TableCell><VendorBadge vendor={device.vendor} /></TableCell>
                     <TableCell className="whitespace-nowrap">{device.model}</TableCell>
