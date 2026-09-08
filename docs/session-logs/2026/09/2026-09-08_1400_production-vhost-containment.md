@@ -1298,3 +1298,9 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   title, description, counters, and existing action controls.
 - Matched the `Discover Devices` toolbar button size to `Add Device` by using
   the same small outline button treatment in the Direct devices view.
+- Rebuilt the current Edge source as Linux/amd64 with `GOOS=linux` and
+  `CGO_ENABLED=0`. Deployed it to GNS3 ALPINE1 through the internal HTTP
+  artifact server and console port `5022` (no base64 transfer). The SHA-256
+  `72288029fa07c0183c312581732f1b57f06f8117dc1dce32b556a145cd7ce27e` matched
+  on Alpine, and `rc-service ainet-edge status` returned `started` with
+  `edge-001` running.
