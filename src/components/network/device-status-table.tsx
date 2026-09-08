@@ -1,13 +1,13 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
-import { Eye, MoreHorizontal, Play, RotateCcw, Search, ServerCog, Terminal } from 'lucide-react'
+import { Eye, MoreHorizontal, PencilLine, Play, RotateCcw, Search, ServerCog, ShieldCheck, Terminal, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from 'src/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from 'src/components/ui/card'
 import { Input } from 'src/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'src/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'src/components/ui/table'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from 'src/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from 'src/components/ui/dropdown-menu'
 import { EmptyState } from 'src/components/network/page-state'
 import { StatusBadge, VendorBadge } from 'src/components/network/status-badge'
 import { cn } from 'src/lib/utils'
@@ -25,7 +25,7 @@ type DeviceStatusTableProps = {
 
 const allValue = 'all'
 
-export function DeviceStatusTable({ devices, compact = false, onAddDevice, footer, allowManagementActions = true }: DeviceStatusTableProps) {
+export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEditDevice, onDeleteDevice, footer, allowManagementActions = true }: DeviceStatusTableProps) {
   const [query, setQuery] = useState('')
   const [vendor, setVendor] = useState(allValue)
   const [status, setStatus] = useState(allValue)
@@ -75,6 +75,11 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, foote
 
   const handleConfigure = (device: Device) => {
     navigate('/configurations', { state: { deviceId: device.id } })
+  }
+
+  const handleBackup = async (device: Device) => {
+    toast.info(`Backup requested for ${device.hostname}`)
+    // TODO: Call POST /api/v1/cisco/{device_id}/config/backup or similar
   }
 
   return (
@@ -175,7 +180,7 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, foote
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
                             <DropdownMenuItem className="flex items-center gap-2" onClick={() => navigate(`/devices/${device.id}`, { state: { device } })}>
-                              <Eye className="size-4" /> Open
+                              {allowManagementActions ? <MoreHorizontal className="size-4" /> : <Eye className="size-4" />} {allowManagementActions ? 'Open device' : 'Open'}
                             </DropdownMenuItem>
                             <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleSSH(device)}>
                               <Terminal className="size-4" /> SSH
@@ -186,6 +191,20 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, foote
                             <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleConfigure(device)}>
                               <ServerCog className="size-4" /> Configure
                             </DropdownMenuItem>
+                            {allowManagementActions && (
+                              <>
+                                <DropdownMenuItem className="flex items-center gap-2" onClick={() => void handleBackup(device)}>
+                                  <ShieldCheck className="size-4" /> Backup
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="flex items-center gap-2" onClick={() => onEditDevice?.(device)}>
+                                  <PencilLine className="size-4" /> Edit device
+                                </DropdownMenuItem>
+                                <DropdownMenuItem variant="destructive" className="flex items-center gap-2" onClick={() => onDeleteDevice?.(device)}>
+                                  <Trash2 className="size-4" /> Delete device
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>

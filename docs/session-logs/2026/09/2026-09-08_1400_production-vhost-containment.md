@@ -1318,3 +1318,7 @@ Start the next session by verifying live `/health` remains 200 and `/`,
 - Simplified the device-row action menu to the requested four operations:
   `Open`, `SSH`, `Run command`, and `Configure`. The menu remains a non-modal
   `...` dropdown so table scrolling is preserved.
+- Scoped the action-menu simplification to Edge devices only. Direct devices
+  retain their previous management menu (`Open device`, `SSH`, `Run command`,
+  `Configure`, `Backup`, `Edit device`, and `Delete device`), while Edge rows
+  use the four operational actions requested for Edge execution.
