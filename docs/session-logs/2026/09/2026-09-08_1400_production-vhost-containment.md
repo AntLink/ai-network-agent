@@ -1315,3 +1315,6 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   service restarted successfully. Enabled the same persistent
   `--discovery-service-scan` flag in ALPINE2 so both Edge connectors collect
   bounded Open Ports observations consistently.
+- Simplified the device-row action menu to the requested four operations:
+  `Open`, `SSH`, `Run command`, and `Configure`. The menu remains a non-modal
+  `...` dropdown so table scrolling is preserved.
