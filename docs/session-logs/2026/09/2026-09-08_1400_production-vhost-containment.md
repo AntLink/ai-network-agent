@@ -1332,3 +1332,11 @@ Start the next session by verifying live `/health` remains 200 and `/`,
 - Added a distinct title strip to the shared device table so Direct devices
   has the same visible section-header treatment as Active Edge connectors,
   including an icon, title, count, and descriptive context above the filters.
+### 2026-09-09 — Direct devices header alignment correction
+
+- Operator: Codex
+- Scope: `src/components/network/device-status-table.tsx`
+- Corrected the Direct/Edge device status card structure so its title row uses the same visible card-header pattern as Active Edge connectors: consistent padding, bottom border, and content separation.
+- Filters and status summaries remain below the shared header and do not change device data or action permissions.
+- No credentials, tokens, or device secrets were recorded.
+- Verification: TypeScript/build validation to be run after this patch.

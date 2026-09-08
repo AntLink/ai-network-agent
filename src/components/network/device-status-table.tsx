@@ -84,8 +84,8 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
 
   return (
     <Card className="overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm">
-      <CardHeader className="gap-3 border-b border-border/70 bg-transparent px-4 py-3">
-        <div className="-mx-4 -mt-3 flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-muted/10 px-4 py-3">
+      <CardHeader className="gap-0 bg-transparent p-0">
+        <div className="flex items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
           <div>
             <div className="flex items-center gap-2">
               {!compact && <span className="rounded-lg bg-muted p-1.5 text-muted-foreground"><Server className="size-4" /></span>}
@@ -106,7 +106,7 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
         </div>
 
         {!compact && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 border-b border-border/70 px-4 py-3">
             <Input className="w-full sm:w-60" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search hostname, IP, serial, model..." />
             <FilterSelect className="w-[120px]" label="Vendor" value={vendor} values={options.vendors} onChange={setVendor} />
             <FilterSelect className="w-[120px]" label="Status" value={status} values={options.statuses} onChange={setStatus} />
@@ -115,7 +115,7 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
           </div>
         )}
         {!compact && (
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <div className="flex flex-wrap items-center gap-1.5 px-4 py-3 text-xs">
             <StatusSummary label="Online" value={statusCounts.online} tone="success" />
             <StatusSummary label="Warning" value={statusCounts.warning} tone="warning" />
             <StatusSummary label="Offline" value={statusCounts.offline} tone="muted" />
