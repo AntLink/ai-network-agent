@@ -1282,3 +1282,7 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   identity (hostname plus device ID), consistent filter/button spacing, stable
   column widths, and row hover feedback. TypeScript check and Vite production
   build passed.
+- Fixed the Direct Devices action menu scroll lock by rendering its dropdown as
+  non-modal. Opening the `...` menu no longer blocks page/table scrolling while
+  the action list remains keyboard and pointer accessible. TypeScript check
+  passed.

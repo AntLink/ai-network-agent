@@ -157,7 +157,7 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end">
-                        <DropdownMenu>
+                        <DropdownMenu modal={false}>
                           <DropdownMenuTrigger className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={`Actions for ${device.hostname}`} title="Actions">
                             <MoreHorizontal className="size-4" />
                           </DropdownMenuTrigger>
