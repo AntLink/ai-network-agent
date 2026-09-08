@@ -1348,3 +1348,10 @@ Start the next session by verifying live `/health` remains 200 and `/`,
 - Preserved Direct devices management actions and filters.
 - No credentials, tokens, or device secrets were recorded.
 - Verification: frontend build passed.
+### 2026-09-09 — Direct devices uses the Active Edge table structure
+
+- Operator: Codex
+- Scope: `src/components/network/device-status-table.tsx`
+- Replaced the Direct devices table card shell with the same structural layout used by Active Edge connectors: edge-to-edge card wrapper, identical title-row treatment, border separators, padding, and table viewport.
+- Direct-specific filters and management actions remain intact; only the presentation structure was aligned.
+- No credentials, tokens, or device secrets were recorded.

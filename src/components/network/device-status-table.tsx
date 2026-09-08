@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import { Eye, MoreHorizontal, PencilLine, Play, RotateCcw, Search, Server, ServerCog, ShieldCheck, Terminal, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from 'src/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from 'src/components/ui/card'
+import { CardTitle } from 'src/components/ui/card'
 import { Input } from 'src/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'src/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'src/components/ui/table'
@@ -83,9 +83,8 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
   }
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm">
-      <CardHeader className="gap-0 bg-transparent p-0">
-        <div className="flex items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
+    <div className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-border/70 px-4 py-3">
           <div>
             <div className="flex items-center gap-2">
               {!compact && <span className="rounded-lg bg-muted p-1.5 text-muted-foreground"><Server className="size-4" /></span>}
@@ -103,7 +102,7 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
               {allowManagementActions && <Button size="sm" onClick={() => toast.info('Import CSV coming soon')}><RotateCcw className="size-4" /> Import CSV</Button>}
             </div>
           )}
-        </div>
+      </div>
 
         {!compact && (
           <div className="flex flex-wrap items-center gap-2 border-b border-border/70 px-4 py-3">
@@ -121,8 +120,7 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
             <StatusSummary label="Offline" value={statusCounts.offline} tone="muted" />
           </div>
         )}
-      </CardHeader>
-      <CardContent className="px-0 pb-0 pt-0">
+      <div>
         {filteredDevices.length === 0 ? (
           <EmptyState title="No devices match the current filters." />
         ) : (
@@ -220,8 +218,8 @@ export function DeviceStatusTable({ devices, compact = false, onAddDevice, onEdi
             )}
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
