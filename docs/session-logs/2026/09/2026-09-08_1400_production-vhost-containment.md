@@ -1329,3 +1329,6 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   layout: matching card background, compact header spacing, border treatment,
   and table content padding while retaining Direct-specific filters and its
   management action menu.
+- Added a distinct title strip to the shared device table so Direct devices
+  has the same visible section-header treatment as Active Edge connectors,
+  including an icon, title, count, and descriptive context above the filters.
