@@ -1309,3 +1309,9 @@ Start the next session by verifying live `/health` remains 200 and `/`,
   The scanner remains policy-scoped to ARP-observed targets and common ports;
   it does not run nmap or expand arbitrary CIDRs. ALPINE1 restarted
   successfully and the subsequent runtime log showed no new submission error.
+- Synchronized ALPINE2 (`edge-002`) with the same Linux/amd64 binary. The
+  downloaded SHA-256 matched
+  `72288029fa07c0183c312581732f1b57f06f8117dc1dce32b556a145cd7ce27e`; the
+  service restarted successfully. Enabled the same persistent
+  `--discovery-service-scan` flag in ALPINE2 so both Edge connectors collect
+  bounded Open Ports observations consistently.
