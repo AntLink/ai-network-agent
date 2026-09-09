@@ -1369,3 +1369,11 @@ Start the next session by verifying live `/health` remains 200 and `/`,
 - Confirmed Central operator JWT configuration is read from environment-backed settings: `AUTH_OPERATOR_ID`, `AUTH_OPERATOR_PASSWORD_HASH`, `AUTH_JWT_SECRET`, and `AUTH_TOKEN_TTL_SECONDS`.
 - Confirmed the frontend keeps the returned bearer session in browser `sessionStorage` under `ainet.operator.session`; the token is sent in the `Authorization: Bearer` header and is not written to the repository or session log.
 - No credential values, tokens, keys, or secrets were recorded.
+### 2026-09-09 — OpenHands Agent Canvas runtime status
+
+- Operator: Codex
+- Verified the OpenHands local runtime from the repository launcher.
+- Agent Canvas ingress is running on `http://127.0.0.1:8121/`.
+- MCP Bridge is listening on `http://127.0.0.1:8911/sse`.
+- Agent Server is running on port `18000`, Automation on `18001`, and the static frontend on `3001`.
+- No credentials, session keys, bearer tokens, or secrets were recorded.
