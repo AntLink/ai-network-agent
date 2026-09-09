@@ -1361,3 +1361,11 @@ Start the next session by verifying live `/health` remains 200 and `/`,
 - Matched the Direct devices title row to Active Edge connectors: same font sizing, subtitle sizing, alignment, border, and padding.
 - Direct-only controls remain available in the same header action area.
 - No credentials, tokens, or device secrets were recorded.
+### 2026-09-09 — UI build refresh and FastAPI token storage review
+
+- Operator: Codex
+- Browser check reached the local frontend but the existing browser session had expired and showed the operator login screen; table comparison therefore requires an authenticated browser session.
+- Rebuilt the frontend after the latest Direct devices layout changes; Vite build completed successfully and regenerated `dist`.
+- Confirmed Central operator JWT configuration is read from environment-backed settings: `AUTH_OPERATOR_ID`, `AUTH_OPERATOR_PASSWORD_HASH`, `AUTH_JWT_SECRET`, and `AUTH_TOKEN_TTL_SECONDS`.
+- Confirmed the frontend keeps the returned bearer session in browser `sessionStorage` under `ainet.operator.session`; the token is sent in the `Authorization: Bearer` header and is not written to the repository or session log.
+- No credential values, tokens, keys, or secrets were recorded.
