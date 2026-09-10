@@ -50,7 +50,8 @@
     "tls_handshake_level_rejection": "PASS_LAB_CRL_HARNESS",
     "tls_server_accepted_connection": false,
     "tls_server_error": "certificate revoked",
-    "production_terminator_integration": "PASS_LAB_COMPOSE",
+    "production_terminator_integration": "PASS",
+    "production_terminator_evidence": "docs/evidence/pki-overlay/production-nginx-revocation-20260907.json",
     "compose_gateway_readiness": "PASS",
     "compose_gateway_authenticated_hello_status": 200,
     "compose_gateway_runtime": "backend/docker-compose.yml mtls profile",
@@ -69,7 +70,7 @@
     "dynamic_gateway_revoked_request": "CONNECTION_CLOSED_BEFORE_HTTP",
     "dynamic_gateway_container_status": "PASS_LAB_CONTAINER",
     "dynamic_gateway_container_live_reload": true,
-    "reason": "disposable certificate fingerprint was persisted and Central rejected subsequent HELLO while disconnecting active sessions; the Python TLS CRL harness rejected the certificate before HTTP, and the official compose gateway accepted a valid authenticated HELLO in the lab. Production PKI, live denial through the supervised compose deployment, and HA integration remain unproven"
+    "reason": "Central rejected the revoked Edge certificate and disconnected active sessions; the production Nginx terminator rejected disposable revoked serial 1002 with HTTP 400 before forwarding to Central. Private-controller overlay deauthorization remains separately evidenced; HA integration remains unproven"
   },
   "secrets_disclosure": "none"
 }

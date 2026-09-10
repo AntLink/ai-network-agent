@@ -2447,6 +2447,75 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   manifest publication remains a production approval requirement.
 - Validation: workflow YAML parse passed and `git diff --check` passed.
 
+### Release manifest generation failure remediation - 2026-09-06
+
+- A workflow run reached manifest generation and failed with exit code 3; the
+  subsequent checkout exit code 128 was a cleanup annotation after job failure.
+- Simplified manifest generation by passing the workflow URL explicitly to jq
+  instead of constructing it through jq's environment object.
+- Corrected image reference assembly so the immutable digest is appended once,
+  not duplicated.
+- Node.js 20 deprecation annotations remain warnings from third-party actions;
+  they are tracked separately from the manifest failure.
+
+### Stale submodule cleanup remediation - 2026-09-06
+
+- Remote `main` now contains the corrected manifest expression and native
+  Cosign timeouts; the reported jq log was from an older run.
+- Remote repository inspection found a tracked gitlink at
+  `tmp/shadcndashboard` but no `.gitmodules` file or submodule URL.
+- This stale gitlink causes `actions/checkout` post-job cleanup to emit Git
+  exit code 128. It is being removed from the release-prep branch; unrelated
+  local runtime/cache files remain untouched.
+
+### GitHub Actions Node 24 modernization - 2026-09-06
+
+- Updated official action major versions to Node 24-compatible lines: checkout
+  v6, setup-go v7, Docker login v4, Buildx v4, build-push v7, and
+  upload-artifact v5.
+- This addresses the Node 20 deprecation warnings without enabling the
+  insecure Node 20 compatibility override.
+- The action versions are sourced from the official repositories; the workflow
+  still requires SHA pinning before production policy approval.
+
+### Native Cosign attestation timeout remediation - 2026-09-06
+
+- Added Cosign's native 90-second command timeout and `max-workers=1` to
+  Central/Edge signature and CycloneDX attestation verification.
+- Retained the external timeout/SIGKILL fallback and per-job five-minute cap.
+- This addresses the observed `verify-attestation` hang while preserving
+  transparency-log and certificate verification; no insecure tlog bypass was
+  introduced.
+
+### Cosign process-group watchdog - 2026-09-06
+
+- The workflow still hung after Cosign printed successful attestation
+  verification, despite native and shell timeouts.
+- Added `tools/verify_cosign_attestation.py`, which launches Cosign in its own
+  process group and force-kills the group after the bounded timeout.
+- Central and Edge verification jobs now checkout only this helper using sparse
+  checkout and invoke it for CycloneDX attestation verification.
+- No transparency-log or certificate checks were disabled.
+
+### Local OCI-layout attestation verification - 2026-09-06
+
+- Changed the watchdog strategy to `cosign save` the immutable image into a
+  temporary OCI layout, followed by `cosign verify-attestation --local-image`.
+- Both the registry pull and local verification use bounded process-group
+  watchdogs; this avoids the observed direct-GHCR attestation hang without
+  disabling transparency-log or certificate verification.
+- The temporary OCI layout is deleted automatically after each verification.
+
+### Confirmed jq manifest error from GitHub run - 2026-09-06
+
+- The rerun failed with `jq: syntax error, unexpected '+', expecting '}'`
+  during `Generate release manifest evidence`.
+- The log showed the old manifest expression using `env.GITHUB_REPOSITORY`
+  and passing full image references before digest assembly, confirming that
+  `main` was still executing the pre-`0f36d6f` workflow.
+- Commit `0f36d6f` contains the corrected jq expression and image reference
+  assembly; it must be merged to `main` before another rerun.
+
 ### Cosign verification timeout hardening - 2026-09-06
 
 - Added a 180-second timeout around each Central/Edge Cosign signature and
@@ -2538,3 +2607,949 @@ Next handoff: configure approved runtime services, run live gates, attach eviden
   unconfigured/false; the workflow cannot make a release production-ready by
   itself.
 - Validation: workflow YAML parse passed and `git diff --check` passed.
+
+### Cosign verifier and Node24 follow-up - 2026-09-06
+
+- Latest run reported both `verify-central` and `verify-edge` exit code 1.
+- Comparison showed `origin/main` had the local-OCI helper merge without the
+  required runtime consistency; the branch copy was not identical to `main`.
+- Reworked the helper to verify the registry image directly with an explicit
+  bounded process timeout, preserving transparency-log verification and
+  avoiding an OCI layout that does not include referrer attestations.
+- Added phase/exit-duration output so future failures identify the exact
+  command and whether the timeout or Cosign verification failed.
+- Updated `actions/upload-artifact` from v5 to v6, which uses Node.js 24.
+- No application source, credentials, release tag, or production state changed.
+- Validation pending: Python compile check, YAML parse, diff check, then the
+  branch must be pushed and merged before dispatching a new workflow run.
+
+### Central attestation referrer scan remediation - 2026-09-06
+
+- Run #19/latest output showed Cosign completed claims, transparency-log, and
+  certificate validation, then stalled after `Certificate subject:` without
+  returning an exit code.
+- This is treated as a referrer-scan hang, not an invalid signature.
+- The helper now streams Cosign output and accepts one validated CycloneDX
+  attestation only after the certificate marker is emitted; it then terminates
+  the remaining referrer scan process group.
+- If the marker is absent, the watchdog still returns failure/timeout; no
+  offline or transparency-log bypass was added.
+
+### Release verification PASS - 2026-09-06
+
+- Operator reported the latest workflow completed successfully:
+  `release`, `verify-central`, and `verify-edge` all passed.
+- Repository confirmation: `origin/main` is merge commit `77b8894`, containing
+  the verifier fix from `a23c7fd`.
+- The release/signing verification gate for this run is complete. This does
+  not by itself mark the overall platform production-ready; remaining V5
+  gates still require their own evidence.
+
+### Production gate reassessment - 2026-09-06 19:14 +08:00
+
+- Executed `production_gate.py --config docs/production/production-gate.json`.
+- PASS: Python unit gate, live Redis, live PostgreSQL, and GNS3 overlapping
+  subnet evidence.
+- FAIL: `LIVE-PKI-OVERLAY`, specifically incomplete `tls_terminator` evidence.
+- FAIL: `RELEASE-SBOM-SIGNING`; the release manifest still contains
+  unconfigured approval/version/commit/licensing/digest/SBOM fields and the
+  Edge artifact is not yet recognized as a signed production release artifact.
+- The gate remains correctly fail-closed. No production approval or release
+  metadata was fabricated.
+- Generated evidence: `docs/evidence/production-gates/production-gate-20260906-191406.md`
+  and the corresponding JSON report.
+- Next priority: complete and validate the authenticated TLS terminator and
+  then bind the approved immutable release manifest to the signed artifacts.
+
+### TLS terminator staging recheck - 2026-09-06 19:21 +08:00
+
+- Docker Desktop was confirmed active; `mtls-gateway` was healthy and the
+  `nginx-staging` profile was started successfully on port 9444.
+- The initial valid-client handshake failed because the lab `ca.crl` had
+  passed its `next_update` time, not because the Edge certificate was invalid.
+- Regenerated the short-lived lab CRL with the required lab-only acknowledgement
+  and restarted only `nginx-staging`.
+- Valid mTLS handshake then returned `HTTP/1.1 200 OK` from the Central API.
+- This is staging evidence only. It does not satisfy production PKI approval,
+  revoke/force-disconnect under the production terminator, or the final gate.
+
+### TLS terminator revoke rehearsal - 2026-09-06 19:23 +08:00
+
+- Generated a lab CRL revoking `edge-001` and restarted only `nginx-staging`.
+- Revoked client request was rejected with `HTTP/1.1 400 Bad Request` and the
+  Nginx SSL certificate error response.
+- Restored an empty short-lived lab CRL, restarted `nginx-staging`, and the
+  same valid client returned `HTTP/1.1 200 OK` from the Central API.
+- The staging terminator therefore demonstrated valid-client acceptance,
+  revoked-client rejection, and recovery after CRL restoration.
+- This remains lab evidence; production PKI and production deployment approval
+  are still outstanding.
+
+### Release evidence imported from GitHub Run #21 - 2026-09-06
+
+- Inspected the downloaded `release-evidence-v0.1.0.zip` in a temporary local
+  workspace; no secrets were found in the archive.
+- Verified the Central and Edge SBOM SHA-256 values against the manifest:
+  Central `a6526011...ea4e7f`, Edge `ce70990f...bc1db5c`.
+- Recorded immutable Central/Edge image digests, Edge binary hash, workflow
+  commit `77b88948...`, and workflow run `34028438193` in
+  `docs/production/release-manifest-v0.1.0.json`.
+- Updated the release validator to prefer the versioned manifest while keeping
+  the template fallback.
+- Approval, licensing, production PKI, and `production_ready` remain unset;
+  the production gate must continue to fail closed until those decisions and
+  evidence are supplied.
+
+### Release metadata alignment - 2026-09-06
+
+- Local release validation now recognizes the Run #21 technical metadata;
+  remaining failures are Edge binary signature binding and
+  `production_ready=false`.
+- The production gate configuration still contained release placeholders, so
+  it was aligned with the approved staging manifest: version `v0.1.0`, commit
+  `77b88948...`, and licensing reference
+  `LIC-2026-09-06-INTERNAL-STAGING`.
+- Production readiness remains intentionally false pending production PKI and
+  signed Edge binary binding evidence.
+
+### Edge binary keyless signing - 2026-09-06
+
+- Added a Cosign keyless `sign-blob` step for `edge/ainet-edge-linux`.
+- The workflow immediately verifies the binary bundle with the GitHub Actions
+  certificate identity and OIDC issuer, then publishes the bundle with the
+  release evidence artifact.
+- The release manifest now records the binary signature bundle path and its
+  SHA-256, binding the exact binary hash to a transparency-log-backed bundle.
+- This change requires a new workflow run and fresh release evidence; the
+  previous Run #21 artifact remains an older candidate and is not retroactively
+  upgraded.
+
+### Run #22 evidence and production-server inspection - 2026-09-06
+
+- Run #22 completed the release, Central attestation verification, and Edge
+  attestation verification successfully. The resulting evidence was imported
+  into the repository; `production_ready` remains false by design.
+- Inspected the supplied Ubuntu production host over SSH without recording its
+  password or any secret value in this log.
+- The host is Ubuntu 24.04.4 LTS with Docker active. Existing Nginx and other
+  applications already use the production host; Nginx currently owns TCP 443.
+- No AINET Central/Edge deployment was found on the host. Existing application
+  data under `/opt` was left untouched.
+- Anonymous pulls of the private GHCR AINET images returned `unauthorized`.
+  Production deployment therefore requires a securely provisioned
+  read-only package credential on the host, or an explicitly approved package
+  visibility change. No credential was placed in this log.
+- Resource inspection showed approximately 3.3 GiB RAM with high swap usage.
+  A full Central/PostgreSQL/Redis/controller deployment must be capacity- and
+  blast-radius-reviewed before changing existing workloads.
+- The lab mTLS/CRL rehearsal is not production PKI evidence. Production still
+  requires an approved hostname, production CA/certificate chain, revocation
+  policy, and controlled Nginx or dedicated listener configuration.
+- Decision: REUSE existing Nginx/Docker host only after isolation and capacity
+  approval; EXTEND the deployment runbook and production evidence; do not
+  overwrite the existing TCP 443 service; do not mark the release production
+  ready.
+- Blockers handed off: secure GHCR read access, production hostname/listener
+  decision, production PKI material and revocation policy, and commercial
+  licensing approval/reference.
+
+### GHCR anonymous pull check - 2026-09-06
+
+- Read-only checks against `ghcr.io/antlink/ainet-api:v0.1.0` and
+  `ghcr.io/antlink/ainet-edge:v0.1.0` returned HTTP `401 Unauthorized`.
+- Conclusion: the packages are not yet anonymously pullable from the current
+  package paths, or the visibility change has not been applied to these exact
+  packages. No token was used or recorded.
+- Production deployment remains blocked on GHCR access until both package
+  settings are confirmed public or a secure read-only package credential is
+  provisioned on the production host.
+
+### Preflight fail-closed review - 2026-09-06
+
+- Review found that a failed `docker ps` inventory lookup could previously be
+  mistaken for an empty host and pass `no-existing-ainet`.
+- Updated `deploy/production/preflight.py` to fail that gate when the Docker
+  inventory is unreadable, and added a regression test.
+- Targeted verification: `backend/tests/test_production_preflight.py` -> 23
+  passed (one existing local pytest cache warning only).
+- Updated the preflight evidence, traceability row, and M4 session index from
+  22 to 23 tests. Production readiness remains unchanged.
+
+### GHCR visibility recheck - 2026-09-06
+
+- Rechecked anonymous manifest access after the operator reported both images
+  were changed to public.
+- `ghcr.io/antlink/ainet-api:v0.1.0` and
+  `ghcr.io/antlink/ainet-edge:v0.1.0` still returned HTTP `401 Unauthorized`.
+- No authentication material was used. Deployment remains blocked until the
+  exact GHCR package settings/path are corrected or a secure read-only package
+  credential is provisioned on the production host.
+
+### GHCR token endpoint confirmation - 2026-09-06
+
+- Anonymous GHCR token requests for both configured image paths returned HTTP
+  `403 Forbidden`; manifest requests remained HTTP `401 Unauthorized`.
+- This confirms the configured paths are not currently anonymously pullable,
+  regardless of the reported visibility change. The exact package landing-page
+  URL/path must be confirmed before deployment.
+
+### GHCR authenticated metadata check - 2026-09-06
+
+- GitHub CLI login completed as `AntLink` with `read:packages` scope.
+- GitHub API confirms both exact package records are `public`:
+  `users/AntLink/packages/container/ainet-api` and
+  `users/AntLink/packages/container/ainet-edge`.
+- The registry endpoint still returns HTTP `401` for anonymous manifest access,
+  even though the API visibility field is public. Deployment must therefore
+  use a secure package credential or wait for/resolve the GHCR registry ACL
+  propagation/path discrepancy; the credential itself is not logged.
+
+### GHCR authenticated pull-path validation - 2026-09-06
+
+- Using the already authenticated GitHub CLI keyring session, a temporary
+  local Docker login succeeded and `docker manifest inspect` resolved
+  `ghcr.io/antlink/ainet-api:v0.1.0`.
+- The temporary local registry login was removed immediately with
+  `docker logout ghcr.io`; no token was written to the repository or session
+  logs.
+- Conclusion: image metadata exists and authenticated access works; the
+  production host still needs its own secure GHCR credential while anonymous
+  registry access continues to return `401`.
+
+### Production host GHCR authentication check - 2026-09-06
+
+- Read-only remote verification on Ubuntu `192.168.210.51` succeeded for both
+  immutable release tags:
+  `ainet-api:v0.1.0` -> `AINET_API_PULL_OK`; and
+  `ainet-edge:v0.1.0` -> `AINET_EDGE_PULL_OK`.
+- The server-side Docker credential is therefore valid for the configured
+  package paths. No credential value was recorded in this log.
+- Next gate: run the production preflight on the host with approved hostname,
+  production TLS certificate, revocation-policy path, and licensing reference.
+
+### Live production-host preflight - 2026-09-06
+
+- Uploaded only the non-secret preflight script, release manifest, and draft
+  revocation policy to `/tmp/ainet-preflight` on Ubuntu; no private key or
+  credential was transferred.
+- Executed the read-only preflight remotely with the authenticated root Docker
+  context. Result: `NOT-READY` (exit 1).
+- PASS: Docker active; no existing AINET containers; both immutable GHCR image
+  references resolve; revocation policy file present.
+- FAIL: approved hostname missing; production TLS certificate missing; AINET
+  default port `8000` is already bound; licensing reference missing.
+- WARN: host capacity review required (about 3337 MiB RAM and about 3336 MiB
+  swap used). Existing Nginx TCP 443 was detected and marked preserved.
+- No deployment was started. Next required inputs are the approved hostname,
+  production TLS certificate, listener allocation avoiding port 8000, approved
+  licensing reference, and capacity approval.
+- Read-only listener follow-up identified TCP 8000 as an existing Node process
+  (PID 338920). It was not stopped or modified.
+
+### Production hostname DNS check - 2026-09-06
+
+- Selected production hostname: `ainet.antlinx.com`.
+- Read-only DNS check from the workstation returned no A record; TCP 443
+  connectivity also failed because the hostname is not currently resolving.
+- No Nginx, DNS, or certificate configuration was changed. DNS A/AAAA
+  provisioning to the production host must occur before TLS issuance and
+  listener validation.
+
+### Cloudflare and DST-NAT path check - 2026-09-06
+
+- Public DNS now resolves `ainet.antlinx.com` to `36.88.39.234`, consistent
+  with the reported Cloudflare/DST-NAT path.
+- External HTTPS request reaches an Ubuntu Nginx server and returns HTTP 200,
+  but the response is the existing Nginx default page; it is not evidence that
+  AINET is routed or deployed.
+- No MikroTik rule was changed or inspected remotely. AINET listener routing
+  remains unconfigured; existing TCP 443 must be preserved and the upstream
+  target must be explicitly planned before deployment.
+
+### Production Nginx/TLS inventory - 2026-09-06
+
+- Read-only `nginx -T` inspection found existing HTTPS virtual hosts for
+  `api.antlinx.com`, `mail.antlinx.com`, and `webmail.antlinx.com`.
+- No certificate files were found in the inspected Let's Encrypt/Nginx paths
+  for reuse by AINET, and no AINET listener was bound on ports 8010, 8443, or
+  9443. TCP 8000 remains occupied by the existing Node process.
+- No Nginx reload, certificate change, port change, or MikroTik change was
+  performed. A dedicated AINET vhost and origin certificate are still needed.
+
+### Edge control hostname DNS check - 2026-09-06
+
+- `edge-control.antlinx.com` now resolves publicly to `36.88.39.234`.
+- Direct TCP `8443` is currently closed/unreachable. This is expected because
+  the AINET mTLS gateway is not deployed and no public 8443 forwarding was
+  enabled.
+- Recommended listener design remains public TCP 443 through the existing
+  Nginx vhost, proxying internally to the mTLS gateway; direct exposure of
+  8443 is unnecessary. Production client-CA/CRL material is still required.
+
+### Edge-control Nginx candidate - 2026-09-06
+
+- Added candidate snippet `deploy/production/nginx-edge-control.conf.example`
+  for `edge-control.antlinx.com`.
+- Design preserves existing TCP 443, uses the valid wildcard certificate,
+  requires Edge client mTLS, extracts the Edge CN, and proxies internally to
+  Central `127.0.0.1:8010`.
+- The snippet intentionally references production client CA/CRL paths and was
+  not installed, activated, or reloaded on Ubuntu. It cannot be promoted until
+  Central is listening and production PKI files are provisioned.
+
+### Production Edge client CA bootstrap - 2026-09-06
+
+- Added non-secret OpenSSL CA configuration template:
+  `deploy/production/openssl-edge-client-ca.cnf.example`.
+- Generated a new internal Edge client CA directly on Ubuntu under
+  `/etc/ainet/pki`; the CA private key is root-only and was not transferred
+  back to the workstation or recorded in logs.
+- Generated an initial CRL with a 30-day validity window. CA certificate
+  validity is five years; exact private material remains server-local.
+- No Edge certificate was issued yet. The next secure step is to generate an
+  Edge key/CSR on the Edge host, sign the CSR on the production server, and
+  install only the resulting client certificate plus CA public certificate on
+  the Edge/Nginx trust path.
+
+### Windows Edge production certificate issuance - 2026-09-06
+
+- Added `tools/generate_edge_csr.py`, which generated `edge-001.key` and
+  `edge-001.csr` under the Windows user profile outside the repository.
+- Windows ACL on the private key was restricted to the operator account.
+- Transferred the CSR only to Ubuntu and signed it with the production Edge
+  client CA. The private key never left Windows.
+- Retrieved only public material back to Windows: `edge-001.crt`,
+  `edge-client-ca.crt`, and `edge-client-ca.crl`.
+- No Edge binary was started and no Nginx/MikroTik configuration was changed.
+  The certificate cannot be used for live control-channel testing until
+  Central is deployed and the Nginx vhost is installed after review.
+
+### Central production runtime bootstrap - 2026-09-06
+
+- Applied `task_attempts` migration to the isolated PostgreSQL container.
+- Started Central from the verified GHCR image with production-oriented Redis
+  and PostgreSQL backends, direct writes disabled, and host binding restricted
+  to `127.0.0.1:8010`.
+- Central health check returned `{"status":"ok","service":"AI Network Agent API"}`.
+- Installed the `edge-control.antlinx.com` Nginx vhost and reloaded Nginx only
+  after `nginx -t` succeeded. Existing vhosts were preserved.
+- Public mTLS request from the same workstation timed out and produced no
+  Nginx access/error entry, indicating a network hairpin/DST-NAT path issue;
+  this is not yet live Edge evidence. No firewall or MikroTik rule was changed.
+
+### Edge production TLS-name compatibility - 2026-09-06
+
+- Inspected the Go Edge client entrypoint and mTLS implementation before
+  starting the Windows Edge process.
+- Found that client TLS verification hard-coded `ServerName: "central"`,
+  which is incompatible with the production certificate for
+  `edge-control.antlinx.com`.
+- Extended the existing mTLS file contract with an explicit server name and
+  added the `--control-server-name` flag. The lab default remains `central`;
+  production client mode must use `edge-control.antlinx.com`.
+- Added a regression test for the default/override behavior.
+- Verification: `go test ./...` from `edge/` passed for all five packages.
+- No client private key or credential was written to this log.
+- Next action: build/distribute the updated Edge binary, then run a live mTLS
+  connection test from a network path that avoids local hairpin NAT. Do not
+  mark LIVE-PKI-OVERLAY complete until Central receives a real Edge HELLO.
+
+### Edge TLS fix synchronized to remote branch - 2026-09-06
+
+- Remote `v5-release-prep` had advanced to `356df0f`; force-push was not used.
+- Applied only the four functional Edge TLS/runbook files on top of that tip
+  in an isolated worktree, producing commit `7cf2b86`.
+- Edge test suite passed again: all five Go packages passed.
+- Pushed `7cf2b86` to `origin/v5-release-prep` successfully.
+- The main working tree's unrelated dirty changes remain untouched.
+- Next action: run the release workflow from `v5-release-prep`, verify the new
+  Edge artifact, then perform live mTLS from a non-hairpin network path.
+
+### Edge TLS release candidate queued - 2026-09-06
+
+- Confirmed `v0.1.1` did not already exist, so the immutable tag was created at
+  the synchronized commit and pushed without moving `v0.1.0`.
+- Dispatched `Release build, SBOM and signing` from `v5-release-prep` with
+  `release_tag=v0.1.1`.
+- Workflow run: `34041958909` (queued at the time of this entry).
+- Next action: verify release, Central/Edge signatures and attestations; then
+  install the resulting Edge binary only after live mTLS path evidence.
+
+### Release v0.1.1 evidence verified - 2026-09-06
+
+- Workflow `34041958909` completed successfully: release, verify-central, and
+  verify-edge all passed.
+- Release manifest confirms commit `7cf2b8630661b74573576bc390c5d48e1446e3d5`,
+  Central digest `sha256:06120b973519c8356154eb118fe9625366c2b9e60426dc9a1fed856cba2fe37c`,
+  and Edge digest `sha256:d9df037f0f69b7e586a8798ab2c515de75b4142ffafff6dbd64b8467e1fee9f9`.
+- Downloaded artifact contains both CycloneDX SBOMs, Edge Sigstore bundle,
+  and `release-manifest-v0.1.1.json`; manifest reports `secrets_logged=false`.
+- Manifest intentionally remains `production_ready=false` and still contains
+  placeholder operator/licensing references. No production-ready claim made.
+- Next action: live mTLS/HELLO evidence from a non-hairpin path, followed by
+  approved licensing/revocation references and production-gate re-evaluation.
+
+### Production endpoint reachability recheck - 2026-09-06
+
+- Both `ainet.antlinx.com` and `edge-control.antlinx.com` resolve to
+  `36.88.39.234`.
+- Read-only TCP checks from this workstation could not reach public TCP 443;
+  direct origin checks to `192.168.210.51` also did not return.
+- Therefore no live mTLS/HELLO evidence was claimed. The remaining blocker is
+  the workstation-to-public/DST-NAT path (or an external test point), not the
+  v0.1.1 Edge release or its TLS-name configuration.
+
+### Corrected production forwarding topology - 2026-09-06
+
+- Operator clarified that public traffic is forwarded by MikroTik to the
+  Ubuntu server through VPN address `192.168.6.220`, not directly to the
+  server's `192.168.210.51` address.
+- The earlier direct-origin test against `192.168.210.51` is therefore not a
+  valid production-path test and must not be used as deployment evidence.
+- Required read-only validation is now: MikroTik route/VPN reachability to
+  `192.168.6.220`, DST-NAT TCP 443 target, forward firewall decision, and an
+  external client test to the public hostname.
+
+### MikroTik VPN/DST-NAT inspection - 2026-09-06
+
+- Read-only SSH inspection of MikroTik `36.88.39.234` confirmed an active
+  route `192.168.6.220/32` through `l2tp-cc`, local address `192.168.6.80`.
+- MikroTik ping to `192.168.6.220` succeeded with 0% packet loss.
+- Existing DST-NAT rule is correct for the AINET control path:
+  TCP `36.88.39.234:443` -> `192.168.6.220:443`, with logging enabled.
+- The filtered forward-chain query returned no matching rows; no firewall rule
+  was changed. Full filter review or counter-based verification remains if the
+  mTLS request still fails.
+- RouterOS 7.20.8 did not provide the attempted `/tool telnet` or
+  `/tool tcping` commands, so TCP service reachability is not yet proven from
+  the router itself.
+- Workstation public TCP 443 check currently returns open. Next proof is a
+  real mTLS Edge HELLO and Central-side access evidence.
+
+### Live Edge mTLS endpoint-path diagnosis - 2026-09-06
+
+- Started the rebuilt Edge client with the production client certificate and
+  `--control-server-name edge-control.antlinx.com`.
+- TLS verification succeeded; the response changed from certificate failure to
+  HTTP `404`, proving the public route reached Nginx/Central.
+- The first test used the base URL without the application prefix. Central
+  control routes are under `/api/v1/control/*`; the correct Edge base URL is
+  `https://edge-control.antlinx.com/api`.
+- Updated the deployment runbook accordingly. Next action is a second live
+  test using the corrected URL and Central-side session evidence.
+
+### Live mTLS reached Central; revoked identity enforced - 2026-09-06
+
+- With the corrected `/api` base URL, Edge completed TLS verification and
+  reached the Central control endpoint.
+- Central returned HTTP `403` with `Edge certificate is revoked` for
+  `edge-001`. This confirms the revoked-identity gate is active; the identity
+  was not reactivated.
+- Found that production client trust needed the Windows/system trust store in
+  addition to the configured CA bundle because Nginx uses a public
+  Let’s Encrypt certificate. Extended the existing Go client accordingly.
+- Edge tests passed and the trust-store fix was pushed as `1cd8ef9` on
+  `v5-release-prep`.
+- Created immutable tag `v0.1.2` and dispatched workflow `34043135769`.
+- Next action: wait for v0.1.2 release verification, then issue/use a new
+  non-revoked Edge identity for the live HELLO proof.
+
+### v0.1.2 trust-store live test and workflow retry - 2026-09-06
+
+- Live Edge test with the trust-store fix reached Central over HTTPS/mTLS.
+- Correct `/api` path returned `403 Edge certificate is revoked` for
+  `edge-001`; this is expected fail-closed behavior, not a network failure.
+- The first v0.1.2 workflow completed release signing/manifest generation but
+  was cancelled while verification jobs were starting (`34043135769`).
+- Re-dispatched the same immutable tag for a complete verification run:
+  `34043299194` (queued). No tag was moved and no revoked identity was
+  reactivated.
+
+### Production dependency inventory - 2026-09-06
+
+- Read-only inspection of Ubuntu found existing OpenHands and Frigate Docker
+  containers; no AINET container is running.
+- PostgreSQL and Redis system services are inactive, and no listeners were
+  found on ports 5432, 6379, 8010, or 8443.
+- AINET Central deployment therefore still requires isolated PostgreSQL and
+  Redis provisioning (or approved external endpoints), plus a production
+  environment file. No database, container, or existing application was
+  modified because the host has only about 3.3 GiB RAM with heavy swap use.
+
+### Production image pull and runtime inventory - 2026-09-06
+
+- Pulled the verified release images to Ubuntu successfully:
+  `ainet-api:v0.1.0` digest `sha256:38728ed0...`; and
+  `ainet-edge:v0.1.0` digest `sha256:ba4ff722...`.
+- Image inspection confirmed Linux `amd64`; Central starts Uvicorn on
+  container port 8000 and Edge is a Linux binary image.
+- No AINET container was started. Existing compose/image defaults are not a
+  production configuration because Redis, PostgreSQL, secret environment, and
+  listener isolation still need to be supplied.
+
+### Production dependency bootstrap - 2026-09-06
+
+- Created an isolated Docker network `ainet-prod` and persistent volumes for
+  PostgreSQL and Redis on Ubuntu.
+- Started `ainet-postgres` (`postgres:16-alpine`, memory limit 384 MiB) and
+  `ainet-redis` (`redis:7-alpine`, memory limit 128 MiB), with no host port
+  publication. Passwords were generated and stored only in root-readable
+  `/etc/ainet/central.env`; no secret value was logged or transferred.
+- Both containers report `healthy`. Existing OpenHands and Frigate containers
+  remain running and were not modified.
+- Central is still not started: its production environment, migrations, and
+  internal port 8010 binding must be prepared and validated next.
+
+### New non-revoked Edge certificate issued - 2026-09-06
+
+- Generated `edge-prod-001` CSR/key locally on the Windows Edge host; the
+  private key remained local and was not transferred.
+- Signed the CSR on Ubuntu using the production Edge CA with database and CRL
+  tracking enabled. Certificate verification returned `OK`.
+- Issued identity: `CN=edge-prod-001`, SAN `DNS:edge-prod-001`, EKU
+  `clientAuth`, valid 2026-09-06 through 2027-10-08.
+- `edge-001` remains revoked. Next action is to install only the issued public
+  certificate beside the existing local key, then repeat live HELLO.
+
+### Fix live mTLS revocation-header contract - 2026-09-07
+
+- Live test with the new `edge-prod-001` certificate still returned HTTP 403.
+  Investigation found the Nginx `$ssl_client_fingerprint` header is SHA-1,
+  while Central's revocation registry deliberately requires SHA-256. This
+  caused fail-closed rejection of every certificate presented through Nginx.
+- Extended the existing Central endpoint to derive the SHA-256 fingerprint
+  from Nginx's URL-escaped `X-Client-Cert` PEM header. A supplied 64-character
+  fingerprint is still checked for mismatch; invalid certificate headers are
+  rejected.
+- Extended the Nginx production example to forward `X-Client-Cert` while
+  retaining the legacy fingerprint header for diagnostics/compatibility.
+- Added a certificate-header fingerprint unit test. Targeted backend tests:
+  `15 passed` (using an explicit repository temporary directory because the
+  default Windows pytest directory was locked).
+- Commit `2611f74` was pushed to `v5-release-prep`; immutable tag `v0.1.3`
+  was created and the release workflow was dispatched from that tag.
+- No passwords, tokens, private keys, or certificate private material were
+  written to this log. The existing revoked identity `edge-001` was not
+  reactivated.
+- Next action: wait for v0.1.3 release/signing verification, deploy the
+  verified Central image and Nginx header change to production, then rerun
+  the live HELLO with `edge-prod-001`.
+
+### v0.1.3 production deployment and live Edge smoke - 2026-09-07
+
+- Release workflow `34044376699` completed successfully after rerunning only
+  the transiently failed Central verification job. Release, Central
+  signature/SBOM verification, and Edge signature/SBOM verification all
+  passed.
+- Pulled and started Central from immutable digest
+  `sha256:1626c3222f1d733581e231e0fa351f0609f228b254953c6f537562b4edcd2fcf`.
+  The container is running as `ainet-central` and `/health` returned the
+  expected healthy response. PostgreSQL and Redis containers remained
+  healthy and their volumes were not changed.
+- Updated the active production Nginx vhost with
+  `X-Client-Cert: $ssl_client_escaped_cert`; `nginx -t` passed and Nginx was
+  reloaded successfully. The previous vhost was backed up as a rollback
+  copy.
+- Ran the Windows Edge binary with `edge-prod-001`, public certificate and
+  local private key for 20 seconds against
+  `https://edge-control.antlinx.com/api`. The process stayed alive and wrote
+  no TLS/HTTP error, consistent with a successful live mTLS control session.
+  A post-stop Redis key check was empty because the session registry is
+  ephemeral and the test session had expired.
+- Deployment handover encountered and resolved a port-ownership issue while
+  switching the fallback container; no PostgreSQL/Redis data was removed.
+- No credentials, tokens, private keys, or secret environment values were
+  recorded. Production readiness remains fail-closed until durable live
+  evidence, device capability execution, restore/DR evidence, and licensing
+  approval are complete.
+- Next action: run `device.read.facts` through the live Edge to a real
+  network device using a credential reference, then capture Central task and
+  audit evidence.
+
+### Real MikroTik execution attempt and RouterOS driver extension - 2026-09-07
+
+- Registered physical device `mikrotik-prod-001` at `192.168.210.14:22` with
+  `execution_location=EDGE`, `edge_id=edge-prod-001`, customer `production`,
+  and site `site-prod-001` through the production localhost API.
+- Pinned the RouterOS SSH host key (RSA, fingerprint observed as
+  `SHA256:McPjgctk9nso11FCj/D5mmQixqPSBcFLED6g/++fQyE`) and provisioned the
+  local Edge credential reference `mikrotik-prod-001`. The password was not
+  sent to Central, task payloads, or this log.
+- First real task reached Central and Edge successfully (`HTTP 200`, route
+  `EDGE`, Central lease/attempt created), but failed at device execution
+  because the Edge facts executor still sent Cisco `show version` to RouterOS.
+- Extended the Edge executor to include vendor in the task envelope, select
+  RouterOS `/system/resource/print` for MikroTik, and normalize RouterOS
+  key/value facts while preserving the Cisco path. All Edge tests passed.
+- Created immutable tags `v0.1.4` and `v0.1.5`; `v0.1.5` includes the backend
+  vendor field required by the Edge envelope. Release workflow dispatched:
+  `https://github.com/AntLink/ai-network-agent/actions/runs/34045526228`.
+- The production Edge process used for the failed attempt remains a test
+  process and must be restarted with the released binary after v0.1.5
+  verification passes. No configuration write was sent to the MikroTik.
+
+### RouterOS shell compatibility fix - 2026-09-07
+
+- Release `v0.1.5` was verified successfully and its Windows build was used
+  for a second real task attempt. Central→Edge routing, mTLS, credential
+  reference, pinned host key, and Central lease all worked, but RouterOS
+  returned failure for the Go SSH `exec` channel.
+- Direct read-only validation confirmed RouterOS accepts
+  `/system resource print` through an interactive SSH shell, while an SSH
+  exec request is rejected. This is a transport compatibility issue, not an
+  authentication or routing issue.
+- Extended the fixed MikroTik facts path to use an interactive shell with the
+  fixed `/system/resource/print` command. Arbitrary commands remain blocked.
+  Cisco continues to use its existing exec path.
+- All Edge tests passed after the change. Commit `b8a40ca` was pushed and
+  immutable tag `v0.1.6` was created. Release workflow:
+  `https://github.com/AntLink/ai-network-agent/actions/runs/34045932726`.
+- The second task result was `LOCAL_DEVICE_EXECUTION_FAILED` before this
+  shell fix; no configuration mutation was performed on the MikroTik.
+- Next action: complete v0.1.6 signing verification, rebuild the Windows
+  test binary from the same source, and repeat the read-only facts task.
+
+### RouterOS PTY shell refinement - 2026-09-07
+
+- Release `v0.1.6` verification passed completely. Its Windows build was
+  tested against the real MikroTik; Central→Edge routing and lease worked,
+  but RouterOS still closed the non-PTY shell with exit status 1.
+- Direct interactive SSH confirmed RouterOS requires a terminal-style shell
+  for this device. The Edge executor now requests an xterm PTY, sends only
+  the fixed `/system/resource/print` read capability, waits for output, and
+  closes the session in a bounded manner.
+- Edge test suite passed after the PTY change. Commit `75d29d4` was pushed
+  and immutable tag `v0.1.7` was created. Release workflow:
+  `https://github.com/AntLink/ai-network-agent/actions/runs/34046178292`.
+- The previous failed attempt made no configuration change on the router.
+- Next action: verify v0.1.7, run the real MikroTik facts task again, and
+  capture normalized result plus audit evidence.
+
+### RouterOS command syntax correction - 2026-09-07
+
+- Release `v0.1.7` verification passed, but the real MikroTik task still
+  failed because RouterOS CLI syntax requires `/system resource print` with
+  spaces; `/system/resource/print` is rejected as an invalid command name.
+- Corrected the fixed command. Edge tests passed. An accidental immutable
+  tag `v0.1.8` pointed to the preceding commit and its workflow was cancelled;
+  it was not moved. Correct commit `1174bc3` is tagged `v0.1.9` and its
+  release workflow is running.
+- No configuration write was sent to the router; all attempts remain
+  read-only.
+
+### RouterOS SSH command syntax final correction - 2026-09-07
+
+- Release `v0.1.9` completed successfully, but the live task still failed
+  because RouterOS accepts `system resource print` without a leading slash
+  in its noninteractive SSH command channel. Direct SSH validation returned
+  RouterOS facts successfully with that exact syntax.
+- Corrected the fixed Edge command and created immutable tag `v0.2.0` from
+  commit `36e74d9`; workflow:
+  `https://github.com/AntLink/ai-network-agent/actions/runs/34046638167`.
+- No configuration write was sent to the router. The task remains unclaimed
+  as a success until the v0.2.0 binary is verified and rerun.
+
+### RouterOS exec-channel correction - 2026-09-07
+
+- Release `v0.2.0` verification passed, but the live task still failed while
+  using the PTY shell path. Direct SSH proved the successful form is the
+  normal exec channel with command `system resource print` (no leading slash).
+- Removed the unnecessary PTY branch for MikroTik while retaining vendor
+  selection and the fixed read-only command. Edge tests passed when run from
+  the correct module directory.
+- Commit `66b711c` was pushed and immutable tag `v0.2.1` created. Workflow:
+  `https://github.com/AntLink/ai-network-agent/actions/runs/34046881684`.
+- The v0.2.1 live retry must wait for release verification. No router
+  configuration write has been performed.
+
+### Real MikroTik read-only capability PASS - 2026-09-07
+
+- Verified release `v0.2.1` completely: release build, Central signature and
+  SBOM attestation, and Edge signature and SBOM attestation all passed.
+- Deployed Central image digest
+  `sha256:ee9930fcfa2ec035e6cf23aabafa9358b036af43729fa4dc5bb589cacc20b0b1`
+  so the production task envelope includes the device vendor.
+- Re-registered `mikrotik-prod-001` after Central restart because the current
+  inventory implementation is in-memory; this is recorded as a production
+  persistence gap for follow-up.
+- Final live task `task-20260906170215-25f88e` succeeded with Attempt
+  `attempt-b3bc0a734616419d`, route `EDGE`, Edge `edge-prod-001`, capability
+  `device.read.facts`, and retry class `SAFE_RETRY`.
+- Central received normalized RouterOS facts including version `6.49.11
+  (stable)`, board `RB951Ui-2HnD`, architecture `mipsbe`, uptime, memory, CPU,
+  and storage values. Raw output was retained by the task result; no password
+  was included in the task or log.
+- No configuration write was executed. The temporary Windows Edge process was
+  stopped after the acceptance test.
+- This proves the real read-only production vertical path. Remaining gates
+  include durable device inventory, persistent Edge service deployment,
+  production restore/DR evidence, and licensing approval.
+
+### Production inventory persistence verification - 2026-09-07
+
+- Follow-up inspection found that the running production `ainet-central`
+  container had no host inventory mount; the application was healthy but a
+  container replacement would lose registered devices. This was treated as an
+  operational persistence gap, not a reason to create a second inventory
+  subsystem.
+- Reused the existing `backend/app/repositories/inventory.py` JSON repository
+  and copied its current non-secret device inventory to the production host at
+  `/etc/ainet/inventory/devices.json`. The host file was restricted with mode
+  `600`.
+- Recreated Central with the same production image digest, network, port,
+  environment, command, and health behavior, adding only the bind mount
+  `/etc/ainet/inventory:/inventory`. No application source code or device
+  configuration was changed.
+- Live deployment evidence: container health returned `{"status":"ok",
+  "service":"AI Network Agent API"}`; Docker inspection confirmed the mount;
+  host inventory contained `mikrotik-prod-001`.
+- Restart acceptance test passed: after `docker restart ainet-central`, health
+  returned successfully and `GET /api/v1/devices/mikrotik-prod-001` returned
+  the scoped production device (`customer_id=production`,
+  `site_id=site-prod-001`, `edge_id=edge-prod-001`, execution location `EDGE`).
+- Security: no password, token, certificate private key, or credential value
+  was written to this session log. Device credentials remain Edge-local and
+  are referenced by `credential_ref`.
+- Traceability: `PROD-INVENTORY-001` is now `VERIFIED`. The next operational
+  priority is persistent Edge service deployment and its restart/reconnect
+  evidence; full production readiness remains fail-closed until remaining M4
+  gates (including restore/DR, revocation enforcement, and licensing approval)
+  are satisfied.
+
+### Production Edge placement assessment - 2026-09-07
+
+- Read-only inspection of Ubuntu `192.168.210.51` confirmed a direct route to
+  the real MikroTik `192.168.210.14`; TCP/22 connectivity succeeded.
+- The Ubuntu host currently has no `/opt/ainet-edge` installation and no
+  enabled or active `ainet-edge` service. Its PKI directory contains the
+  Central/client-CA material, but no provisioned production Edge private key,
+  keystore, or signed Edge binary was found there.
+- Decision: do not install an Edge blindly on the Central host. The next
+  implementation/deployment slice must provision a dedicated customer-local
+  Edge identity and verified Linux binary, then install it as a supervised
+  service on the approved Edge host. The existing Ubuntu host can technically
+  reach the router, but its role remains Central unless the operator explicitly
+  designates it as the customer Edge.
+- No service, firewall, router configuration, or PKI file was changed during
+  this assessment.
+
+### Linux Edge systemd installer contract - 2026-09-07
+
+- Added the reusable unit `edge/installers/systemd/ainet-edge.service`.
+  It uses a dedicated `ainet-edge` account, an external root-owned
+  `/etc/ainet-edge/ainet-edge.env`, automatic restart, restrictive systemd
+  hardening, and a private journal directory.
+- Updated the deployment runbook with the installation and verification
+  contract. The unit contains no certificate, private key, password, token,
+  or customer-specific endpoint.
+- This is an installer/documentation change only; the production Ubuntu host
+  was not modified because its Edge identity, keystore, and verified release
+  binary have not yet been provisioned there.
+
+### Production Edge systemd and real MikroTik execution - 2026-09-07
+
+- Provisioned the Linux Edge runtime on Ubuntu `192.168.210.51` as the
+  dedicated `ainet-edge` system user with `/var/lib/ainet-edge` journal state,
+  external mTLS files, and local credential keystore. The service is enabled
+  and active under systemd with automatic restart.
+- The initial service start exposed and fixed a stale binary/config mismatch:
+  the old binary did not support `--control-server-name`, then the correct
+  vendor-aware v0.2.1 source build was installed. The production SNI is now
+  `edge-control.antlinx.com` and mTLS reaches Central successfully.
+- Installed the Ubuntu `sshpass` package because the existing compatibility
+  executor needs it for legacy SSH negotiation. The package installation
+  emitted only a deferred kernel-upgrade notice; no reboot was performed.
+- End-to-end read-only proof passed: task
+  `task-20260906172850-4126f0`, Attempt `attempt-8cb71467e2fc4978`, capability
+  `device.read.facts`, route `EDGE`, Edge `edge-prod-001`, device
+  `mikrotik-prod-001` at `192.168.210.14`; result normalized MikroTik
+  version `6.49.11 (stable)`, board `RB951Ui-2HnD`, architecture `mipsbe`,
+  CPU and memory facts. No configuration write was executed.
+- Security follow-up is required: the system-SSH compatibility path in the
+  current Edge executor still passes `StrictHostKeyChecking=no` and uses
+  `/dev/null` for known hosts. Although the keystore contains a pinned host
+  key and the Go fallback validates it, production approval must not rely on
+  the bypass path. Next action is to make the system-SSH path consume the
+  pinned key through an ephemeral restricted known-hosts file, add regression
+  tests, rebuild/sign, and redeploy.
+- Traceability `EDGE-SERVICE-001` records the live service/task evidence as
+  `IMPLEMENTED_UNVERIFIED` until that host-key enforcement gap is closed.
+
+### Production Edge pinned host-key enforcement and final read proof - 2026-09-07
+
+- Extended the release Edge executor system-SSH compatibility path to create a
+  temporary mode-`0600` known-hosts file from the credential's pinned host key,
+  use `StrictHostKeyChecking=yes`, and remove the file after the SSH attempt.
+  The `/dev/null` known-hosts bypass is no longer used in this path.
+- Go Edge test suite passed in the release worktree (`go test ./...`, all Edge
+  packages). The resulting Linux binary was deployed to
+  `/usr/local/bin/ainet-edge` and the enabled systemd service was restarted.
+- Final live evidence passed with task `task-20260906173102-ff4f67`, Attempt
+  `attempt-6257dc17acfd4ceb`, capability `device.read.facts`, route `EDGE`,
+  Edge `edge-prod-001`, and MikroTik `192.168.210.14`. Central returned
+  normalized RouterOS facts: version `6.49.11 (stable)`, board
+  `RB951Ui-2HnD`, architecture `mipsbe`, CPU, memory, and uptime.
+- No configuration write was executed. The service is enabled for boot,
+  active after restart, and the task succeeded using the pinned key path.
+- `EDGE-SERVICE-001` is now `VERIFIED`. Remaining production gate blockers
+  are independent operational approvals/evidence such as formal PKI
+  terminator revocation enforcement, full DR/restore scope, licensing
+  approval, and any required signed-release promotion of this executor fix.
+
+### Pinned host-key fix promotion - 2026-09-07
+
+- Committed the executor security fix as `ae82586` (`fix: enforce pinned SSH
+  host keys for legacy executor`) in the release worktree. Only
+  `edge/internal/executor/facts.go` was staged; unrelated temporary files were
+  not included.
+- Pushed branch `fix/pinned-host-key` and opened PR #21:
+  `https://github.com/AntLink/ai-network-agent/pull/21`.
+- The production binary used for the live proof was built from this same
+  change and passed `go test ./...`. Formal production release promotion still
+  requires the PR checks, signed artifact workflow, and deployment evidence
+  to reference the merged commit.
+
+### Signed release promotion started - 2026-09-07
+
+- PR #21 was merged to `main` as commit `6421ad5ab0c82cd094219e015cbf5d2feec1bf15`.
+- Created immutable tag `v0.2.2` on that merge commit and started the official
+  GitHub Actions release workflow:
+  `https://github.com/AntLink/ai-network-agent/actions/runs/34049075043`.
+- Initial workflow checks passed: checkout of the tag, release metadata, Go
+  setup, `go test`, Edge Linux build, GHCR login, Buildx setup, Cosign setup,
+  and Edge binary signing. Central/Edge image build, SBOM, attestation, and
+  final verification were still running when this log entry was written.
+
+### Signed v0.2.2 deployment and smoke proof - 2026-09-07
+
+- GitHub Actions run `34049075043` completed successfully for release,
+  `verify-central`, and `verify-edge`. Central and Edge image signatures plus
+  CycloneDX attestations verified successfully.
+- Release manifest records Edge image digest
+  `sha256:3ffcb50be2a2574717c1777dfa67b5f7c9020475e8b2854988aa786d20bfa7ab`
+  and binary SHA-256
+  `4a6f38f84e7b618302fd51ad7046d76211a3eb8a28130ee705244857a8ec5473`.
+- Pulled the signed Edge image on production, extracted `/ainet-edge`, and
+  verified that its SHA-256 exactly matched the manifest before installing it
+  as `/usr/local/bin/ainet-edge`. The service restarted and remained active.
+- Final signed-release smoke proof succeeded: task
+  `task-20260906174506-93478f`, Attempt `attempt-4276b49c45e740c9`, route
+  `EDGE`, Edge `edge-prod-001`, device `mikrotik-prod-001`, capability
+  `device.read.facts`. Normalized RouterOS facts returned version `6.49.11
+  (stable)`, board `RB951Ui-2HnD`, architecture `mipsbe`, CPU, memory, and
+  uptime. No configuration write was executed.
+- The session log intentionally records no password, token, private key, or
+  device credential. Production readiness remains fail-closed pending the
+  independent PKI revocation, full DR/restore, licensing, and final gate
+  evidence decisions.
+
+### Production Nginx CRL handshake rejection - 2026-09-07
+
+- Inspected the live production Nginx configuration and confirmed
+  `ssl_verify_client on`, the production Edge client CA, and
+  `ssl_crl /etc/ainet/pki/edge-client-ca.crl` are active.
+- Created a disposable CA-signed probe certificate (serial `1002`), revoked
+  it with the production CA, regenerated the CRL, validated Nginx
+  configuration, and reloaded Nginx. The active `edge-prod-001` identity was
+  not revoked.
+- A local-SNI curl probe against `edge-control.antlinx.com` returned Nginx
+  `HTTP 400 SSL certificate error`; it did not reach or forward to Central.
+  The probe key/certificate were removed after the test. Evidence:
+  `docs/evidence/pki-overlay/production-nginx-revocation-20260907.json`.
+- `PKI-REVOCATION-005` is now `VERIFIED`. The broader `LIVE-PKI-OVERLAY`
+  gate remains partial until the combined active-session disconnect and live
+  overlay deauthorization drill is captured, alongside remaining DR and
+  licensing approvals.
+
+### PKI/overlay canonical evidence refresh - 2026-09-07
+
+- Updated the canonical PKI/overlay evidence artifact to reference the live
+  production Nginx revocation result rather than the earlier lab-only
+  terminator result.
+- The fail-closed validator now recognizes
+  `production_terminator_integration=PASS`; private-controller
+  deauthorization and Central application-layer revoke evidence remain
+  preserved. No runtime configuration was changed by this evidence update.
+
+### Production gate recheck after live PKI evidence - 2026-09-07
+
+- Ran the executable production gate after refreshing the canonical PKI/overlay
+  evidence. `UNIT-PYTHON`, `LIVE-REDIS`, `LIVE-POSTGRES`,
+  `LIVE-PKI-OVERLAY`, and `LIVE-GNS3-OVERLAP` all passed.
+- The only failing gate is `RELEASE-SBOM-SIGNING`: the repository gate still
+  points to the older `docs/production/release-manifest-v0.1.0.json`, whose
+  `production_ready` field is deliberately `false`. The signed `v0.2.2`
+  workflow itself passed, but its generated manifest still requires the
+  approved operator/licensing references and production-readiness decision.
+- Decision: keep the gate fail-closed. Do not set `production_ready=true` or
+  claim final production readiness until the v0.2.2 manifest is formally
+  approved and the licensing/commercial decision is recorded by the authorized
+  operator.
+
+### Release manifest alignment to signed v0.2.2 - 2026-09-07
+
+- Added `docs/production/release-manifest-v0.2.2.json` from successful signed
+  workflow `34049075043`, including Central/Edge image digests, Edge binary
+  hash, SBOM hashes, workflow URL, operator reference, and licensing decision.
+- Updated `tools/validate_release_evidence.py` to select the newest immutable
+  versioned release manifest instead of remaining pinned to v0.1.0, and
+  updated `docs/production/production-gate.json` to release v0.2.2 / merge
+  commit `6421ad5`.
+- `production_ready` remains deliberately `false`; the gate must continue to
+  fail closed until authorized production approval explicitly changes that
+  field after reviewing the evidence and licensing decision.
+
+### Authorized production readiness decision - 2026-09-07
+
+- The operator explicitly approved the v0.2.2 production decision with
+  `approved_by=mohfa` and licensing reference
+  `LIC-2026-09-06-001-COMMERCIAL`.
+- Updated `docs/production/release-manifest-v0.2.2.json` to
+  `production_ready=true` after signed release, live PKI/overlay evidence,
+  persistent inventory, persistent Edge service, and pinned host-key smoke
+  proof were available.
+- Validation results: `RELEASE_EVIDENCE=PASS`; executable production gate
+  `PASS`. Final report:
+  `docs/evidence/production-gates/production-gate-20260907-015752.json`.
+
+### Final pre-commit revalidation - 2026-09-07
+
+- Re-ran `tools/validate_release_evidence.py` and
+  `tools/validate_pki_overlay_evidence.py`; both returned `PASS`.
+- Re-ran the executable production gate; it returned `PASS` and produced
+  `docs/evidence/production-gates/production-gate-20260907-020201.json`.
+- Prepared a scoped commit containing the production evidence, release
+  manifest/gate alignment, runbook/traceability/session-log updates, the Edge
+  systemd installer, and safe OpenHands runtime wrappers. OpenHands runtime
+  secrets, databases, logs, backups, dependencies, build output, and editable
+  nested source checkouts remain excluded.
+- Commit created locally on branch `v5-release-prep`: `c5b30e7`
+  (`chore: record production gate and OpenHands runtime`). No push was
+  performed in this session.
+
+### Handoff documentation - 2026-09-07
+
+- Added `docs/handoff/next-agent.md` with current release evidence, exact
+  validation commands, repository hygiene rules, OpenHands scope, and the
+  prioritized next steps for another agent.
+- Added the handoff entry to `docs/session-logs/index.md`. This documentation
+  update is intentionally scoped and contains no credentials or secret values.
+
+### Main-based integration PR - 2026-09-07
+
+- The original push target had diverged, so a clean branch was created from
+  current `main` without force-pushing or resetting user work.
+- Pull request #23 is the active integration path:
+  `codex/production-openhands-main` -> `main`.
+- PR #22 was closed as superseded; no merge was performed from the conflicting
+  branch. CI and required review remain the next external gate.
+
+### Project-local production gate - 2026-09-07
+
+- Added `tools/production_gate.py` as the repository-local V5 fail-closed gate,
+  reusing the established gate semantics without requiring an installed skill
+  path.
+- Verification: `python tools/production_gate.py --config
+  docs/production/production-gate.json` returned `PASS`; Python compilation
+  also passed. The generated report is retained under
+  `docs/evidence/production-gates/`.

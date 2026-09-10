@@ -18,7 +18,7 @@ from app.services.task_attempt_leases import task_attempt_lease_store
 from app.services.attempt_reconciliation import reconcile_attempts
 from app.services.journal_signature import EdgeJournalKeyRegistry, JournalSignatureError, verify_summary_signature
 from app.services.edge_identity import EdgeLifecycleState, edge_identity_registry
-from app.services.certificate_revocation import CertificateRevocationRegistry
+from app.services.certificate_revocation import CertificateRevocationRegistry, certificate_fingerprint_from_header
 from app.core.audit import log_event
 
 router = APIRouter()
@@ -106,9 +106,19 @@ async def _session(session_id: str):
 
 
 @router.post("/control/hello")
-async def hello(request: HelloRequest, edge_identity: str | None = Header(default=None, alias=EDGE_IDENTITY_HEADER), certificate_fingerprint: str | None = Header(default=None, alias="X-Client-Cert-Fingerprint")) -> dict[str, object]:
+async def hello(request: HelloRequest, edge_identity: str | None = Header(default=None, alias=EDGE_IDENTITY_HEADER), certificate_fingerprint: str | None = Header(default=None, alias="X-Client-Cert-Fingerprint"), client_certificate: str | None = Header(default=None, alias="X-Client-Cert")) -> dict[str, object]:
     _require_identity(edge_identity, request.edge_id)
-    if certificate_revocation_registry.is_revoked(certificate_fingerprint):
+    effective_fingerprint = certificate_fingerprint
+    if client_certificate:
+        try:
+            derived_fingerprint = certificate_fingerprint_from_header(client_certificate)
+        except ValueError as exc:
+            raise HTTPException(status_code=403, detail="Edge certificate is invalid") from exc
+        presented = (certificate_fingerprint or "").replace(":", "").replace(" ", "").lower()
+        if len(presented) == 64 and presented != derived_fingerprint:
+            raise HTTPException(status_code=403, detail="Edge certificate fingerprint mismatch")
+        effective_fingerprint = derived_fingerprint
+    if certificate_revocation_registry.is_revoked(effective_fingerprint):
         raise HTTPException(status_code=403, detail="Edge certificate is revoked")
     if edge_identity_registry.state(request.edge_id) in {EdgeLifecycleState.REVOKED, EdgeLifecycleState.DELETED}:
         raise HTTPException(status_code=403, detail="Edge identity is not permitted")

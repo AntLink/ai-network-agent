@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "release": {
-    "version": "<CONFIGURE>",
-    "git_commit": "<CONFIGURE>",
-    "licensing_decision": "<CONFIGURE>"
+    "version": "v0.2.2",
+    "git_commit": "6421ad5ab0c82cd094219e015cbf5d2feec1bf15",
+    "licensing_decision": "LIC-2026-09-06-001-COMMERCIAL"
   },
   "required_files": [
     "docs/traceability/requirements-matrix.md",

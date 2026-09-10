@@ -41,9 +41,19 @@ returned by GHCR and verifies that digest immediately afterward.
   uploads a generated manifest evidence file containing immutable image
   references and SBOM hashes; operator approval and licensing fields remain
   intentionally unconfigured.
+- Manifest generation passes the workflow URL explicitly to `jq` and assembles
+  image references from a tag-free image name plus exactly one digest.
+- Official GitHub/Docker actions are pinned to Node 24-compatible major lines:
+  checkout v6, setup-go v7, Docker login v4, Buildx v4, build-push v7, and
+  upload-artifact v5.
 - Signature and attestation verification each have a 180-second timeout with
   explicit image progress output, so a registry or transparency-log stall
   fails diagnostically instead of hanging indefinitely. Verification now runs
   in separate Central and Edge jobs, each capped at 5 minutes; each command
-  also uses a SIGKILL fallback. The build/sign job is capped at 30 minutes.
+  uses Cosign's native 90-second timeout, one attestation worker, and a SIGKILL
+  fallback. The build/sign job is capped at 30 minutes.
+- Attestation verification uses a repository wrapper that first saves the
+  immutable image to a temporary OCI layout, then verifies the local bundle.
+  It kills the entire Cosign process group if either operation remains hung,
+  while retaining certificate and transparency-log checks from the bundle.
 - Production gate remains fail-closed until workflow evidence is attached.

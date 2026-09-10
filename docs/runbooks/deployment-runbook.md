@@ -135,6 +135,31 @@ cd edge && go test ./...
   --key-file /opt/ainet-edge/edge.key --keystore-file /opt/ainet-edge/keystore.json \
   --journal-file /opt/ainet-edge/journal.json
 ```
+- For a Linux production Edge, install the version-controlled unit
+  `edge/installers/systemd/ainet-edge.service`. Create the root-owned
+  `/etc/ainet-edge/ainet-edge.env` with mode `600` and set only the approved
+  non-secret argument string (control URL, Edge ID, certificate paths,
+  keystore path, and journal path). Create a dedicated `ainet-edge` system
+  user, keep private keys/keystore readable only by that user, then run:
+```text
+systemctl daemon-reload
+systemctl enable --now ainet-edge
+systemctl is-active ainet-edge
+journalctl -u ainet-edge --no-pager -n 50
+```
+- Do not install this service on the Central host by assumption. The service
+  belongs on the approved customer-local Edge host; if Central and Edge are
+  intentionally colocated, record that topology decision and its blast-radius
+  review in the deployment evidence.
+- For client-mode Edge connecting through the production Nginx mTLS endpoint,
+  set the public TLS name explicitly (the default `central` is for the lab):
+```text
+ainet-edge.exe --control-url https://edge-control.antlinx.com/api \
+  --control-server-name edge-control.antlinx.com --edge-id edge-001 \
+  --boot-id <unique-boot-id> --ca-file <edge-client-ca.crt> \
+  --cert-file <edge-001.crt> --key-file <edge-001.key> \
+  --keystore-file <keystore.json> --journal-file <journal.json>
+```
 - Verify listener: `systemctl is-active ainet-edge` and `ss -ltnp | grep 9443`.
 - Enrollment (mTLS): Central outbound client performs HELLO/READY over TLS 1.3;
   evidence: `docs/evidence/m1-vertical-slice/`.
@@ -270,3 +295,81 @@ Result/evidence: **FAIL / NOT READY** until the missing gates below pass
   deployable release identities.
 - Follow `docs/runbooks/release-signing-runbook.md` once the approved registry
   and signing identity are available.
+
+## 19. Production Host Deployment Plan
+
+> Inspected Ubuntu host 192.168.210.51 (Ubuntu 24.04.4 LTS, Docker active).
+> Findings recorded in session log `2026-09-03_1957_phase-04_five-block-production-hardening.md`
+> (commit `8be8ccf`). Existing Nginx owns TCP 443 and must be preserved. There
+> is no existing AINET deployment to preserve.
+
+### 19.1 Blocking gates before any deployment (all fail-closed)
+
+1. **Registry feed auth** – GHCR images are private; anonymous pull returns
+   `unauthorized`. Provision a read-only PAT (`read:packages`) as a host
+   secret (`docker login ghcr.io --username <user> --password-stdin`) by the
+   operator. Never place the PAT in the repository, chat, or session logs.
+2. **Production hostname** – e.g. `edge-control.antlinx.com`; must be approved
+   and must match the served certificate SAN.
+3. **Production TLS certificate** for that hostname (public CA or approved
+   private CA chain with renewal/revocation path). Lab PKI is not sufficient.
+4. **Listener/port plan** – do not modify the existing Nginx/443 service.
+   AINET listeners must use dedicated ports/addresses approved for coexistence
+   (Central API, Edge control, Redis, PostgreSQL) without clobbering existing
+   workloads.
+5. **PKI revocation policy** – approve `docs/production/revocation-policy.md`
+   and bind production revocation state to the durable registry + CRL:
+   `EDGE_CERT_REVOCATION_STATE_FILE`, terminator `ssl_crl` via
+   `deploy/mtls/nginx_crl_reload.py`.
+6. **Licensing/commercial approval** – record the approved decision reference
+   (pattern `LIC-YYYY-MM-DD-NNN-<LABEL>`) before deployment.
+
+### 19.2 Host preflight
+
+Run the read-only preflight on the target host; it never writes, pulls, or
+modifies anything and fails closed on every blocked gate:
+
+```text
+python3 deploy/production/preflight.py \
+  --hostname edge-control.antlinx.com \
+  --tls-cert /etc/ainet/pki/central.crt \
+  --manifest docs/production/release-manifest-v0.1.0.json \
+  --revocation-policy docs/production/revocation-policy.md \
+  --licensing-ref <approved LIC reference>
+```
+
+`VERDICT: READY` (exit 0) is required before proceeding.
+`READY-WITH-WARNINGS` (exit 2) still requires manual capacity/listener review;
+`NOT-READY` (exit 1) blocks deployment. Contract tests:
+`backend/tests/test_production_preflight.py`.
+
+### 19.3 Capacity and isolation review
+
+- Host showed ~3.3 GiB RAM with high swap usage. A full
+  Central/PostgreSQL/Redis/controller deployment must be
+  capacity- and blast-radius-reviewed before touching existing workloads.
+- Prefer reverse proxies/containers pinned to dedicated loopback/private
+  listener addresses; keep the existing Nginx/443 tenant untouched.
+
+### 19.4 Post-deployment hygiene
+
+- Change the host access password/keys after deployment completes and revoke
+  any temporary provisioning credentials.
+- Re-run the preflight after any host-level change and record the verdict
+  plus evidence in `docs/evidence/production-gates/`.
+
+### 19.5 Central inventory persistence
+
+- The current canonical inventory repository is the JSON file at
+  `/inventory/devices.json` inside the Central container. Production Central
+  must bind-mount the host directory `/etc/ainet/inventory` to `/inventory`:
+  `-v /etc/ainet/inventory:/inventory`.
+- Before the first replacement/restart, copy the existing inventory out of
+  the container, restrict the host file to the service administrator (`chmod
+  600`), and verify that it contains the expected device identities.
+- Never run the production Central container without this mount; container
+  replacement otherwise loses device registrations. After a restart, verify
+  `/health` and retrieve at least one known device by its scoped `device_id`.
+- Back up `/etc/ainet/inventory/devices.json` with the production backup set.
+  Inventory contains topology metadata and must not be used as a credential
+  store; credentials remain Edge-local and referenced by `credential_ref`.

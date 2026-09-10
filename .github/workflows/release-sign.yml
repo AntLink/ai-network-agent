@@ -25,7 +25,7 @@ jobs:
       edge_ref: ${{ steps.sign.outputs.edge_ref }}
     steps:
       - name: Checkout approved release commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.release_tag }}
           fetch-depth: 0
@@ -52,7 +52,7 @@ jobs:
           echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: edge/go.mod
           cache-dependency-path: edge/go.sum
@@ -66,20 +66,30 @@ jobs:
         run: go build -trimpath -ldflags "-s -w" -o ainet-edge-linux ./cmd/ainet-edge
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.7.0
 
+      - name: Sign and verify Edge binary
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          set -euo pipefail
+          cosign sign-blob --yes edge/ainet-edge-linux --bundle edge-binary.sigstore.json
+          cosign verify-blob edge/ainet-edge-linux --bundle edge-binary.sigstore.json \
+            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+
       - name: Build and push Central
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: backend/Dockerfile.release
@@ -88,7 +98,7 @@ jobs:
           labels: org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Build and push Edge
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: edge
           file: edge/Dockerfile
@@ -146,30 +156,36 @@ jobs:
           edge_ref="${EDGE_REF:?edge_ref was not exported}"
           central_digest="${central_ref##*@}"
           edge_digest="${edge_ref##*@}"
+          central_image="${central_ref%@*}"
+          edge_image="${edge_ref%@*}"
           central_sbom_sha="$(sha256sum central-sbom.json | awk '{print $1}')"
           edge_sbom_sha="$(sha256sum edge-sbom.json | awk '{print $1}')"
           edge_binary_sha="$(sha256sum edge/ainet-edge-linux | awk '{print $1}')"
+          edge_binary_bundle_sha="$(sha256sum edge-binary.sigstore.json | awk '{print $1}')"
           jq -n \
             --arg version "$RELEASE_TAG" \
             --arg commit "${GITHUB_SHA}" \
             --arg created_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg central "$central_ref" \
+            --arg central "$central_image" \
             --arg central_digest "$central_digest" \
-            --arg edge "$edge_ref" \
+            --arg edge "$edge_image" \
             --arg edge_digest "$edge_digest" \
             --arg central_sbom_sha "$central_sbom_sha" \
             --arg edge_sbom_sha "$edge_sbom_sha" \
             --arg edge_binary_sha "$edge_binary_sha" \
-            '{schema_version:1,release:{version:$version,git_commit:$commit,created_at:$created_at,approved_by:"<CONFIGURE_OPERATOR_OR_CHANGE_REFERENCE>",licensing_decision:"<CONFIGURE_APPROVED_LICENSING_REFERENCE>"},artifacts:{central_image:($central+"@"+$central_digest),edge_image:($edge+"@"+$edge_digest),edge_binary:{version:$version,sha256:$edge_binary_sha,signature_reference:"cosign-attestation-on-edge-image"}},sbom:{format:"CycloneDX JSON",central_path:"central-sbom.json",central_sha256:$central_sbom_sha,edge_path:"edge-sbom.json",edge_sha256:$edge_sbom_sha,generated_by:"anchore/sbom-action@v0"},verification:{workflow_run:"https://github.com/"+env.GITHUB_REPOSITORY+"/actions/runs/"+env.GITHUB_RUN_ID},secrets_logged:false,production_ready:false}' \
+            --arg edge_binary_bundle_sha "$edge_binary_bundle_sha" \
+            --arg workflow_run "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            '{schema_version:1,release:{version:$version,git_commit:$commit,created_at:$created_at,approved_by:"<CONFIGURE_OPERATOR_OR_CHANGE_REFERENCE>",licensing_decision:"<CONFIGURE_APPROVED_LICENSING_REFERENCE>"},artifacts:{central_image:($central+"@"+$central_digest),edge_image:($edge+"@"+$edge_digest),edge_binary:{version:$version,sha256:$edge_binary_sha,signature_reference:"edge-binary.sigstore.json",signature_bundle_sha256:$edge_binary_bundle_sha}},sbom:{format:"CycloneDX JSON",central_path:"central-sbom.json",central_sha256:$central_sbom_sha,edge_path:"edge-sbom.json",edge_sha256:$edge_sbom_sha,generated_by:"anchore/sbom-action@v0"},verification:{workflow_run:$workflow_run},secrets_logged:false,production_ready:false}' \
             > "release-manifest-${RELEASE_TAG}.json"
 
       - name: Publish release evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-evidence-${{ steps.meta.outputs.tag }}
           path: |
             central-sbom.json
             edge-sbom.json
+            edge-binary.sigstore.json
             release-manifest-${{ steps.meta.outputs.tag }}.json
 
   verify-central:
@@ -180,8 +196,15 @@ jobs:
       contents: read
       packages: read
     steps:
+      - name: Checkout verification helper
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            tools/verify_cosign_attestation.py
+          sparse-checkout-cone-mode: false
+
       - name: Log in to GHCR for verification
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -197,7 +220,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Central signature: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify "$REF" \
+          timeout --signal=TERM --kill-after=10s 120s cosign verify --timeout 90s "$REF" \
             --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
 
@@ -208,9 +231,8 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Central CycloneDX attestation: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation "$REF" --type cyclonedx \
-            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
-            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          timeout --signal=TERM --kill-after=10s 120s \
+            python3 tools/verify_cosign_attestation.py --timeout-seconds 90 "$REF"
 
   verify-edge:
     needs: release
@@ -220,8 +242,15 @@ jobs:
       contents: read
       packages: read
     steps:
+      - name: Checkout verification helper
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            tools/verify_cosign_attestation.py
+          sparse-checkout-cone-mode: false
+
       - name: Log in to GHCR for verification
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -237,7 +266,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Edge signature: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify "$REF" \
+          timeout --signal=TERM --kill-after=10s 120s cosign verify --timeout 90s "$REF" \
             --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
 
@@ -248,6 +277,5 @@ jobs:
         run: |
           set -euo pipefail
           echo "Verifying Edge CycloneDX attestation: $REF"
-          timeout --signal=TERM --kill-after=10s 120s cosign verify-attestation "$REF" --type cyclonedx \
-            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.*" \
-            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          timeout --signal=TERM --kill-after=10s 120s \
+            python3 tools/verify_cosign_attestation.py --timeout-seconds 90 "$REF"

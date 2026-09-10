@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "release": {
+    "version": "v0.1.0",
+    "git_commit": "bf10ef69031b0e7cf022b0bb1d31104b96aa5e8e",
+    "created_at": "2026-09-06T11:54:03Z",
+    "approved_by": "mohfa",
+    "licensing_decision": "LIC-2026-09-06-001-COMMERCIAL"
+  },
+  "artifacts": {
+    "central_image": "ghcr.io/antlink/ainet-api:v0.1.0@sha256:38728ed0ea06a9f435c3ed89297a2e545eb07754bc60f895e730f80de9acbcd1",
+    "edge_image": "ghcr.io/antlink/ainet-edge:v0.1.0@sha256:ba4ff7226fa826ea83c673260501e8a8251e26f54d9c6c1d1be1300ca1104cf7",
+    "edge_binary": {
+      "version": "v0.1.0",
+      "sha256": "2f319957de5c674a6773d6e46bfd369ad5a83b6b54ac1545bf9e9305585f6775",
+      "signature_reference": "edge-binary.sigstore.json",
+      "signature_bundle_sha256": "95d97537f6302b012996675c735cfb74840c41e60c3fda3bea60ae2920fb48e1"
+    }
+  },
+  "sbom": {
+    "format": "CycloneDX JSON",
+    "central_path": "central-sbom.json",
+    "central_sha256": "ce1ba65edc9a3ee6388b1c9d85f03d559d985fe0692ddef65b14be13eaa61743",
+    "edge_path": "edge-sbom.json",
+    "edge_sha256": "d8c63c2625c016b916c4e167fa47b15ca0fe4ecdee1c900c8e591779a08930ab",
+    "generated_by": "anchore/sbom-action@v0"
+  },
+  "verification": {
+    "workflow_run": "https://github.com/AntLink/ai-network-agent/actions/runs/34031456191"
+  },
+  "secrets_logged": false,
+  "production_ready": false
+}

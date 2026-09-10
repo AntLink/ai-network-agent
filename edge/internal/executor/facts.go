@@ -1,11 +1,14 @@
 package executor
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/ai-network-agent/edge/internal/credentials"
@@ -27,6 +30,14 @@ type FactsRequest struct {
 	Host          string
 	Port          int
 	CredentialRef string
+	Vendor        string
+}
+
+func factsCommand(vendor string) string {
+	if vendor == "mikrotik" || vendor == "routeros" {
+		return "system resource print"
+	}
+	return "show version"
 }
 
 // FactsExecutor maps the capability to a fixed read-only command. It never
@@ -121,16 +132,62 @@ func (e FactsExecutor) executeWithGoSSH(ctx context.Context, req FactsRequest, c
 		return "", fmt.Errorf("facts connector session failed: %w", err)
 	}
 	defer session.Close()
-	out, err := session.Output("show version")
+	out, err := session.Output(factsCommand(req.Vendor))
 	if err != nil {
 		return "", fmt.Errorf("facts connector command failed: %w", err)
 	}
 	return string(out), nil
 }
 
+func executeRouterOSShell(session *ssh.Session, command string) ([]byte, error) {
+	stdin, err := session.StdinPipe()
+	if err != nil {
+		return nil, fmt.Errorf("routeros shell stdin failed: %w", err)
+	}
+	var stdout, stderr bytes.Buffer
+	session.Stdout = &stdout
+	session.Stderr = &stderr
+	if err := session.RequestPty("xterm", 80, 24, ssh.TerminalModes{ssh.ECHO: 0}); err != nil {
+		return nil, fmt.Errorf("routeros shell pty failed: %w", err)
+	}
+	if err := session.Shell(); err != nil {
+		return nil, fmt.Errorf("routeros shell start failed: %w", err)
+	}
+	if _, err := io.WriteString(stdin, command+"\n"); err != nil {
+		return nil, fmt.Errorf("routeros shell write failed: %w", err)
+	}
+	time.Sleep(1500 * time.Millisecond)
+	_ = session.Close()
+	if err := session.Wait(); err != nil && stdout.Len() == 0 {
+		return nil, fmt.Errorf("routeros shell command failed: %w: %s", err, stderr.String())
+	}
+	return stdout.Bytes(), nil
+}
+
 func (e FactsExecutor) executeWithSystemSSH(ctx context.Context, req FactsRequest, cred credentials.Entry) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, e.Timeout)
 	defer cancel()
+	knownHosts, err := os.CreateTemp("", "ainet-edge-known-hosts-")
+	if err != nil {
+		return "", fmt.Errorf("create pinned known-hosts file: %w", err)
+	}
+	knownHostsPath := knownHosts.Name()
+	defer os.Remove(knownHostsPath)
+	if err := knownHosts.Chmod(0600); err != nil {
+		knownHosts.Close()
+		return "", fmt.Errorf("protect pinned known-hosts file: %w", err)
+	}
+	host := req.Host
+	if req.Port != 22 {
+		host = fmt.Sprintf("[%s]:%d", req.Host, req.Port)
+	}
+	if _, err := fmt.Fprintf(knownHosts, "%s %s\n", host, strings.TrimSpace(cred.HostKey)); err != nil {
+		knownHosts.Close()
+		return "", fmt.Errorf("write pinned known-hosts file: %w", err)
+	}
+	if err := knownHosts.Close(); err != nil {
+		return "", fmt.Errorf("close pinned known-hosts file: %w", err)
+	}
 
 	// Debug log
 	f, ferr := os.OpenFile(debugLog, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
@@ -140,8 +197,8 @@ func (e FactsExecutor) executeWithSystemSSH(ctx context.Context, req FactsReques
 	}
 
 	args := []string{
-		"-o", "StrictHostKeyChecking=no",
-		"-o", "UserKnownHostsFile=/dev/null",
+		"-o", "StrictHostKeyChecking=yes",
+		"-o", "UserKnownHostsFile=" + knownHostsPath,
 		"-o", "ConnectTimeout=15",
 		"-o", "PreferredAuthentications=password",
 		"-o", "NumberOfPasswordPrompts=1",
@@ -150,7 +207,7 @@ func (e FactsExecutor) executeWithSystemSSH(ctx context.Context, req FactsReques
 		"-o", "PubkeyAcceptedAlgorithms=+ssh-rsa",
 		"-o", "BatchMode=no",
 		fmt.Sprintf("%s@%s", cred.Username, req.Host),
-		"show version",
+		factsCommand(req.Vendor),
 	}
 	proc := exec.CommandContext(ctx, "/usr/bin/sshpass", append([]string{"-p", cred.Password, "/usr/bin/ssh"}, args...)...)
 	proc.Env = append(os.Environ(), "PATH=/usr/bin:/bin:/sbin:/usr/sbin", "LANG=C")

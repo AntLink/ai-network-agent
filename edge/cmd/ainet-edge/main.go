@@ -100,17 +100,22 @@ func executeFacts(ctx context.Context, e Envelope, ex executor.FactsExecutor, j 
 		return r
 	}
 	host, _ := e.Payload["device_host"].(string)
+	vendor, _ := e.Payload["device_vendor"].(string)
 	port := 22
 	if p, ok := e.Payload["device_port"].(float64); ok {
 		port = int(p)
 	}
-	raw, err := ex.Execute(ctx, executor.FactsRequest{Host: host, Port: port, CredentialRef: e.CredentialRef})
+	raw, err := ex.Execute(ctx, executor.FactsRequest{Host: host, Port: port, CredentialRef: e.CredentialRef, Vendor: vendor})
 	if err != nil {
 		r := map[string]interface{}{"status": "FAILED", "task_id": e.TaskID, "attempt_id": e.AttemptID, "capability": e.Capability, "error_code": "LOCAL_DEVICE_EXECUTION_FAILED"}
 		j.put(e.AttemptID, r)
 		return r
 	}
-	r := map[string]interface{}{"status": "SUCCEEDED", "task_id": e.TaskID, "attempt_id": e.AttemptID, "capability": e.Capability, "data": executor.NormalizeCiscoFacts(raw), "raw": raw}
+	normalized := executor.NormalizeCiscoFacts(raw)
+	if vendor == "mikrotik" || vendor == "routeros" {
+		normalized = executor.NormalizeRouterOSFacts(raw)
+	}
+	r := map[string]interface{}{"status": "SUCCEEDED", "task_id": e.TaskID, "attempt_id": e.AttemptID, "capability": e.Capability, "data": normalized, "raw": raw}
 	j.put(e.AttemptID, r)
 	return r
 }
@@ -164,6 +169,7 @@ func run(in io.Reader, out io.Writer, now func() time.Time) error {
 func main() {
 	listen := flag.String("control-listen", "", "mTLS control listen address, e.g. 0.0.0.0:9443")
 	controlURL := flag.String("control-url", "", "Central mTLS control URL, e.g. https://central:9443")
+	controlServerName := flag.String("control-server-name", "central", "Central TLS server name, e.g. edge-control.antlinx.com")
 	edgeID := flag.String("edge-id", "", "registered Edge identity")
 	bootID := flag.String("boot-id", "", "Edge boot/session identity")
 	caFile := flag.String("ca-file", "", "project CA PEM")
@@ -178,7 +184,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, "edge-id and boot-id are required")
 			os.Exit(2)
 		}
-		tlsConfig, err := security.ClientConfig(security.MTLSFiles{CAFile: *caFile, CertificateFile: *certFile, PrivateKeyFile: *keyFile})
+		tlsConfig, err := security.ClientConfig(security.MTLSFiles{CAFile: *caFile, CertificateFile: *certFile, PrivateKeyFile: *keyFile, ServerName: *controlServerName})
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(2)
@@ -232,15 +238,20 @@ func main() {
 		ex := executor.FactsExecutor{Store: store}
 		srv := control.Server{EdgeID: *edgeID, TLSConfig: tlsConfig, JournalPath: *journalFile, Handler: func(ctx context.Context, e control.Envelope) (map[string]interface{}, error) {
 			host, _ := e.Payload["device_host"].(string)
+			vendor, _ := e.Payload["device_vendor"].(string)
 			port := 22
 			if p, ok := e.Payload["device_port"].(float64); ok {
 				port = int(p)
 			}
-			raw, err := ex.Execute(ctx, executor.FactsRequest{Host: host, Port: port, CredentialRef: e.CredentialRef})
+			raw, err := ex.Execute(ctx, executor.FactsRequest{Host: host, Port: port, CredentialRef: e.CredentialRef, Vendor: vendor})
 			if err != nil {
 				return nil, err
 			}
-			return map[string]interface{}{"status": "SUCCEEDED", "task_id": e.TaskID, "attempt_id": e.AttemptID, "capability": e.Capability, "data": executor.NormalizeCiscoFacts(raw), "raw": raw}, nil
+			normalized := executor.NormalizeCiscoFacts(raw)
+			if vendor == "mikrotik" || vendor == "routeros" {
+				normalized = executor.NormalizeRouterOSFacts(raw)
+			}
+			return map[string]interface{}{"status": "SUCCEEDED", "task_id": e.TaskID, "attempt_id": e.AttemptID, "capability": e.Capability, "data": normalized, "raw": raw}, nil
 		}}
 		if err := srv.Serve(context.Background(), ln); err != nil {
 			fmt.Fprintln(os.Stderr, err)
