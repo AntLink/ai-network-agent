@@ -4,6 +4,12 @@ export type LabEngine = 'gns3' | 'containerlab' | 'vrnetlab'
 export type TaskStatus = 'queued' | 'running' | 'success' | 'failed' | 'cancelled'
 export type RiskLevel = 'low' | 'medium' | 'high'
 
+export interface OpenPort {
+  port: number
+  service: string
+  banner?: string
+}
+
 export type ApiResponse<T> = {
   status: number
   data: T
@@ -21,6 +27,7 @@ export interface Device {
   cpu: number
   memory: number
   latencyMs: number | null
+  openPorts?: OpenPort[]
   lastSeen: string
   lab: string
   tags: string[]
@@ -35,6 +42,15 @@ export interface Device {
     authMethod: 'password' | 'ssh-key' | 'token'
     privilegeLevel: string
   }
+  executionLocation?: 'CENTRAL' | 'EDGE' | 'LAB'
+  edgeId?: string
+  credentialRef?: string
+  edgeStatus?: 'online' | 'offline'
+  edgeLastSeen?: string
+  customerId?: string
+  siteId?: string
+  source?: 'gns3' | 'edge' | 'direct'
+  projectName?: string
 }
 
 export interface NetworkInterface {
@@ -335,6 +351,21 @@ export interface Topology {
     sourceInterface: string
     targetInterface: string
     status: 'up' | 'down'
+    evidenceSources?: string[]
+    confidence?: number
+    verificationState?: 'DISCOVERED' | 'INFERRED' | 'VERIFIED' | 'STALE' | 'CONFLICTED'
+  }>
+  evidence?: Array<{
+    evidenceId: string
+    customerId: string
+    siteId: string
+    edgeId: string
+    sourceNodeId: string
+    targetNodeId: string
+    evidenceSources: string[]
+    confidence: number
+    verificationState: 'DISCOVERED' | 'INFERRED' | 'VERIFIED' | 'STALE' | 'CONFLICTED'
+    expiresAt: string
   }>
   layout?: Record<string, { x: number; y: number }>
 }

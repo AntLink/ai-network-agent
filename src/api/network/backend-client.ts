@@ -30,6 +30,14 @@ import type {
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8000'
 const API_TIMEOUT_MS = 12000
+const AUTH_SESSION_KEY = 'ainet.operator.session'
+
+export type BackendOperatorSession = {
+  access_token: string
+  token_type: string
+  expires_in: number
+  operator: { id: string; role: string }
+}
 
 type UnknownRecord = Record<string, unknown>
 
@@ -53,6 +61,39 @@ export function getApiBaseUrl() {
   return (import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/$/, '')
 }
 
+export function getBackendAuthToken(): string | null {
+  try {
+    const raw = window.sessionStorage.getItem(AUTH_SESSION_KEY)
+    if (!raw) return null
+    const session = JSON.parse(raw) as Partial<BackendOperatorSession>
+    return typeof session.access_token === 'string' && session.access_token ? session.access_token : null
+  } catch {
+    return null
+  }
+}
+
+export function getBackendOperatorSession(): BackendOperatorSession | null {
+  try {
+    const raw = window.sessionStorage.getItem(AUTH_SESSION_KEY)
+    return raw ? (JSON.parse(raw) as BackendOperatorSession) : null
+  } catch {
+    return null
+  }
+}
+
+export function clearBackendAuthSession() {
+  window.sessionStorage.removeItem(AUTH_SESSION_KEY)
+}
+
+export async function loginBackendOperator(operatorId: string, password: string): Promise<BackendOperatorSession> {
+  const session = await apiRequest<BackendOperatorSession>('/api/v1/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ operator_id: operatorId, password }),
+  })
+  window.sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session))
+  return session
+}
+
 export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const controller = new AbortController()
   const timeout = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS)
@@ -64,6 +105,7 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
       headers: {
         Accept: 'application/json',
         ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(getBackendAuthToken() ? { Authorization: `Bearer ${getBackendAuthToken()}` } : {}),
         ...init?.headers,
       },
     })
@@ -71,6 +113,12 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     const payload = await readJsonSafe(response)
 
     if (!response.ok) {
+      if (response.status === 401 && !path.endsWith('/auth/login')) {
+        clearBackendAuthSession()
+        if (window.location.pathname !== '/auth/auth2/login') {
+          window.location.assign('/auth/auth2/login?reason=session-expired')
+        }
+      }
       throw new ApiClientError(extractErrorMessage(payload, response.statusText), response.status, payload)
     }
 
@@ -140,15 +188,190 @@ export async function loadBackendDeviceStatuses(): Promise<DeviceMetrics[]> {
   }
 }
 
+export type EdgeRuntimeStatus = {
+  edge_id: string
+  customer_id?: string
+  site_id?: string
+  session_id: string
+  boot_id: string
+  ready: boolean
+  status: 'online' | 'offline'
+  last_seen: string
+  age_seconds: number
+  ttl_seconds: number
+  os?: string
+  management_ip?: string
+  mac_address?: string
+  cpu_percent?: number | null
+  memory_percent?: number | null
+  latency_ms?: number | null
+}
+
+export type EdgeLiveObservation = {
+  observation_id: string
+  edge_id: string
+  source: string
+  observed_at: string
+  received_at: string | null
+  expires_at: string
+  subject: Record<string, unknown>
+  attributes: Record<string, unknown>
+  state: string
+  fresh: boolean
+  age_seconds: number
+  ttl_seconds: number
+}
+
+let edgeStatusInFlight: Promise<EdgeRuntimeStatus[]> | null = null
+
+/**
+ * Share concurrent status reads between the Devices page, Edge detail page,
+ * and inventory enrichment. Without this, one refresh could scan Redis and
+ * query live observations multiple times at once.
+ */
+export function loadBackendEdgeStatuses(): Promise<EdgeRuntimeStatus[]> {
+  if (edgeStatusInFlight) return edgeStatusInFlight
+  edgeStatusInFlight = fetchBackendEdgeStatuses().finally(() => {
+    edgeStatusInFlight = null
+  })
+  return edgeStatusInFlight
+}
+
+async function fetchBackendEdgeStatuses(): Promise<EdgeRuntimeStatus[]> {
+  try {
+    const payload = await apiRequest<unknown>('/api/v1/control/status')
+    const sessions = extractArray(payload).map((item) => {
+      const record = asRecord(item)
+      return {
+        edge_id: stringValue(record.edge_id, ''),
+        customer_id: stringValue(record.customer_id ?? record.customerId, ''),
+        site_id: stringValue(record.site_id ?? record.siteId, ''),
+        session_id: stringValue(record.session_id, ''),
+        boot_id: stringValue(record.boot_id, ''),
+        ready: Boolean(record.ready),
+        status: (stringValue(record.status, 'offline') === 'online' ? 'online' : 'offline') as EdgeRuntimeStatus['status'],
+        last_seen: stringValue(record.last_seen, ''),
+        age_seconds: numberValue(record.age_seconds, 0),
+        ttl_seconds: numberValue(record.ttl_seconds, 60),
+        os: stringValue(record.os ?? record.platform ?? record.edge_os, ''),
+        management_ip: stringValue(record.management_ip ?? record.managementIp ?? record.management_address, ''),
+        mac_address: stringValue(record.mac_address ?? record.macAddress ?? record.mac, ''),
+        cpu_percent: numberOrNull(record.cpu_percent ?? record.cpu),
+        memory_percent: numberOrNull(record.memory_percent ?? record.memory),
+        latency_ms: numberOrNull(record.latency_ms ?? record.latency),
+      }
+    }).filter((item) => item.edge_id)
+
+    // Redis may retain short-lived historical sessions while their TTL expires.
+    // The Devices page represents Edge identities, not every session record:
+    // keep the newest ready/online session for each edge and hide stale ones.
+    const selected = new Map<string, EdgeRuntimeStatus>()
+    for (const session of sessions) {
+      const current = selected.get(session.edge_id)
+      if (!current) {
+        selected.set(session.edge_id, session)
+        continue
+      }
+      const currentPriority = current.ready && current.status === 'online' ? 1 : 0
+      const sessionPriority = session.ready && session.status === 'online' ? 1 : 0
+      const currentTime = Date.parse(current.last_seen) || 0
+      const sessionTime = Date.parse(session.last_seen) || 0
+      if (sessionPriority > currentPriority || (sessionPriority === currentPriority && sessionTime > currentTime)) {
+        selected.set(session.edge_id, session)
+      }
+    }
+    const active = Array.from(selected.values()).filter((session) => session.ready && session.status === 'online')
+    const enriched = await Promise.all(active.map(async (session) => {
+      try {
+        const observations = await loadBackendEdgeLiveObservations(session.edge_id)
+        const local = observations.filter((observation) => observation.source === 'local' && observation.fresh)
+        const localAddress = local.find((observation) => {
+          const address = observation.subject.address
+          return typeof address === 'string' && address.includes('.')
+        })
+        const localMac = local.find((observation) => {
+          const subject = observation.subject
+          const attributes = observation.attributes
+          return typeof (subject.mac ?? subject.mac_address ?? attributes.mac ?? attributes.mac_address) === 'string'
+        })
+        const address = localAddress ? stringValue(localAddress.subject.address, '').split('/')[0] : ''
+        const mac = localMac
+          ? stringValue(localMac.subject.mac ?? localMac.subject.mac_address ?? localMac.attributes.mac ?? localMac.attributes.mac_address, '')
+          : ''
+        return {
+          ...session,
+          management_ip: session.management_ip || address,
+          mac_address: session.mac_address || mac,
+        }
+      } catch {
+        return session
+      }
+    }))
+    return enriched
+  } catch (error) {
+    // Preserve the error for the SWR consumer. With keepPreviousData this
+    // keeps the last known Edge rows visible and lets the UI mark them stale;
+    // returning [] incorrectly looked like every Edge disappeared.
+    throw error
+  }
+}
+
+export async function loadBackendEdgeLiveObservations(edgeId: string): Promise<EdgeLiveObservation[]> {
+  const payload = await apiRequest<unknown>(`/api/v1/discovery/live?edge_id=${encodeURIComponent(edgeId)}`)
+  const record = asRecord(payload)
+  return extractArray(record.observations).map((item) => {
+    const value = asRecord(item)
+    return {
+      observation_id: stringValue(value.observation_id, ''),
+      edge_id: stringValue(value.edge_id, edgeId),
+      source: stringValue(value.source, 'unknown'),
+      observed_at: stringValue(value.observed_at, ''),
+      received_at: typeof value.received_at === 'string' ? value.received_at : null,
+      expires_at: stringValue(value.expires_at, ''),
+      subject: asRecord(value.subject),
+      attributes: asRecord(value.attributes),
+      state: stringValue(value.state, 'OBSERVED'),
+      fresh: Boolean(value.fresh),
+      age_seconds: numberValue(value.age_seconds, 0),
+      ttl_seconds: numberValue(value.ttl_seconds, 0),
+    }
+  }).filter((item) => item.observation_id)
+}
+
+function applyEdgeRuntimeStatus(device: Device, edgeStatusMap: Map<string, EdgeRuntimeStatus>) {
+  if (!device.edgeId) return device
+  const edge = edgeStatusMap.get(device.edgeId)
+  if (!edge) return device
+  const effectiveStatus = edge.status === 'offline' ? 'offline' : device.status
+  const connectionStatus: Device['connection']['status'] = effectiveStatus === 'online'
+    ? 'connected'
+    : effectiveStatus === 'warning'
+      ? 'degraded'
+      : 'disconnected'
+  const updatedDevice: Device = {
+    ...device,
+    status: effectiveStatus,
+    edgeStatus: edge.status,
+    edgeLastSeen: edge.last_seen,
+    connection: {
+      ...device.connection,
+      status: connectionStatus,
+    },
+  }
+  return updatedDevice
+}
+
 export async function loadBackendDevices(): Promise<Device[]> {
-  const [devices, statuses] = await Promise.all([
+  const [devices, statuses, edgeStatuses] = await Promise.all([
     apiRequest<unknown>('/api/v1/devices'),
     loadBackendDeviceStatuses(),
+    loadBackendEdgeStatuses().catch(() => []),
   ])
   const statusMap = new Map(statuses.map((s) => [s.device_id, s]))
+  const edgeStatusMap = new Map(edgeStatuses.map((s) => [s.edge_id, s]))
 
   return extractArray(devices).map((item) => {
-    const device = normalizeDevice(item)
+    let device = normalizeDevice(item)
     const m = statusMap.get(device.id)
     if (m) {
       device.status = m.status
@@ -156,7 +379,7 @@ export async function loadBackendDevices(): Promise<Device[]> {
       device.memory = m.memory
       device.latencyMs = m.latency_ms
     }
-    return device
+    return applyEdgeRuntimeStatus(device, edgeStatusMap)
   })
 }
 
@@ -174,17 +397,19 @@ export async function loadBackendDevicesPage(query: { page?: number; limit?: num
   if (query.limit) params.set('limit', String(query.limit))
   const qs = params.toString()
 
-  const [payload, statuses] = await Promise.all([
+  const [payload, statuses, edgeStatuses] = await Promise.all([
     apiRequest<unknown>(`/api/v1/devices${qs ? '?' + qs : ''}`),
     loadBackendDeviceStatuses(),
+    loadBackendEdgeStatuses(),
   ])
   const statusMap = new Map(statuses.map((s) => [s.device_id, s]))
+  const edgeStatusMap = new Map(edgeStatuses.map((s) => [s.edge_id, s]))
 
   const record = asRecord(payload)
   const rawList = Array.isArray(payload) ? payload : extractArray(record.devices)
 
   const devices = rawList.map((item) => {
-    const device = normalizeDevice(item)
+    let device = normalizeDevice(item)
     const m = statusMap.get(device.id)
     if (m) {
       device.status = m.status
@@ -192,7 +417,7 @@ export async function loadBackendDevicesPage(query: { page?: number; limit?: num
       device.memory = m.memory
       device.latencyMs = m.latency_ms
     }
-    return device
+    return applyEdgeRuntimeStatus(device, edgeStatusMap)
   })
 
   if (Array.isArray(payload)) {
@@ -306,25 +531,38 @@ export async function loadBackendDeviceDetail(deviceId: string): Promise<{
   device: Device
   interfaces: NetworkInterface[]
   routes: RouteEntry[]
+  facts?: unknown
 }> {
-  const [deviceResult, interfacesResult, routesResult, healthResult] = await Promise.allSettled([
-    apiRequest<unknown>(`/api/v1/devices/${deviceId}`),
+  const deviceResult = await apiRequest<unknown>(`/api/v1/devices/${deviceId}`)
+  const normalizedDevice = normalizeDevice(deviceResult)
+  const edgeStatusResult = await Promise.allSettled([loadBackendEdgeStatuses()])
+  const edgeStatuses = edgeStatusResult[0].status === 'fulfilled' ? edgeStatusResult[0].value : []
+  const device = applyEdgeRuntimeStatus(normalizedDevice, new Map(edgeStatuses.map((item) => [item.edge_id, item])))
+
+  if (device.executionLocation === 'EDGE' || device.edgeId) {
+    const factsUrl = device.credentialRef
+      ? `/api/v1/devices/${encodeURIComponent(deviceId)}/facts?credential_ref=${encodeURIComponent(device.credentialRef)}`
+      : null
+    const factsResult = factsUrl ? await Promise.allSettled([apiRequest<unknown>(factsUrl)]) : []
+    return {
+      device,
+      interfaces: [],
+      routes: [],
+      facts: factsResult[0]?.status === 'fulfilled' ? factsResult[0].value : undefined,
+    }
+  }
+
+  const [interfacesResult, routesResult, healthResult] = await Promise.allSettled([
     apiRequest<unknown>(`/api/v1/devices/${deviceId}/interfaces`),
     apiRequest<unknown>(`/api/v1/devices/${deviceId}/routes`),
     apiRequest<unknown>(`/api/v1/devices/${deviceId}/health`),
   ])
-
-  if (deviceResult.status === 'rejected') {
-    throw deviceResult.reason
-  }
-
   const health = healthResult.status === 'fulfilled' ? healthResult.value : undefined
-  const device = normalizeDevice(deviceResult.value, health)
-
+  const directDevice = applyEdgeRuntimeStatus(normalizeDevice(deviceResult, health), new Map(edgeStatuses.map((item) => [item.edge_id, item])))
   return {
-    device,
-    interfaces: interfacesResult.status === 'fulfilled' ? normalizeInterfaces(interfacesResult.value, device.id) : [],
-    routes: routesResult.status === 'fulfilled' ? normalizeRoutes(routesResult.value, device.id) : [],
+    device: directDevice,
+    interfaces: interfacesResult.status === 'fulfilled' ? normalizeInterfaces(interfacesResult.value, directDevice.id) : [],
+    routes: routesResult.status === 'fulfilled' ? normalizeRoutes(routesResult.value, directDevice.id) : [],
   }
 }
 
@@ -428,6 +666,25 @@ function normalizeTopology(payload: unknown): Topology {
     name: stringValue(data.name, 'Backend Topology'),
     projectId: stringValue(data.projectId ?? data.project_id, '') || undefined,
     layout: normalizeTopologyLayout(data.layout),
+    evidence: extractArray(data.evidence).map((entry) => {
+      const item = asRecord(entry)
+      const state = String(item.verificationState ?? item.verification_state ?? 'DISCOVERED').toUpperCase()
+      const verificationState = ['DISCOVERED', 'INFERRED', 'VERIFIED', 'STALE', 'CONFLICTED'].includes(state)
+        ? state as 'DISCOVERED' | 'INFERRED' | 'VERIFIED' | 'STALE' | 'CONFLICTED'
+        : 'DISCOVERED'
+      return {
+        evidenceId: stringValue(item.evidenceId ?? item.evidence_id, ''),
+        customerId: stringValue(item.customerId ?? item.customer_id, ''),
+        siteId: stringValue(item.siteId ?? item.site_id, ''),
+        edgeId: stringValue(item.edgeId ?? item.edge_id, ''),
+        sourceNodeId: stringValue(item.sourceNodeId ?? item.source_node_id, ''),
+        targetNodeId: stringValue(item.targetNodeId ?? item.target_node_id, ''),
+        evidenceSources: extractArray(item.evidenceSources ?? item.evidence_sources).map((source) => String(source)),
+        confidence: typeof item.confidence === 'number' ? item.confidence : 0,
+        verificationState,
+        expiresAt: stringValue(item.expiresAt ?? item.expires_at, ''),
+      }
+    }),
     nodes: nodes.map((node, index) => {
       const item = asRecord(node)
       const hostname = stringValue(item.hostname ?? item.name ?? item.label, `Node ${index + 1}`)
@@ -451,6 +708,11 @@ function normalizeTopology(payload: unknown): Topology {
         sourceInterface: stringValue(item.sourceInterface ?? item.source_interface ?? item.interface_a, '-'),
         targetInterface: stringValue(item.targetInterface ?? item.target_interface ?? item.interface_b, '-'),
         status: stringValue(item.status, 'up').toLowerCase() === 'down' ? 'down' : 'up',
+        evidenceSources: extractArray(item.evidenceSources ?? item.evidence_sources).map((source) => String(source)),
+        confidence: typeof item.confidence === 'number' ? item.confidence : undefined,
+        verificationState: ['DISCOVERED', 'INFERRED', 'VERIFIED', 'STALE', 'CONFLICTED'].includes(String(item.verificationState ?? item.verification_state).toUpperCase())
+          ? String(item.verificationState ?? item.verification_state).toUpperCase() as 'DISCOVERED' | 'INFERRED' | 'VERIFIED' | 'STALE' | 'CONFLICTED'
+          : undefined,
       }
     }),
   }
@@ -754,6 +1016,15 @@ function normalizeDevice(input: unknown, healthInput?: unknown): Device {
   const reachable = typeof health.reachable === 'boolean' ? health.reachable : undefined
   const status = reachable === undefined ? normalizeStatus(item.status) : reachable ? 'online' : 'offline'
 
+  const tags = Array.isArray(item.tags) ? item.tags.map((tag) => String(tag)) : [vendor]
+  const executionLocation = String(item.execution_location ?? item.executionLocation ?? '').toUpperCase()
+  const edgeId = stringValue(item.edge_id ?? item.edgeId, '')
+  const source = executionLocation === 'EDGE' || Boolean(edgeId)
+    ? 'edge'
+    : item.device_type === 'virtual' || tags.some((tag) => ['gns3', 'gns3-chr', 'm1', 'm3'].includes(tag.toLowerCase()))
+      ? 'gns3'
+      : 'direct'
+
   return {
     id,
     hostname,
@@ -767,7 +1038,7 @@ function normalizeDevice(input: unknown, healthInput?: unknown): Device {
     latencyMs: numberOrNull(item.latencyMs ?? item.latency_ms ?? item.latency),
     lastSeen: stringValue(item.lastSeen ?? item.last_seen, reachable === false ? 'unreachable' : 'live inventory'),
     lab: stringValue(item.lab ?? item.project ?? item.group, 'Backend Inventory'),
-    tags: Array.isArray(item.tags) ? item.tags.map((tag) => String(tag)) : [vendor],
+    tags,
     osVersion: stringValue(item.osVersion ?? item.os_version ?? item.version, 'Unknown'),
     uptime: stringValue(item.uptime, '-'),
     serial: stringValue(item.serial ?? item.serial_number, id),
@@ -779,6 +1050,15 @@ function normalizeDevice(input: unknown, healthInput?: unknown): Device {
       authMethod: normalizeAuthMethod(item.authMethod ?? item.auth_method),
       privilegeLevel: stringValue(item.privilegeLevel ?? item.privilege_level, vendor === 'mikrotik' ? 'full' : '-'),
     },
+    executionLocation: executionLocation === 'CENTRAL' || executionLocation === 'EDGE' || executionLocation === 'LAB'
+      ? executionLocation
+      : undefined,
+    edgeId: edgeId || undefined,
+    credentialRef: stringValue(item.credential_ref ?? item.credentialRef, '') || undefined,
+    customerId: stringValue(item.customer_id ?? item.customerId, '') || undefined,
+    siteId: stringValue(item.site_id ?? item.siteId, '') || undefined,
+    source,
+    projectName: stringValue(item.project_name ?? item.projectName ?? item.lab, '') || undefined,
   }
 }
 
@@ -1354,6 +1634,30 @@ export async function loadBackendTaskDetail(taskId: string): Promise<{ task: Tas
   }
 }
 
+export async function executeBackendCapability(input: {
+  deviceId: string
+  capability: 'device.read.telemetry'
+  credentialRef: string
+  edgeId: string
+  customerId?: string
+  siteId?: string
+  parameters?: Record<string, unknown>
+}): Promise<Record<string, unknown>> {
+  return apiRequest<Record<string, unknown>>('/api/v1/tasks/capability', {
+    method: 'POST',
+    body: JSON.stringify({
+      device_id: input.deviceId,
+      capability: input.capability,
+      credential_ref: input.credentialRef,
+      edge_id: input.edgeId,
+      customer_id: input.customerId,
+      site_id: input.siteId,
+      parameters: input.parameters ?? {},
+      idempotency_key: `ui-${input.capability}-${input.deviceId}-${Date.now()}`,
+    }),
+  })
+}
+
 function normalizeTaskStatus(value: unknown): TaskStatus {
   const normalized = String(value ?? '').toLowerCase()
   if (normalized.includes('running') || normalized.includes('progress')) return 'running'
@@ -1380,6 +1684,13 @@ export async function loadBackendAlerts(): Promise<Alert[]> {
       createdAt: stringValue(r.created_at ?? r.createdAt, '-'),
       status: normalizeAlertStatus(r.status),
     }
+  })
+}
+
+export async function acknowledgeBackendAlert(alertId: string): Promise<void> {
+  await apiRequest(`/api/v1/alerts/${encodeURIComponent(alertId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'acknowledged' }),
   })
 }
 
@@ -1444,6 +1755,25 @@ export async function loadBackendCredentials(): Promise<CredentialProfile[]> {
       lastTest: stringValue(r.last_test, '-'),
       status: normalizeCredStatus(r.status),
     }
+  })
+}
+
+export async function createBackendCredential(input: {
+  name: string
+  vendor: string
+  username: string
+  password: string
+  authType: 'password' | 'ssh-key' | 'api-token'
+}): Promise<unknown> {
+  return apiRequest<unknown>('/api/v1/credentials', {
+    method: 'POST',
+    body: JSON.stringify({
+      name: input.name,
+      vendor: input.vendor,
+      username: input.username,
+      password: input.password,
+      auth_type: input.authType,
+    }),
   })
 }
 
@@ -1517,6 +1847,64 @@ export async function loadBackendDiscoveryResults(): Promise<DiscoveryResult[]> 
         status: normalizeDiscoveryStatus(d.status),
       }
     })
+  })
+}
+
+export async function startBackendDiscoveryScan(input: {
+  subnet: string
+  method: 'icmp' | 'ssh' | 'snmp'
+  customerId: string
+  siteId: string
+  edgeId: string
+}): Promise<unknown> {
+  return apiRequest<unknown>('/api/v1/discovery/scan', {
+    method: 'POST',
+    body: JSON.stringify({
+      subnet: input.subnet,
+      method: input.method,
+      policy: {
+        policy_version: 1,
+        customer_id: input.customerId,
+        site_id: input.siteId,
+        edge_id: input.edgeId,
+        mode: 'baseline',
+        scopes: [{
+          cidr: input.subnet,
+          methods: [input.method],
+          max_packets_per_second: 10,
+          max_concurrency: 16,
+        }],
+        excluded_targets: [],
+        kill_switch: false,
+      },
+    }),
+  })
+}
+
+export async function addBackendDiscoveredDevice(input: {
+  deviceId: string
+  hostname: string
+  managementAddress: string
+  vendor: string
+  platform: string
+  transport: string
+  customerId: string
+  siteId: string
+  edgeId: string
+}): Promise<unknown> {
+  return apiRequest<unknown>('/api/v1/discovery/add', {
+    method: 'POST',
+    body: JSON.stringify({
+      device_id: input.deviceId,
+      hostname: input.hostname,
+      management_address: input.managementAddress,
+      vendor: input.vendor,
+      platform: input.platform,
+      transport: input.transport,
+      customer_id: input.customerId,
+      site_id: input.siteId,
+      edge_id: input.edgeId,
+    }),
   })
 }
 

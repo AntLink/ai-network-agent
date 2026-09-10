@@ -3,8 +3,10 @@ from pydantic import Field
 from pydantic import BaseModel
 from typing import Any
 import math
+import uuid
 from app.services.device_service import device_service
 from app.repositories.inventory import inventory_repository
+from app.schemas.edge import CapabilityRequest, ExecutionLocation
 
 router = APIRouter()
 
@@ -229,8 +231,31 @@ async def identify_device(device_id: str):
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.get("/{device_id}/facts")
-async def get_facts(device_id: str):
+async def get_facts(device_id: str, credential_ref: str | None = Query(default=None, min_length=1, max_length=200)):
     try:
+        device = inventory_repository.get_device(device_id)
+        if not device:
+            raise ValueError("Device not found")
+        location = str(device.get("execution_location", "")).upper()
+        if location == ExecutionLocation.EDGE.value or device.get("edge_id"):
+            edge_id = str(device.get("edge_id") or "").strip()
+            resolved_credential_ref = credential_ref or device.get("credential_ref")
+            if not edge_id:
+                raise HTTPException(status_code=422, detail="EDGE facts require edge_id")
+            if not resolved_credential_ref:
+                raise HTTPException(status_code=422, detail="EDGE facts require credential_ref")
+            from app.api.v1.endpoints.tasks import execute_capability
+            request = CapabilityRequest(
+                device_id=device_id,
+                capability="device.read.facts",
+                credential_ref=str(resolved_credential_ref),
+                edge_id=edge_id,
+                customer_id=device.get("customer_id"),
+                site_id=device.get("site_id"),
+                execution_location=ExecutionLocation.EDGE,
+                idempotency_key=f"facts-endpoint-{device_id}-{uuid.uuid4().hex}",
+            )
+            return await execute_capability(request)
         return await device_service.facts(device_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
